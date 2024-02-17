@@ -1,0 +1,137 @@
+
+//         function validateInput(inputElement, errorMessageElement, validationRegex, minLength, maxLength, emptyErrorMessage, invalidErrorMessage, consecutiveSameDigitsErrorMessage) {
+//     let input = document.getElementById(inputElement);
+//     let error = document.getElementById(errorMessageElement);
+
+//     if (inputElement === 'category') {
+//         let select = document.getElementById(inputElement);
+//         select.addEventListener('change', function() {
+//             if (select.value === '') {
+//                 select.classList.add('invalid');
+//                 error.innerHTML = `<span style="color: red;">${emptyErrorMessage}</span>`;
+//             } else {
+//                 select.classList.remove('invalid');
+//                 error.innerHTML = '';
+//             }
+//         });
+//     } else {
+//         input.addEventListener('blur', function() {
+//             const inputValue = input.value.trim();
+
+//             if (inputElement === 'image') {
+//                 if (input.files.length === 0) {
+//                     input.classList.add('invalid');
+//                     error.innerHTML = `<span style="color: red;">${emptyErrorMessage}</span>`;
+//                 } else {
+//                     input.classList.remove('invalid');
+//                     error.innerHTML = '';
+//                 }
+//             } else {
+//                 if (inputValue === '') {
+//                     input.classList.add('invalid');
+//                     error.innerHTML = `<span style="color: red;">${emptyErrorMessage}</span>`;
+//                 } else if (inputValue.length < minLength || (maxLength !== false && inputValue.length > maxLength) || !validationRegex.test(inputValue)) {
+//                     input.classList.add('invalid');
+//                     error.innerHTML = `<span style="color: red;">${invalidErrorMessage}</span>`;
+//                 } else if (inputElement === 'title' && hasConsecutiveSameCharacters(inputValue)) {
+//                     input.classList.add('invalid');
+//                     error.innerHTML = `<span style="color: red;">${consecutiveSameDigitsErrorMessage}</span>`;
+//                 } else if (inputElement === 'ISBN' && hasConsecutiveSameCharacters(inputValue)) {
+//                     input.classList.add('invalid');
+//                     error.innerHTML = `<span style="color: red;">${consecutiveSameDigitsErrorMessage}</span>`;
+//                 } else {
+//                     input.classList.remove('invalid');
+//                     error.innerHTML = '';
+//                 }
+//             }
+//         });
+
+//         input.addEventListener('focus', function() {
+//             if (input.classList.contains('invalid')) {
+//                 input.classList.remove("invalid");
+//                 error.innerHTML = '';
+//             }
+//         });
+//     }
+// }
+
+// validateInput('title', 'tittleErrorMessage', /^[A-Za-z0-9\s\-']+$/, 1, 30, 'Title should be required.', 'Title name cannot exceed more than 30 letters', 'Consecutive same letters are not allowed.');
+// validateInput('authorname', 'AuthorErrorMessage', /^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/, 1, 50, 'Author name should be required.', 'Author name should only contain letters and spaces.', null);
+// validateInput('ISBN', 'ISBNErrorMessage', null, null, 13, 'ISBN should be required.', null,'ISBN must contain exactly 13 digits.');
+// validateInput('description', 'descriptionErrorMessage', /^[A-Za-z0-9\s\-']+$/, 1, false, 'Description should be required.', '');
+// validateInput('image', 'imageErrorMessage', null, null, null, 'Please select an image.', null);
+// validateInput('category', 'categoryErrorMessage', null, null, null, 'Please select a category', null);
+// validateInput('price', 'priceErrorMessage', /^[0-9,.]+$/, null, null, 'Price should be required', 'Price cannot contain any letters', null);
+
+// function hasConsecutiveSameCharacters(inputValue) {
+//     for (let i = 0; i < inputValue.length - 1; i++) {
+//         if (inputValue[i] === inputValue[i + 1]) {
+//             return true;
+//         }
+//     }
+//     return false;
+// }
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Form Validation</title>
+<style>
+    .error {
+        color: red;
+    }
+</style>
+</head>
+<body>
+
+<form id="myForm">
+    <label for="name">Name:</label><br>
+    <input type="text" id="name" name="name"><br>
+    <span id="nameError" class="error"></span><br>
+    <label for="email">Email:</label><br>
+    <input type="email" id="email" name="email"><br>
+    <span id="emailError" class="error"></span><br><br>
+    <button type="submit">Submit</button>
+</form>
+
+<script>
+document.getElementById("myForm").addEventListener("submit", function(event) {
+    event.preventDefault(); // Prevent the form from submitting
+
+    var nameInput = document.getElementById("name");
+    var emailInput = document.getElementById("email");
+    var nameError = document.getElementById("nameError");
+    var emailError = document.getElementById("emailError");
+
+    // Clear previous error messages
+    nameError.textContent = "";
+    emailError.textContent = "";
+
+    var errorMessages = [];
+
+    if (nameInput.value.trim() === "") {
+        nameError.textContent = "Name is required";
+        errorMessages.push("Name is required");
+    }
+
+    if (emailInput.value.trim() === "") {
+        emailError.textContent = "Email is required";
+        errorMessages.push("Email is required");
+    }
+
+    // If there are any errors, prevent form submission
+    if (errorMessages.length > 0) {
+        return false;
+    }
+
+    // If no errors, submit the form
+    event.target.submit();
+});
+</script>
+
+</body>
+</html>
+

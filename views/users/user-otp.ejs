@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OTP Verification</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      integrity="sha384-rzjluCzsHDAE6PHhRM6r0CkPk6R5Io3tP2dceP4F8fznIbDI4+6s4FWeT1HIZYnU"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-Q5jn9oYQOj0X6r28MLJtiKab4rc+oS/ZKbVubLqQlVKOxCR0VWO1UI4c7k56Ojl"
+      crossorigin="anonymous"
+    ></script>
+    <link rel="stylesheet" href="/assets/css/plugins/otp-style.css" />
+  </head>
+  <body>
+    <div class="otp-form">
+      <!-- Your OTP form goes here -->
+      <form method="post" action="/verify-otp" id="otpForm">
+        <% if (typeof successMessage !== 'undefined') { %>
+          <p style="color: green; font-size: 18px;"><%= successMessage %></p>
+      <% } else if (typeof errorMessage !== 'undefined') { %>
+          <p style="color: red; font-size: 18px;"><%= errorMessage %></p>
+      <% } %>
+        <div>
+          <label for="otp">Enter OTP:</label>
+          <input type="text" id="otp" name="otp" required />
+          <button type="submit" class="btn btn-primary">Verify OTP</button>
+          <a href="/register" id="goBackLink" class="btn btn-secondary mt-3"
+            >Back to Registration</a
+          >
+        </div>
+        <span class="error-message" id="otpErrorMessage"></span>
+      </form>
+    </div>
+
+    <script>
+      function validateOTP(
+        inputElement,
+        errorMessageElement,
+        minLength,
+        emptyErrorMessage,
+        invalidErrorMessage
+      ) {
+        let input = document.getElementById(inputElement);
+        let error = document.getElementById(errorMessageElement);
+
+        input.addEventListener("blur", function () {
+          const inputValue = input.value.trim();
+
+          if (inputValue === "") {
+            input.classList.add("invalid");
+            error.innerHTML = `<span style="color: red;">${emptyErrorMessage}</span>`;
+          } else if (inputValue.length < minLength) {
+            input.classList.add("invalid");
+            error.innerHTML = `<span style="color: red;">${invalidErrorMessage}</span>`;
+          } else {
+            error.innerHTML = "";
+          }
+        });
+
+        input.addEventListener("focus", function () {
+          if (input.classList.contains("invalid")) {
+            input.classList.remove("invalid");
+            error.innerHTML = "";
+          }
+        });
+      }
+
+      validateOTP(
+        "otp",
+        "otpErrorMessage",
+        6,
+        "Please enter otp",
+        "otp doesn't satisfy. please do recheck"
+      );
+
+      document
+        .getElementById("otpForm")
+        .addEventListener("submit", function (event) {
+          const otpInput = document.getElementById("otp");
+          const otpValue = otpInput.value.trim();
+
+          if (otpValue === "" || otpValue.length < 6) {
+            event.preventDefault(); 
+            otpInput.classList.add("invalid");
+          }
+        });
+
+        // Confirmation dialog before navigating back
+        document.getElementById('goBackLink').addEventListener('click', function (event) {
+            const confirmResult = confirm('Are you sure you want to go back to the registration page. All your data will we lost');
+            
+            if (!confirmResult) {
+                event.preventDefault(); //preventing navigation if the user rejects
+            }
+        });
+    </script>
+  </body>
+</html>

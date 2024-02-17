@@ -1,0 +1,423 @@
+﻿<%- include('../userLayout/header') %>
+    <main class="main">
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="/home" rel="nofollow" style="color: #000000;">Home</a>
+                    <span></span>
+                    <a href="/product-list" rel="nofollow" style="color: #000000;">Shop</a>
+                    <span></span> View
+                </div>
+            </div>
+        </div>
+        <section class="mt-50 mb-50">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-9">
+                        <div class="product-detail accordion-detail">
+                            <div class="row mb-50">
+                                <div class="col-md-6 col-sm-12 col-xs-12">
+                                    <div class="detail-gallery">
+                                        <span class="zoom-icon"><i class="fi-rs-search"></i></span>
+                                        <!-- MAIN SLIDES -->
+                                        <div class="product-image-slider" >
+                                            <% if (product.images && product.images.length > 0) { %>
+                                                <% product.images.forEach((productImage) => { %>
+                                                    <figure class="border-radius-10" >
+                                                        <img src="/assets-admin/productImages/<%= productImage%>" alt="product image" height="600px" width="100%">
+                                                    </figure>
+                                                <% }) %>
+                                            <% } %>
+                                        </div>                                        
+                                        <!-- THUMBNAILS -->
+                                        <div class="slider-nav-thumbnails pl-15 pr-15">
+                                            <% if (product.images && product.images.length > 0) { %>
+                                                <% product.images.forEach((productImage, index) => { %>
+                                                    <div>
+                                                        <!-- Add a class to the thumbnail image for event handling -->
+                                                        <img class="thumbnail-image" src="/assets-admin/productImages/<%= productImage %>" alt="<%= product.title %>" data-index="<%= index %>">
+                                                    </div>
+                                                <% }) %>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                    <!-- End Gallery -->
+                                    <div class="social-icons single-share">
+                                        <ul class="text-grey-5 d-inline-block">
+                                            <li><strong class="mr-10">Share this:</strong></li>
+                                            <li class="social-facebook"><a href="#"><img src="/assets/imgs/theme/icons/icon-facebook.svg" alt=""></a></li>
+                                            <li class="social-twitter"> <a href="#"><img src="/assets/imgs/theme/icons/icon-twitter.svg" alt=""></a></li>
+                                            <li class="social-instagram"><a href="#"><img src="/assets/imgs/theme/icons/icon-instagram.svg" alt=""></a></li>
+                                            <li class="social-linkedin"><a href="#"><img src="/assets/imgs/theme/icons/icon-pinterest.svg" alt=""></a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-sm-12 col-xs-12">
+                                    <div class="detail-info">
+                                        <h2 class="title-detail"><%= product.title  %></h2>
+                                        <div class="product-detail-rating">
+                                            <div class="pro-details-brand">
+                                                <span> Category: <a href="#"><%= product.category %></a></span>
+                                            </div>
+                                            <div class="product-rate-cover text-end">
+                                                <div class="product-rate d-inline-block">
+                                                    <div class="product-rating" style="width:90%">
+                                                    </div>
+                                                </div>
+                                                <span class="font-small ml-5 text-muted"> (25 reviews)</span>
+                                            </div>
+                                        </div>
+                                        <div class="clearfix product-price-cover">
+                                            <div class="product-price primary-color float-left">
+                                                <ins><span class="text-brand-dark">Rs.<%= product.afterDiscount%>/-</span></ins>
+                                                <ins><span class="old-price font-md ml-15">Rs.<%= product.price%>/-</span></ins>
+                                                <span class="save-price  font-md color3 ml-15"><%= product.discountPrice %>% off</span>
+                                            </div>
+                                        </div>
+                                        <div class="bt-1 border-color-1 mt-15 mb-15"></div>
+                                        <div class="short-desc mb-30">
+                                            <span> Title: <a href="#"><%= product.title %></a></span><br>
+                                            <span> Author: <a href="#"><%= product.author %></a></span><br>
+                                            <span> ISBN: <a href="#"><%= product.ISBN %></a></span><br>
+                                        </div>
+                                        <div class="product_sort_info font-xs mb-30">
+                                            <ul>
+                                                <li class="mb-10 text-dark"><i class="fi-rs-refresh mr-5"></i> 30 Day Return Policy</li>
+                                                <li><i class="fi-rs-credit-card mr-5"></i> Cash on Delivery available</li>
+                                            </ul>
+                                        </div>
+                                        <div class="bt-1 border-color-1 mt-30 mb-30"></div>
+                                        <div class="detail-extralink">
+                                            <!-- <div class="detail-qty border radius">
+                                                <a href="#" class="qty-down"><i class="fi-rs-angle-small-down"></i></a>
+                                                <span class="qty-val">1</span>
+                                                <a href="#" class="qty-up"><i class="fi-rs-angle-small-up"></i></a>
+                                            </div> -->
+                                            <div class="product-extra-link2">
+                                                <button type="submit" class="button button-add-to-cart text-white">GO TO CART</button>
+                                                <button type="submit" class="button button-add-to-cart text-white">BUY NOW</button>
+                                                <a aria-label="Add To Wishlist" class="action-btn hover-up" href="shop-wishlist.html"><i class="fi-rs-heart"></i></a>
+                                                <a aria-label="Compare" class="action-btn hover-up" href="shop-compare.html"><i class="fi-rs-shuffle"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Detail Info -->
+                                </div>
+                            </div>
+                            <div class="tab-style3">
+                                <ul class="nav nav-tabs text-uppercase">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" id="Description-tab" data-bs-toggle="tab" href="#Description">Description</a>
+                                    </li>
+                                </ul>
+                                <div class="tab-content shop_info_tab entry-main-content">
+                                    <div class="tab-pane fade show active" id="Description">
+                                        <div class="">
+                                            <p><%= product.description  %></p>                       
+                                        </div>
+                                    </div>    
+                                    <div class="tab-pane fade" id="Reviews"> 
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-60">
+                                <div class="col-12">
+                                    <h3 class="section-title style-1 mb-30">Related products</h3>
+                                </div>
+                                <div class="col-12">
+                                    <div class="row related-products">
+                                        <div class="col-lg-3 col-md-4 col-12 col-sm-6">
+                                            <div class="product-cart-wrap small hover-up">
+                                                <div class="product-img-action-wrap">
+                                                    <div class="product-img product-img-zoom">
+                                                        <a href="shop-product-right.html" tabindex="0">
+                                                            <img class="default-img" src="#" alt="">
+                                                            <img class="hover-img" src="#" alt="">
+                                                        </a>
+                                                    </div>
+                                                    <div class="product-action-1">
+                                                        <a aria-label="Quick view" class="action-btn small hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal
+                                                         "><i class="fi-rs-search"></i></a>
+                                                        <a aria-label="Add To Wishlist" class="action-btn small hover-up" href="#" tabindex="0"><i class="fi-rs-heart"></i></a>
+                                                        <a aria-label="Compare" class="action-btn small hover-up" href="#" tabindex="0"><i class="fi-rs-shuffle"></i></a>
+                                                    </div>
+                                                    <div class="product-badges product-badges-position product-badges-mrg">
+                                                        <span class="hot">Hot</span>
+                                                    </div>
+                                                </div>
+                                                <div class="product-content-wrap">
+                                                    <h2><a href="shop-product-right.html" tabindex="0"></a></h2>
+                                                    <div class="rating-result" title="90%">
+                                                        <span>
+                                                        </span>
+                                                    </div>
+                                                    <div class="product-price">
+                                                        <span></span>
+                                                        <span class="old-price"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-md-4 col-12 col-sm-6">
+                                            <div class="product-cart-wrap small hover-up">
+                                                <div class="product-img-action-wrap">
+                                                    <div class="product-img product-img-zoom">
+                                                        <a href="#" tabindex="0">
+                                                            <img class="default-img" src="" alt="">
+                                                            <img class="hover-img" src="" alt="">
+                                                        </a>
+                                                    </div>
+                                                    <div class="product-action-1">
+                                                        <a aria-label="Quick view" class="action-btn small hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal
+"><i class="fi-rs-search"></i></a>
+                                                        <a aria-label="Add To Wishlist" class="action-btn small hover-up" href="#" tabindex="0"><i class="fi-rs-heart"></i></a>
+                                                        <a aria-label="Compare" class="action-btn small hover-up" href="#" tabindex="0"><i class="fi-rs-shuffle"></i></a>
+                                                    </div>
+                                                    <div class="product-badges product-badges-position product-badges-mrg">
+                                                        <span class="sale">-12%</span>
+                                                    </div>
+                                                </div>
+                                                <div class="product-content-wrap">
+                                                    <h2><a href="shop-product-right.html" tabindex="0"></a></h2>
+                                                    <div class="rating-result" title="90%">
+                                                        <span>
+                                                        </span>
+                                                    </div>
+                                                    <div class="product-price">
+                                                        <span></span>
+                                                        <span class="old-price"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-md-4 col-12 col-sm-6">
+                                            <div class="product-cart-wrap small hover-up">
+                                                <div class="product-img-action-wrap">
+                                                    <div class="product-img product-img-zoom">
+                                                        <a href="#" tabindex="0">
+                                                            <img class="default-img" src="#" alt="">
+                                                            <img class="hover-img" src="#" alt="">
+                                                        </a>
+                                                    </div>
+                                                    <div class="product-action-1">
+                                                        <a aria-label="Quick view" class="action-btn small hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal
+"><i class="fi-rs-search"></i></a>
+                                                        <a aria-label="Add To Wishlist" class="action-btn small hover-up" href="#" tabindex="0"><i class="fi-rs-heart"></i></a>
+                                                        <a aria-label="Compare" class="action-btn small hover-up" href="#" tabindex="0"><i class="fi-rs-shuffle"></i></a>
+                                                    </div>
+                                                    <div class="product-badges product-badges-position product-badges-mrg">
+                                                        <span class="new">New</span>
+                                                    </div>
+                                                </div>
+                                                <div class="product-content-wrap">
+                                                    <h2><a href="#" tabindex="0"></a></h2>
+                                                    <div class="rating-result" title="90%">
+                                                        <span>
+                                                        </span>
+                                                    </div>
+                                                    <div class="product-price">
+                                                        <span></span>
+                                                        <span class="old-price"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-md-4 col-12 col-sm-6">
+                                            <div class="product-cart-wrap small hover-up mb-0">
+                                                <div class="product-img-action-wrap">
+                                                    <div class="product-img product-img-zoom">
+                                                        <a href="#" tabindex="0">
+                                                            <img class="default-img" src="" alt="">
+                                                            <img class="hover-img" src="" alt="">
+                                                        </a>
+                                                    </div>
+                                                    <div class="product-action-1">
+                                                        <a aria-label="Quick view" class="action-btn small hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal
+"><i class="fi-rs-search"></i></a>
+                                                        <a aria-label="Add To Wishlist" class="action-btn small hover-up" href="#" tabindex="0"><i class="fi-rs-heart"></i></a>
+                                                        <a aria-label="Compare" class="action-btn small hover-up" href="#" tabindex="0"><i class="fi-rs-shuffle"></i></a>
+                                                    </div>
+                                                    <div class="product-badges product-badges-position product-badges-mrg">
+                                                        <span class="hot">Hot</span>
+                                                    </div>
+                                                </div>
+                                                <div class="product-content-wrap">
+                                                    <h2><a href="#" tabindex="0"></a></h2>
+                                                    <div class="rating-result" title="90%">
+                                                        <span>
+                                                        </span>
+                                                    </div>
+                                                    <div class="product-price">
+                                                        <span></span>
+                                                        <span class="old-price"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="banner-img banner-big wow fadeIn f-none animated mt-50">
+                                <img class="border-radius-10" src="" alt="">
+                                <div class="banner-text">
+                                    <h4 class="mb-15 mt-40"></h4>
+                                    <h2 class="fw-600 mb-20"><br></h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 primary-sidebar sticky-sidebar">
+                        <div class="widget-category mb-30">
+                            <h5 class="section-title style-1 mb-30 wow fadeIn animated">Category</h5>
+                            <% if (category) { %>
+                                <% for (let i = 0; i < category.length; i++) { %>
+                                    <li><a href="#"><%= category[i].name %></a></li>
+                                <% } %>
+                            <% } %>
+                                                       
+                        </div>
+                        <!-- Fillter By Price -->
+                        <div class="sidebar-widget price_range range mb-30">
+                            <div class="widget-header position-relative mb-20 pb-10">
+                                <h5 class="widget-title mb-10">Fill by price</h5>
+                                <div class="bt-1 border-color-1"></div>
+                            </div>
+                            <div class="price-filter">
+                                <div class="price-filter-inner">
+                                    <div id="slider-range"></div>
+                                    <div class="price_slider_amount">
+                                        <div class="label-input">
+                                            <span>Range:</span><input type="text" id="amount" name="price" placeholder="Add Your Price" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="list-group">
+                                <div class="list-group-item mb-10 mt-10">
+                                    <label class="fw-900 text-dark">BOOKHUB</label>
+                                    <div class="custome-checkbox">
+                                        <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox1" value="">
+                                        <label class="form-check-label" for="exampleCheckbox1"><span>Popular</span></label>
+                                        <br>
+                                        <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox2" value="">
+                                        <label class="form-check-label" for="exampleCheckbox2"><span>Trending</span></label>
+                                        <br>
+                                        <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox3" value="">
+                                        <label class="form-check-label" for="exampleCheckbox3"><span>Latest</span></label>
+                                        <br>
+                                        <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox3" value="">
+                                        <label class="form-check-label" for="exampleCheckbox3"><span>Most buyed</span></label>
+                                    </div>
+                                    <label class="fw-900 mt-15 text-dark">Item Condition</label>
+                                    <div class="custome-checkbox">
+                                        <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox11" value="">
+                                        <label class="form-check-label" for="exampleCheckbox11"><span>Hard copy (100)</span></label>
+                                        <br>
+                                        <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox21" value="">
+                                        <label class="form-check-label" for="exampleCheckbox21"><span>soft copy (27)</span></label>
+                                        <br>
+                                        <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox31" value="">
+                                        <label class="form-check-label" for="exampleCheckbox31"><span>Audio books(111)</span></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="#" class="btn btn-sm btn-default"><i class="fi-rs-filter mr-5"></i> Fillter</a>
+                        </div>
+                        <!-- Product sidebar Widget -->
+                        <div class="sidebar-widget product-sidebar  mb-30 p-30 bg-grey border-radius-10">
+                            <div class="widget-header position-relative mb-20 pb-10">
+                                <h5 class="widget-title mb-10">New products</h5>
+                                <div class="bt-1 border-color-1"></div>
+                            </div>
+                            <div class="single-post clearfix">
+                                <div class="image">
+                                    <img src="" alt="#">
+                                </div>
+                                <div class="content pt-10">
+                                    <h5><a href="#"></a></h5>
+                                    <p class="price mb-0 mt-5"></p>
+                                    <div class="product-rate">
+                                        <div class="product-rating" style="width:90%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="single-post clearfix">
+                                <div class="image">
+                                    <img src="" alt="#">
+                                </div>
+                                <div class="content pt-10">
+                                    <h6><a href="#"></a></h6>
+                                    <p class="price mb-0 mt-5"></p>
+                                    <div class="product-rate">
+                                        <div class="product-rating" style="width:80%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="single-post clearfix">
+                                <div class="image">
+                                    <img src="" alt="#">
+                                </div>
+                                <div class="content pt-10">
+                                    <h6><a href="shop-product-detail.html"></a></h6>
+                                    <p class="price mb-0 mt-5"></p>
+                                    <div class="product-rate">
+                                        <div class="product-rating" style="width:60%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="banner-img wow fadeIn mb-45 animated d-lg-block d-none">
+                            <img src="" alt="">
+                            <div class="banner-text">
+                                <span></span>
+                                <h4><br></h4>
+                                <a href="#"><i class="fi-rs-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <!-- Preloader Start -->
+    <div id="preloader-active">
+        <div class="preloader d-flex align-items-center justify-content-center">
+            <div class="preloader-inner position-relative">
+                <div class="text-center">
+                    <h5 class="mb-5">Now Loading</h5>
+                    <div class="loader">
+                        <div class="bar bar1"></div>
+                        <div class="bar bar2"></div>
+                        <div class="bar bar3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Vendor JS-->
+    <script src="/assets/js/vendor/modernizr-3.6.0.min.js"></script>
+    <script src="/assets/js/vendor/jquery-3.6.0.min.js"></script>
+    <script src="/assets/js/vendor/jquery-migrate-3.3.0.min.js"></script>
+    <script src="/assets/js/vendor/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/plugins/slick.js"></script>
+    <script src="/assets/js/plugins/jquery.syotimer.min.js"></script>
+    <script src="/assets/js/plugins/wow.js"></script>
+    <script src="/assets/js/plugins/jquery-ui.js"></script>
+    <script src="/assets/js/plugins/perfect-scrollbar.js"></script>
+    <script src="/assets/js/plugins/magnific-popup.js"></script>
+    <script src="/assets/js/plugins/select2.min.js"></script>
+    <script src="/assets/js/plugins/waypoints.js"></script>
+    <script src="/assets/js/plugins/counterup.js"></script>
+    <script src="/assets/js/plugins/jquery.countdown.min.js"></script>
+    <script src="/assets/js/plugins/images-loaded.js"></script>
+    <script src="/assets/js/plugins/isotope.js"></script>
+    <script src="/assets/js/plugins/scrollup.js"></script>
+    <script src="/assets/js/plugins/jquery.vticker-min.js"></script>
+    <script src="/assets/js/plugins/jquery.theia.sticky.js"></script>
+    <script src="/assets/js/plugins/jquery.elevatezoom.js"></script>
+    <!-- Template  JS -->
+    <script src="/assets/js/main.js?v=3.4"></script>
+    <script src="/assets/js/shop.js?v=3.4"></script>
+</body>
+
+</html>
