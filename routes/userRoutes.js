@@ -5,6 +5,7 @@ const session = require('express-session')
 const config = require('../config/config');
 const auth = require('../middleware/userauth');
 const cart = require('../controller/cartController');
+const order = require('../controller/checkoutController');
 const user_route = express();
 
 
@@ -67,7 +68,12 @@ user_route.get('/product-view',auth.isLogin,userController.LoadIndIvidualProduct
 user_route.get('/cart',auth.isLogin,cart.loadCartPage)
 user_route.post('/add-to-cart',auth.isLogin,cart.addToCart);
 user_route.post('/updateQuantity',auth.isLogin,cart.updateQuantity);
-user_route.post('/remove-product',auth.isLogin,cart.removeCart)
+user_route.post('/remove-product',auth.isLogin,cart.removeProduct);
+user_route.post('/clear-cart',auth.isLogin,cart.clearEntireCart);
+
+//checkout
+user_route.get('/checkout',auth.isLogin,order.loadCheckoutPage);
+user_route.post('/add-to-checkout',auth.isLogin,order.addCheckout);
 
 user_route.get('/logout', auth.isLogin, userController.userLogout)
 

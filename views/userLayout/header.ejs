@@ -172,12 +172,15 @@
                                 </div>
                                 <div class="header-action-icon-2">
                                     <a class="mini-cart-icon" href="/cart">
-                                        <i class="material-symbols-outlined">
+                                        <i class="material-symbols-outlined"> 
                                             shopping_bag
                                         </i>
-                                        <span class="pro-count blue">2</span>
-                                    </a>
-                                    
+                                        <% if (cartItemCount >0) { %>
+                                            <span class="pro-count blue"><%= cartItemCount %></span>
+                                            <% } else { %>
+                                             <span></span>
+                                        <% } %>                                      
+                                    </a>                                   
                                 </div>
                             </div>
                         </div>

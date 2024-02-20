@@ -259,7 +259,12 @@ const loadHomePage = async(req,res) => {
     try{
        const  userData = await User.findById({_id:req.session.user_id})
        const productData=await Product.find({is_published:1})
-       res.render('home',{user:userData,product:productData})
+       const cartData = await Cart.findOne({owner:userData});
+        let cartItemCount = 0;
+        if(cartData && cartData.items){
+            cartItemCount = cartData.items.length;
+        }
+       res.render('home',{user:userData,product:productData,cartItemCount:cartItemCount})
     }catch(error){
         console.log(error.message)
     }
@@ -270,7 +275,9 @@ const loadProfilePage = async(req,res) => {
     try{
         const userData = await User.findById({_id:req.session.user_id})
         const categoryData = await Category.find({status:'active'})
-        res.render('user-profile',{user:userData,category:categoryData})
+        const cart = await Cart.findOne({owner:userData})
+        const cartItemCount = cart ? cart.items.length : 0;
+        res.render('user-profile',{user:userData,category:categoryData, cartItemCount: cartItemCount})
     }catch(error){
         console.log(error.message)
     }
@@ -488,8 +495,13 @@ const loadProduct = async(req,res) => {
         const  userData = await User.findById({_id:req.session.user_id})
         const productData=await Product.find({is_published:1})
         const categoryData = await Category.find({status:'active'})
-        res.render('user-product-list',{user:userData,
-        product:productData, category: categoryData})
+        const cartData = await Cart.findOne({owner:userData});
+        let cartItemCount = 0;
+        if(cartData && cartData.items){
+            cartItemCount = cartData.items.length;
+        }
+        res.render('user-product-list',{user:userData,                  
+        product:productData, category: categoryData,cartItemCount:cartItemCount})
     }catch(error){
         console.log(error.message)
     }
@@ -501,13 +513,21 @@ const LoadIndIvidualProduct = async (req,res) => {
         const id = req.query.id;
         const userData = await User.findById({_id:req.session.user_id})
         const productData = await Product.findById({_id:id})
-        const categoryData = await Category.find({status:'active'})
+        const categoryData = await Category.find({status:'active'});
+        const cartData = await Cart.findOne({owner:userData});
+        let cartItemCount = 0;
+        if(cartData && cartData.length){
+           cartItemCount = cartData.items.length;  
+        }
         if(productData){
+            productData.views++;
+            await productData.save();
             res.render('user-product-view',{product:productData
             ,user:userData
-            ,category:categoryData
+            ,category:categoryData,
+            cartItemCount:cartItemCount
         })
-        c
+
         }else{
             res.redirect('//product-list')
         }
@@ -555,5 +575,5 @@ module.exports = {
     loadupdateUserAddress,
     updateUserAddress,
     deleteUserAddress,
-    // addToCart
+    
 };

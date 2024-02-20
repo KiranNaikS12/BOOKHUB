@@ -10,7 +10,8 @@ const loadCartPage = async(req,res) => {
         const categoryData = await Category.find({status:'active'})
         const userId = req.session.user_id;
         const cart = await Cart.findOne({owner:userId});
-        
+
+       
         for(const item of cart.items){
             let data = await Product.findById(item.productId);
             item.data = data;
@@ -25,10 +26,11 @@ const loadCartPage = async(req,res) => {
             category:categoryData,
             cart:cart,
             cartItemCount: cartItemCount
-        });  
+        });
+       
     }catch(error){
         console.log(error.message);
-        return res.status(500).json({ message: "No cart found" });
+        return res.status(500).json({ message: "Internal server error" });
     }
 }
 
@@ -74,6 +76,8 @@ const addToCart = async(req,res) => {
                 cartItem.price = cartItem.quantity * product.afterDiscount;
                 cartItem.image = product.images;
             } else {
+                product.status = 'out-of-stock';
+                await product.save();
                 outOfStock = true;
             }
         } else{
@@ -118,7 +122,7 @@ const updateQuantity = async(req,res) => {
             return res.status(404).json({ error: "Product not found." });
         }  
 
-        if (newQuantity > product.countInStock) {
+        if (newQuantity >= product.countInStock) {
             return res.status(400).json({ error: true, message: "Stock limit exceeded" });
         }
         
@@ -126,9 +130,13 @@ const updateQuantity = async(req,res) => {
         
         cartItem.quantity = newQuantity;
         cartItem.price = newPrice;
-        // console.log('price',cartItem.price)
         let billTotal = cart.items.reduce((total, item) => total + item.price, 0);
         cart.billTotal = billTotal;
+        if(newQuantity < product.countInStock && product.status === 'out-of-stock'){
+            product.status = 'active';
+            await product.save();
+        }
+        
         await cart.save();
         res.status(200).json({ success: true, message: "Cart updated successfully.", newPrice: cartItem.price, billTotal:cart.billTotal});
     }catch(error){
@@ -137,13 +145,13 @@ const updateQuantity = async(req,res) => {
     }
 }
 
-//***********RemoveCart***************
-const removeCart = async(req,res) => {
+//***********RemoveProductFromTheCart***************
+const removeProduct = async(req,res) => {
     const {userId,productId} = req.body;
     try{
        console.log(userId);
        console.log(productId);
-    const cart = await Cart.findOne({owner:userId});
+       const cart = await Cart.findOne({owner:userId});
 
     if (!cart) {
         return res
@@ -175,10 +183,35 @@ const removeCart = async(req,res) => {
     }
 }
 
+//***********ClearCart***************
+const clearEntireCart = async(req,res) => {
+    const {userId} = req.body;  
+    try{
+        const cart = await Cart.findOne({owner:userId})
+       
+        if(!cart){
+            return res
+            .status(404)
+            .json({ success: false, message: "Cart Not Found" }); 
+        }
+
+        cart.items = [];
+        cart.billTotal = 0;
+
+        await cart.save();
+        return res.status(200).json({success:true, message:"Cart Cleared Successfully"});
+    }catch(error){
+        console.log(error.message);
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+}
+
+
 
 module.exports = {
     addToCart,
     loadCartPage,
     updateQuantity,
-    removeCart
+    removeProduct,
+    clearEntireCart,
 }

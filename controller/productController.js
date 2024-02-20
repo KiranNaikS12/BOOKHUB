@@ -52,6 +52,7 @@ const insertProduct = async(req,res) => {
                     is_published:isPublished,
                     status: isPublished ? 'active' : 'Draft',
                     discountPrice,
+                    views:0,
                     afterDiscount: Math.floor(parseInt(req.body.price) - (parseInt(req.body.price) * (parseInt(req.body.discountPrice) / 100)))             
                 }) 
                 if(product.images.length >= 5){

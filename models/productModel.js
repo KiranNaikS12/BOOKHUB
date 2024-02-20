@@ -56,6 +56,10 @@ const bookSchema = mongoose.Schema({
     deleted_at:{
         type:Date,
         default: null
+    },
+    views:{
+        type:Number,
+        default:0
     }
 });
 

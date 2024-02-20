@@ -1,8 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose')
 const app = express();
-const nocache = require('nocache')
-const PORT = process.env.PORT || 4000;
+const nocache = require('nocache');
+const PORT = process.env.PORT || 4000
 //connecting mongoose
 async function connectToDatabase(){
     try{
