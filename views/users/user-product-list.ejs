@@ -1,10 +1,23 @@
 ﻿<%- include('../userLayout/header') %>
 <style>
-.out-of-stock {
-    color: red;
+  .product-label {
+  position: absolute;
+  top: 26px;
+  left: -35px;
+  z-index: 2;
+  border-radius: 5px;
+  transform: rotate(-45deg);
+  padding: 7px 26px;
+  background-color: #000000;
+  font-size: 18px;
+  font-weight: bold;
 }
 .out-of-stock-product {
-    filter: brightness(0.8); 
+    filter: brightness(92%); 
+}
+
+.out-of-stock {
+    color: red;
 }
 </style>
     <main class="main">
@@ -55,11 +68,9 @@
                                     </div>
                                     <div class="sort-by-dropdown">
                                         <ul>
-                                            <li><a class="active" href="#">Featured</a></li>
                                             <li><a href="#">Price: Low to High</a></li>
                                             <li><a href="#">Price: High to Low</a></li>
                                             <li><a href="#">Release Date</a></li>
-                                            <li><a href="#">Avg. Rating</a></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -68,13 +79,18 @@
                         <div class="row product-grid-3">
                             <% product.forEach(productItem => { %>
                                 <div class="col-lg-4 col-md-4 col-12 col-sm-6">
-                                    <div class="product-cart-wrap mb-30 <%= productItem.status === 'out-of-stock' ? 'out-of-stock-product' : '' %>">
-                                        <% if (productItem.status === 'out-of-stock') { %>
-                                            <div class="product-label">
-                                                <span class="badge bg-danger">Out of stock</span>
-                                            </div>
-                                        <% } %>
+                                    <div class="product-cart-wrap mb-30 <%= productItem.productStatus === 'Limit-Exceeded' ? 'Limit-Exceeded-product' : '' %> <%= productItem.status === 'out-of-stock' ? 'out-of-stock-product' : '' %>">
+                                        
                                         <div class="product-img-action-wrap">
+                                            <% if (productItem.productStatus === 'Limit-Exceeded') { %>
+                                                <div class="product-label limit-exceeded-label">
+                                                    <span class="badge bg-warning text-dark">Limit Exceeded</span>
+                                                </div>
+                                                <% } else if (productItem.status === 'out-of-stock') { %>
+                                                    <div class="product-label">
+                                                        <span class="badge bg-danger">Out of stock</span>
+                                                    </div>
+                                            <% } %>
                                             <div class="product-img product-img-zoom">
                                                 <a href="/product-view?id=<%= productItem._id %>">
                                                     <img class="default-img" src="/assets-admin/productImages/<%= productItem.images[productItem.images.length - 1]%>"  alt="">
@@ -107,7 +123,7 @@
                                                 <span class="<%= productItem.status === 'out-of-stock' ? 'out-of-stock' : 'active' %>"><%= productItem.status %></span>
                                             </div>
                                             <div class="product-action-1 show">
-                                                <a aria-label="Add To Cart" class="action-btn hover-up"  onclick="addToCart('<%= productItem._id %>', '<%= productItem.countInStock %>')">
+                                                <a aria-label="Add To Cart" class="action-btn hover-up"  onclick="addToCart('<%= productItem._id %>')">
                                                     <i class="fi-rs-shopping-bag-add"></i>
                                                 </a>
                                             </div>
@@ -115,7 +131,7 @@
                                     </div>
                                 </div>
                             <% }); %>
-                        </div>                        
+                        </div>                                               
                         <!--pagination-->
                         <!-- <div class="pagination-area mt-15 mb-sm-5 mb-lg-0">
                             <nav aria-label="Page navigation example">
@@ -190,7 +206,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <a href="shop-grid-right.html" class="btn btn-sm btn-default"><i class="fi-rs-filter mr-5"></i> Fillter</a>
+                            <a href="#" class="btn btn-sm btn-default"><i class="fi-rs-filter mr-5"></i> Fillter</a>
                         </div>
                     </div>
                 </div>
@@ -239,7 +255,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- ajax request to the sever -->
     <script>
-        async function addToCart(productId, countInStock) {
+        async function addToCart(productId) {
             try{
                 let response = await fetch('/add-to-cart',{
                     method:'POST',
@@ -248,7 +264,7 @@
                     },
                     body: JSON.stringify({
                         productId,
-                        countInStock                     
+                                             
                     })
                 });
                 let title, text, iconClass;
@@ -266,8 +282,8 @@
                     await Swal.fire({
                         title:'Sorry! Out of Stock',
                         text:'Stock limit exceeded',
-                        icon: 'Sorry',
-                        timer: 1500
+                        icon: 'error',
+                        
                     });
                     window.location.reload();
                 }else {
@@ -288,6 +304,97 @@
                 });
             }
         }
-    </script>
+
+    document.addEventListener("DOMContentLoaded", function() {
+    const PopularCheckbox = document.getElementById("exampleCheckbox1");
+    PopularCheckbox.addEventListener("click", function(){
+        sortProductsByPopularity();
+    });
+
+    function sortProductsByPopularity(){
+        if (PopularCheckbox.checked) {
+            fetch("/api/popular-products")
+            .then(response => response.json())
+            .then(data => {
+                updateProductList(data);
+            })
+            .catch(error => console.log("Error fetching the product",error));
+        } else {
+            fetch("/api/all-products") 
+            .then(response => response.json())
+            .then(data => {
+                updateProductList(data);
+            })
+            .catch(error => console.log("Error fetching the product",error));
+        }
+    }
+
+    function updateProductList(products) {
+        const productListContainer = document.querySelector('.product-grid-3'); 
+
+        productListContainer.innerHTML = ""; 
+
+        products.forEach(product => {
+            const productElement = document.createElement("div");
+            productElement.classList.add("col-lg-4", "col-md-4", "col-12", "col-sm-6");
+            productElement.innerHTML = `
+                <div class="product-cart-wrap mb-30 ${product.productStatus === 'Limit-Exceeded' ? 'Limit-Exceeded-product' : ''} ${product.status === 'out-of-stock' ? 'out-of-stock-product' : ''}">
+                    <div class="product-img-action-wrap">
+                        ${product.productStatus === 'Limit-Exceeded' ? 
+                        `<div class="product-label limit-exceeded-label">
+                            <span class="badge bg-warning text-dark">Limit Exceeded</span>
+                        </div>` : 
+                        product.status === 'out-of-stock' ? 
+                        `<div class="product-label">
+                            <span class="badge bg-danger">Out of stock</span>
+                        </div>` : ''}
+                        <div class="product-img product-img-zoom">
+                            <a href="/product-view?id=${product._id}">
+                                <img class="default-img" src="/assets-admin/productImages/${product.images[product.images.length - 1]}" alt="">
+                                <img class="hover-img" src="${product.imageUrl}" alt="">
+                            </a>
+                        </div>
+                        <div class="product-action-1">
+                            <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal">
+                                <i class="fi-rs-search"></i>
+                            </a>
+                            <a aria-label="Add To Wishlist" class="action-btn hover-up" href="#">
+                                <i class="fi-rs-heart"></i>
+                            </a>
+                            <a aria-label="Compare" class="action-btn hover-up" href="#">
+                                <i class="fi-rs-shuffle"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="product-content-wrap">
+                        <div class="product-category">
+                            <a href="#">${product.category}</a>
+                        </div>
+                        <h2><a href="">${product.title}</a></h2>
+
+                        <div class="product-price">
+                            <span>Rs.${product.afterDiscount}/-</span>
+                            <span class="old-price">Rs.${product.price} /-</span>
+                        </div>
+                        <div class="product-status">
+                            <span class="${product.status === 'out-of-stock' ? 'out-of-stock' : 'active'}">${product.status}</span>
+                        </div>
+                        <div class="product-action-1 show">
+                            <a aria-label="Add To Cart" class="action-btn hover-up"  onclick="addToCart('${product._id}')">
+                                <i class="fi-rs-shopping-bag-add"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            productListContainer.appendChild(productElement);
+        });
+    }
+});
+
+
+
+
+</script>
 </body>
 </html>

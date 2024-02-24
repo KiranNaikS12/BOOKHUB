@@ -1,0 +1,200 @@
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+        body {
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        table.table-bordered {
+            border: 1px solid #000000;
+            padding: 4px;
+        }
+        table.table-bordered thead th {
+            border: 1px solid #000000;
+            padding: 10px;
+        }
+
+        table.table-bordered tbody td {
+            border: 1px solid #dee2e6;
+            padding: 10px;
+        }
+        .card {
+            border: none;
+            padding: 20px;
+        }
+        .totals tr td {
+            font-size: 13px;
+        }
+        .product-qty span {
+            font-size: 12px;
+            color: #dedbdb;
+        }
+        .div-container {
+            background-color: #848484a8;
+        }
+        .fs-3 {
+            font-size: 20px; 
+        }
+        .container {
+            width: 80%;
+        }
+        .logo h3{
+           font-family:fantasy;
+           background-color: #39FF14;
+           padding: 10px 20px;
+           border-radius: 8px;
+           display: inline-block;
+           margin: 0;
+           text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); 
+           letter-spacing: 1px; 
+           overflow: hidden;
+           text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+        }
+
+        .logo h3::before {
+           content: "";
+           position: absolute;
+           top: 0;
+           left: 0;
+           width: 100%;
+           height: 100%;
+           z-index: -1;
+           border-radius: 10px;
+        }
+        .logo h3:hover {
+           transform: scale(1.1); 
+           transition: transform 0.3s ease-in-out;
+        }
+</style>
+</head>
+<body>
+    <div class="container mt-5 mb-5">
+        <div class="row d-flex justify-content-center">
+            <div class="col-md-8">
+                <div class="card div-container">
+                    <div class="text-left logo p-2 px-5 text-white">
+                        <div class="logo logo-width-1" >
+                            <a href="/home"><h3>BOOKHUB</h3></a>
+                        </div>
+                    </div>
+                    <div class="invoice p-5">
+                        <h5>Your order Confirmed!</h5>
+                        <span class="font-weight-bold d-block mt-4">Hello, </span>
+                        <span>You order has been confirmed and will be shipped in the few  days!</span>
+                        <div class="payment border-top mt-3 mb-3 border-bottom table-responsive">
+                            <table class="table table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="py-2">
+                                                <% if (typeof order !== 'undefined') { %>                   
+                                                <span class="d-block text-muted"><b>Order Date:</b></span>
+                                                <span><%= order.orderDate %></span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="py-2">
+                                                <span class="d-block text-muted"><b>Order ID:</b></span>
+                                                <span><%= order.oId %></span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="py-2">
+                                                <span class="d-block text-muted"><b>Payment Method:</b></span>
+                                                <span><%= order.paymentMethod %></span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <td>
+                                            <div class="py-2">
+                                                <span class="d-block text-muted"><b>Shipping Address:</b></span>
+                                                <span>
+                                                    Street: <%= order.shippingAddress.street %>,<br>
+                                                    City: <%= order.shippingAddress.city %>,<br>
+                                                    State: <%= order.shippingAddress.state %>,<br>
+                                                    Country: <%= order.shippingAddress.country %>,<br>
+                                                    Postal Code: <%= order.shippingAddress.postalCode %>,<br>
+                                                    Address Type: <%= order.shippingAddress.addressType %>
+                                                </span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>                                
+                            </table>
+                        </div>
+                        <div class="product border-bottom table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Image</th>
+                                        <th>Product name</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% order.items.forEach((item, index) => { %>
+                                        <tr>
+                                            <td class="product_thumb"><a href="">
+                                                <img src="/assets-admin/productImages/<%= item.image[item.image.length - 1] %>" alt="" style="width: 60px;">
+                                            </a></td>
+                                            <td class="product_name"><a href="">
+                                                <%= item.data.title %>
+                                            </a></td>
+                                            <td>
+                                                <div class="detail-qty radius m-auto">
+                                                    <span class="qty-val me-3">qty-x<%= item.quantity %></span>
+                                                </div>
+                                            </td>
+                                            <td class="product_total">Rs.<%= item.price %>.00/-</td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>                        
+                        <div class="row d-flex justify-content-end">
+                            <div class="col-md-5">
+                                <table class="table table-borderless">
+                                    <tbody class="totals">
+                                        <tr>
+                                            <td>
+                                                <div class="text-left">
+                                                    <span class="text-muted fs-3"><b>Totol Amount:</b></span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="text-right">
+                                                    <span class="fs-3">Rs. <%= order.billTotal %>/- Only</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <% } %>
+                        </div>
+                        <p>We will be sending a shipping confirmation email when the item is shipped successfully!</p>
+                        <p class="font-weight-bold mb-0">Thanks for shopping with us!</p>
+                        <span>TEAM BOOKHUB</span>
+                        <a href="/myOrder" class="text-white btn btn-primary">ORDER HISTORY</a>
+                    </div>
+                    <div class="d-flex justify-content-between footer p-3">
+                        <span>Need Help? visit our <a href="#"> help center</a></span>
+                        <span><%= order.createdAt %></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

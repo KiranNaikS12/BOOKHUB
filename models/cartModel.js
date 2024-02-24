@@ -14,6 +14,10 @@ const cartSchema = mongoose.Schema({
             required: true,
             ref: 'Book'
         },
+        title:{
+           type:String,
+           required:true
+        },
         image: [{
             type: String,
             required: true
@@ -31,6 +35,11 @@ const cartSchema = mongoose.Schema({
         price: {
             type:Number
           },
+        productStatus: {
+            type: String,
+            enum: ['active','Limit-Exceeded'],
+            default: 'active'
+        },
         selected: {
             type: Boolean,
             default: false
@@ -40,9 +49,9 @@ const cartSchema = mongoose.Schema({
         type: Number,
         required: true,
         default: 0
-    }
+    },
 }, {
-    timeStamp: true
+    timestamps: true
 });
 
 module.exports = mongoose.model('Cart',cartSchema);

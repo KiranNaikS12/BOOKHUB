@@ -6,6 +6,7 @@ const config = require('../config/config');
 const auth = require('../middleware/userauth');
 const cart = require('../controller/cartController');
 const order = require('../controller/checkoutController');
+
 const user_route = express();
 
 
@@ -63,7 +64,8 @@ user_route.post('/forget-password',userController.resetPassword);
 
 user_route.get('/product-list',auth.isLogin,userController.loadProduct)
 user_route.get('/product-view',auth.isLogin,userController.LoadIndIvidualProduct)
-
+user_route.get('/api/popular-products',auth.isLogin,userController.getPopularProducts);
+user_route.get('/api/all-products',auth.isLogin,userController.getAllProducts);
 //cart
 user_route.get('/cart',auth.isLogin,cart.loadCartPage)
 user_route.post('/add-to-cart',auth.isLogin,cart.addToCart);
@@ -73,7 +75,11 @@ user_route.post('/clear-cart',auth.isLogin,cart.clearEntireCart);
 
 //checkout
 user_route.get('/checkout',auth.isLogin,order.loadCheckoutPage);
-user_route.post('/add-to-checkout',auth.isLogin,order.addCheckout);
+user_route.post('/order-page',auth.isLogin,order.addOrderDetails);
+
+user_route.get('/order-summary',auth.isLogin,order.loadOrderSummary);
+user_route.get('/order-history',auth.isLogin,order.loadOrderHistory);
+user_route.post('/cancel-order',auth.isLogin,order.cancelOrder);
 
 user_route.get('/logout', auth.isLogin, userController.userLogout)
 

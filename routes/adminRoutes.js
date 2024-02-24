@@ -33,8 +33,13 @@ admin_route.get('/new-user',auth.isLogin,adminController.newUserLoad)
 admin_route.post('/new-user',adminController.addNewUser)
 admin_route.get('/edit-user',auth.isLogin,adminController.editUserLoad);
 admin_route.post('/edit-user',adminController.updateUserLoad);
-admin_route.get('/delet-user',auth.isLogin,adminController.deleteUserLoad)
+admin_route.get('/delet-user',auth.isLogin,adminController.deleteUserLoad);
 
+//orders
+admin_route.get('/list-orders',auth.isLogin,adminController.LoadOrderDetails);
+admin_route.get('/order-details',auth.isLogin,adminController.ViewOrderDetails);
+admin_route.post('/update-order-status', adminController.updateOrder);
+admin_route.post('/remove-orderdata',auth.isLogin,adminController.deleteOrderData)
 
 //used as a default route for adminPage
 admin_route.get('*',function(req,res){

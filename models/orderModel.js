@@ -12,11 +12,23 @@ const orderSchema = mongoose.Schema({
         type: ObjectId,
         ref:'Cart'
     },
-
+    oId:{
+       type:String,
+       required:true
+    },
+    orderStatus:{
+        type:String,
+        enum:['Pending','Confirmed','Shipped','Delivered','Canceled'],
+        default:'Pending',
+    },
     items:[{
         productId:{
             type:objectID,
             ref:'Book'
+        },
+        title:{
+            type: String,
+            required:true
         },
         image: [{
             type: String,
@@ -34,16 +46,43 @@ const orderSchema = mongoose.Schema({
         },
         price:{
             type:Number,
-            required:true
         },
     }],
     billTotal:{
         type:Number,
         required:true
     },
-    
+    additionalMobile: {
+        type: String,
+        default: '' 
+    },
+    shippingAddress: {
+        street: String,
+        city: String,
+        state: String,
+        country: String,
+        postalCode: String,
+    },
+    paymentMethod: {
+        type: String,
+        required:true
+      },
+      paymentStatus: {
+        type: String,
+        enum: ['Pending', 'Success', 'Failed'],
+        default: 'Pending',
+      },
+      orderDate: {
+        type: Date,
+        default: Date.now,
+      },
+      orderNotes: {
+        type: String,
+        default:''
+    }
 },{
-    timeStamp: true
+    timestamps: true,
 });
 
 module.exports = mongoose.model('Order',orderSchema);
+

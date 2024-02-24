@@ -138,7 +138,7 @@
                                 <span class="material-symbols-outlined">
                                     developer_guide
                                     </span>
-                                <h6 class="mb-0 text-dark"><a href="#">   MY ORDERS</a></h6>
+                                <h6 class="mb-0 text-dark"><a href="/order-history">MY ORDERS</a></h6>
                             </div>
                         </div>
                       </div>
@@ -301,9 +301,9 @@
                                             <div id="currentAddressContainer">
                                                 <label for="currentAddress">Current Address:</label>
                                                 <p id="currentAddress">
-                                                    Street:<%= user.address[0].street %>, <%= user.address[0].city %>, <%= user.address[0].country %>
+                                                    Street:<%= user.address[user.address.length-1].street %>, <%= user.address[user.address.length-1].city %>, <%= user.address[user.address.length-1].country %>
                                                     <br>
-                                                    Pin:<%= user.address[0].postalCode %>
+                                                    Pin:<%= user.address[user.address.length-1].postalCode %>
                                                 </p>
                                             </div>
                                             <% } else { %>

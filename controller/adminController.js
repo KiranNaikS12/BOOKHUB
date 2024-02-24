@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 const randomstring = require('randomstring')
 const config = require('../config/config');
+const Order = require('../models/orderModel');
+const Product = require('../models/productModel');
 
 
 // **********Hash password**********
@@ -320,6 +322,68 @@ const deleteUserLoad = async(req,res) => {
     }
 }
 
+// ***************LoadOrderDetails***************
+const LoadOrderDetails = async(req,res) => {
+    try{
+
+        const orderData = await Order.find().populate('user');
+        res.render('admin-list-order',{order:orderData})
+
+    }catch(error){
+        console.log(error.message)
+    }
+}
+
+const ViewOrderDetails = async(req,res) => {
+    try{
+        const id = req.query.id;
+        const orderData = await Order.findById({_id:id}).populate('user');
+        if(orderData){
+            res.render('admin-order-details',{order:orderData})
+        }else{
+            res.redirect('/admin/list-orders')
+        }
+    }catch(error){
+        console.log(error.message);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+const updateOrder = async (req, res) => {
+    try {
+        const orderId = req.body.orderId;
+        const newStatus = req.body.status;
+
+        console.log(orderId,newStatus);
+        const updatedOrder = await Order.findByIdAndUpdate(orderId, { orderStatus: newStatus }, { new: true });
+        if (updatedOrder) {
+            res.redirect('/admin/order-details?id=' + orderId);
+        } else {
+            res.status(404).json({ message: 'Order not found' });
+        }
+       
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+const deleteOrderData = async(req,res) => {
+    try{
+        const {orderId} = req.body
+        console.log(orderId);
+        const deleteOrderData = await Order.findByIdAndDelete(orderId);
+        if (!deleteOrderData) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+          }
+          return res.status(200).json({ success: true, message: "Order successfully Deleted" });
+    }catch(error){
+        console.log(error.message);
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+}
+
+
 
 
  module.exports = {
@@ -337,5 +401,9 @@ const deleteUserLoad = async(req,res) => {
     addNewUser,
     editUserLoad,
     updateUserLoad,
-    deleteUserLoad
+    deleteUserLoad,
+    LoadOrderDetails,
+    ViewOrderDetails,
+    updateOrder,
+    deleteOrderData
 }

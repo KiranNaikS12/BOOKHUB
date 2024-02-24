@@ -264,7 +264,7 @@ const loadHomePage = async(req,res) => {
         if(cartData && cartData.items){
             cartItemCount = cartData.items.length;
         }
-       res.render('home',{user:userData,product:productData,cartItemCount:cartItemCount})
+       res.render('home',{user:userData,product:productData,cartItemCount:cartItemCount,cart:cartData})
     }catch(error){
         console.log(error.message)
     }
@@ -288,8 +288,10 @@ const insertAddress = async(req,res) => {
     try{
         
         const {street,city,state,country,postalCode} = req.body;
-        const userId = await User.findById({_id:req.session.user_id});
+        const userData = await User.findById({_id:req.session.user_id});
         const categoryData = await Category.find({status:'active'});
+        const cart = await Cart.findOne({owner:userData})
+        const cartItemCount = cart ? cart.items.length : 0;
         const address = {
             street,
             city,
@@ -299,16 +301,16 @@ const insertAddress = async(req,res) => {
             type:req.body.type || 'home'
         }
 
-        if (!userId) {
+        if (!userData) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        if(userId.address.length >=3){
-            res.render('user-profile',{errorMessage:"You can't set more than three address.",user:userId,category:categoryData})
+        if(userData.address.length >=3){
+            res.render('user-profile',{errorMessage:"You can't set more than three address.",user:userData,category:categoryData,cartItemCount:cartItemCount})
         }else{
-            userId.address.push(address);
-            await userId.save();
-            res.render('user-profile', { successMessage: 'Address added successfully', user: userId, category: categoryData });
+            userData.address.push(address);
+            await userData.save();
+            res.render('user-profile', { successMessage: 'Address added successfully', user: userData, category: categoryData,cartItemCount:cartItemCount });
         }
 
     }catch(error){
@@ -323,8 +325,10 @@ const loadEditUser = async(req,res) => {
         const id = req.query.id;
         const userData = await User.findById({_id:id})
         const categoryData = await Category.find({status:'active'})
+        const cart = await Cart.findOne({owner:userData})
+        const cartItemCount = cart ? cart.items.length : 0;
         if(userData){
-            res.render('user-edit-page',{user:userData,category:categoryData});
+            res.render('user-edit-page',{user:userData,category:categoryData,cartItemCount:cartItemCount});
         }else{
             res.redirect('/profile')
         }
@@ -349,11 +353,13 @@ const loadupdateUserAddress = async(req,res) => {
     try{
         const id = req.query.id;
         const addressId = req.query.addressId;
-        const userData = await User.findById({_id:id})
+        const userData = await User.findById({_id:id});
+        const cart = await Cart.findOne({owner:userData})
+        const cartItemCount = cart ? cart.items.length : 0;
         if(userData){
             const address = userData.address.find(address => address._id == addressId);
             if(address){
-                res.render('user-edit-address',{user:userData, address: address});
+                res.render('user-edit-address',{user:userData, address: address,cartItemCount:cartItemCount});
             }else{
                 res.redirect('/profile');
             }           
@@ -495,13 +501,34 @@ const loadProduct = async(req,res) => {
         const  userData = await User.findById({_id:req.session.user_id})
         const productData=await Product.find({is_published:1})
         const categoryData = await Category.find({status:'active'})
-        const cartData = await Cart.findOne({owner:userData});
+        const cartData = await Cart.findOne({owner:userData}).populate('items.productId');
         let cartItemCount = 0;
         if(cartData && cartData.items){
             cartItemCount = cartData.items.length;
         }
+
+        const productWithStatus = productData.map(productItem => {
+            let productStat = 'active';
+
+            if(cartData && cartData.items){
+                const cartItem = cartData.items.find(item => item.productId.equals(productItem._id));
+                productStat = cartItem ? cartItem.productStatus: 'active';
+            }
+            return {
+                _id:productItem._id,
+                images:productItem.images,
+                category:productItem.category,
+                title:productItem.title,
+                afterDiscount:productItem.afterDiscount,
+                price: productItem.price,
+                status:productItem.status,
+                productStatus: productStat
+            };
+        })
+        // console.log(productWithStatus)
+
         res.render('user-product-list',{user:userData,                  
-        product:productData, category: categoryData,cartItemCount:cartItemCount})
+        product:productWithStatus, category: categoryData,cartItemCount:cartItemCount})
     }catch(error){
         console.log(error.message)
     }
@@ -548,6 +575,29 @@ const userLogout = async(req,res) => {
     }
 }
 
+const getPopularProducts = async(req,res) => {
+    try{
+
+        const popularProducts = await Product.find().sort({ views: -1 }).limit(10);
+        res.json(popularProducts);
+
+    }catch(error){
+        console.log('Error fetching popular products:', error);
+        res.status(500).json({ message: 'Internal server error' }); 
+    }
+}
+
+const getAllProducts = async(req,res) => {
+    try{
+
+        const getAllProudcts = await Product.find();
+        res.json(getAllProudcts)
+    }catch(error){
+        console.log(error.message);
+        res.status(500).json({ message: 'Internal server error' }); 
+    }
+}
+
 
 
 
@@ -575,5 +625,6 @@ module.exports = {
     loadupdateUserAddress,
     updateUserAddress,
     deleteUserAddress,
-    
+    getPopularProducts,
+    getAllProducts
 };
