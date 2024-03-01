@@ -1,4 +1,64 @@
 ﻿<%- include('../userLayout/header') %>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<style>
+    .modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgb(0,0,0); 
+    background-color: rgba(0,0,0,0.9); 
+    padding-top: 60px; 
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px; 
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.close:hover,
+.close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+.rating {
+    display: inline-block;
+    unicode-bidi: bidi-override;
+    direction: rtl;
+  }
+  .rating input {
+    display: none;
+  }
+  .rating label {
+    font-size: 17px;
+    color: #8b8b8b;
+    display: inline-block;
+    padding: 5px;
+    cursor: pointer;
+  }
+  .rating label:hover,
+  .rating label:hover ~ label,
+  .rating input:checked ~ label {
+    color: #f90;
+  }
+</style>
     <main class="main">
         <div class="page-header breadcrumb-wrap">
             <div class="container">
@@ -16,15 +76,18 @@
                     <div class="col-lg-9">
                         <div class="product-detail accordion-detail">
                             <div class="row mb-50">
-                                <div class="col-md-6 col-sm-12 col-xs-12">
+                                <div class="col-md-4 col-sm-12 col-xs-12">
+                                    <div id="imageModal" class="modal">
+                                        <span class="close">&times;</span>
+                                        <img class="modal-content" id="zoomedImage">
+                                    </div>
                                     <div class="detail-gallery">
-                                        <span class="zoom-icon"><i class="fi-rs-search"></i></span>
                                         <!-- MAIN SLIDES -->
                                         <div class="product-image-slider" >
                                             <% if (product.images && product.images.length > 0) { %>
                                                 <% product.images.forEach((productImage) => { %>
                                                     <figure class="border-radius-10" >
-                                                        <img src="/assets-admin/productImages/<%= productImage%>" alt="product image" height="600px" width="100%">
+                                                        <img src="/assets-admin/productImages/<%= productImage%>" alt="product image" style="max-height: 400px; width: 100%; height: 100%;" onclick="openModal('/assets-admin/productImages/<%= productImage%>')">
                                                     </figure>
                                                 <% }) %>
                                             <% } %>
@@ -34,7 +97,6 @@
                                             <% if (product.images && product.images.length > 0) { %>
                                                 <% product.images.forEach((productImage, index) => { %>
                                                     <div>
-                                                        <!-- Add a class to the thumbnail image for event handling -->
                                                         <img class="thumbnail-image" src="/assets-admin/productImages/<%= productImage %>" alt="<%= product.title %>" data-index="<%= index %>">
                                                     </div>
                                                 <% }) %>
@@ -57,6 +119,9 @@
                                         <h2 class="title-detail"><%= product.title  %></h2>
                                         <div class="product-detail-rating">
                                             <div class="pro-details-brand">
+                                                <% if (product.status === 'out-of-stock') { %>
+                                                    <span> Currently unavailable: <a href="#" class="text-danger"><%= product.status %></a></span>
+                                                <% } %> <br>
                                                 <span> Category: <a href="#"><%= product.category %></a></span>
                                             </div>
                                             <div class="product-rate-cover text-end">
@@ -79,6 +144,11 @@
                                             <span> Title: <a href="#"><%= product.title %></a></span><br>
                                             <span> Author: <a href="#"><%= product.author %></a></span><br>
                                             <span> ISBN: <a href="#"><%= product.ISBN %></a></span><br>
+                                            <% if (product.countInStock <= 10 && product.countInStock >= 1 ) { %>
+                                                <span class="text-danger"> Hurry up only <%= product.countInStock %> stocks left</span><br>
+                                                <% } else  { %>
+                                                 
+                                            <% } %>
                                         </div>
                                         <div class="product_sort_info font-xs mb-30">
                                             <ul>
@@ -90,9 +160,11 @@
                                         <div class="detail-extralink">
                                             <div class="product-extra-link2">
                                                 <button type="submit" class="button button-add-to-cart text-white" onclick="addToCart('<%= product._id %>', '<%= product.countInStock %>')">
-                                                    GO TO CART <i class=" fi-rs-shopping-bag-add"></i>
+                                                    ADD TO CART <i class=" fi-rs-shopping-bag-add"></i>
                                                 </button>
-                                                <button type="submit" class="button button-add-to-cart text-white">BUY NOW</button>
+                                                <button type="submit" class="button button-add-to-cart text-white" onclick="proceedCheckoutPage('<%= product._id %>', '<%= product.countInStock %>')">
+                                                    BUY NOW
+                                                </button>
                                                 <a aria-label="Add To Wishlist" class="action-btn hover-up" href="shop-wishlist.html"><i class="fi-rs-heart"></i></a>
                                                 <a aria-label="Compare" class="action-btn hover-up" href="shop-compare.html"><i class="fi-rs-shuffle"></i></a>
                                             </div>
@@ -101,19 +173,89 @@
                                     <!-- Detail Info -->
                                 </div>
                             </div>
+                            <!-- <div class="tab-pane fade show active" id="Description">
+                                <div class="">
+                                    <p></p>                       
+                                </div>
+                            </div> -->
                             <div class="tab-style3">
                                 <ul class="nav nav-tabs text-uppercase">
                                     <li class="nav-item">
-                                        <a class="nav-link active" id="Description-tab" data-bs-toggle="tab" href="#Description">Description</a>
+                                        <a class="nav-link active text-secondary" id="Description-tab" data-bs-toggle="tab" href="#Description">Description</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-secondary" id="Reviews-tab" data-bs-toggle="tab" href="#Reviews">Reviews (<%= review.length %>)</a>
                                     </li>
                                 </ul>
                                 <div class="tab-content shop_info_tab entry-main-content">
                                     <div class="tab-pane fade show active" id="Description">
-                                        <div class="">
-                                            <p><%= product.description  %></p>                       
+                                       <div class="">
+                                        <p>><%= product.description %></p>                       
                                         </div>
-                                    </div>    
-                                    <div class="tab-pane fade" id="Reviews"> 
+                                    </div>
+                                    <div class="tab-pane fade" id="Reviews">
+                                        <div class="comments-area">
+                                            <div class="row">
+                                                <div class="col-lg-8">
+                                                    <h4 class="mb-30">Reviews</h4>
+                                                    <div class="comment-list">
+                                                        <% if (review.length > 0) { %>
+                                                            <% for (let i = 0; i < review.length; i++) { %>
+                                                                <% const reviewItem = review[i]; %>
+                                                                <div class="single-comment justify-content-between d-flex">  
+                                                                    <div class="user justify-content-between d-flex">
+                                                                        <div class="thumb text-center">
+                                                                            <h6><a href="#"><%= reviewItem.userId.firstname %></a></h6>
+                                                                            <% var reviewYear = reviewItem.createdAt.getFullYear(); %>
+                                                                            <p><%= reviewYear %></p>
+                                                                        </div>
+                                                                        <div class="desc">Rating:
+                                                                            <div class="d-inline-block">
+                                                                                <div style="width: 100%;">
+                                                                                    <% for (let j = 1; j <= 5; j++) { %>
+                                                                                        <% if (j <= reviewItem.rating) { %>
+                                                                                            <i class="fas fa-star" style="color: #f90;"></i>
+                                                                                        <% } else { %>
+                                                                                            <i class="far fa-star" style="color:#8b8b8b"></i>
+                                                                                        <% } %>
+                                                                                    <% } %><%= reviewItem.rating %>.0
+                                                                                </div>
+                                                                            </div>
+                                                                            <p><%= reviewItem.reviewText  %></p>
+                                                                            <div class="d-flex justify-content-between">
+                                                                                <div class="d-flex align-items-center">
+                                                                                    <p class="font-xs mr-30">submitted at: <%= reviewItem.createdAt.toLocaleDateString() %></p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            <% } %>
+                                                        <% } else { %>
+                                                            <p>No Reviews</p>
+                                                        <% } %>
+                                                    </div>
+                                                </div>                                                                                                
+                                            </div>
+                                        </div>                                        
+                                        <form id="reviewForm">
+                                            <div class="form-group">
+                                              <label for="rating">ADD RATING</label>
+                                              <div class="rating">
+                                                <input type="radio" id="star5" name="rating" value="5"><label for="star5" title="5 stars"><i class="far fa-star"></i></label>
+                                                <input type="radio" id="star4" name="rating" value="4"><label for="star4" title="4 stars"><i class="far fa-star"></i></label>
+                                                <input type="radio" id="star3" name="rating" value="3"><label for="star3" title="3 stars"><i class="far fa-star"></i></label>
+                                                <input type="radio" id="star2" name="rating" value="2"><label for="star2" title="2 stars"><i class="far fa-star"></i></label>
+                                                <input type="radio" id="star1" name="rating" value="1"><label for="star1" title="1 star"><i class="far fa-star"></i></label>
+                                              </div>
+                                            </div>
+                                            <input type="hidden" name="productId" value="<%= product._id %>">
+                                            <div class="form-group">
+                                              <label for="reviewText">Review:</label>
+                                              <textarea id="reviewText" name="reviewText" required></textarea>
+                                            </div>
+                                            <button type="submit" onclick="sendReview()">Submit Review</button>
+                                        </form>                                  
                                     </div>
                                 </div>
                             </div>
@@ -154,69 +296,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="col-lg-3 col-md-4 col-12 col-sm-6">
-                                            <div class="product-cart-wrap small hover-up">
-                                                <div class="product-img-action-wrap">
-                                                    <div class="product-img product-img-zoom">
-                                                        <a href="#" tabindex="0">
-                                                            <img class="default-img" src="" alt="">
-                                                            <img class="hover-img" src="" alt="">
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-action-1">
-                                                        <a aria-label="Quick view" class="action-btn small hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal"><i class="fi-rs-search"></i></a>
-                                                        <a aria-label="Add To Wishlist" class="action-btn small hover-up" href="#" tabindex="0"><i class="fi-rs-heart"></i></a>
-                                                        <a aria-label="Compare" class="action-btn small hover-up" href="#" tabindex="0"><i class="fi-rs-shuffle"></i></a>
-                                                    </div>
-                                                    <div class="product-badges product-badges-position product-badges-mrg">
-                                                        <span class="sale">-12%</span>
-                                                    </div>
-                                                </div>
-                                                <div class="product-content-wrap">
-                                                    <h2><a href="shop-product-right.html" tabindex="0"></a></h2>
-                                                    <div class="rating-result" title="90%">
-                                                        <span>
-                                                        </span>
-                                                    </div>
-                                                    <div class="product-price">
-                                                        <span></span>
-                                                        <span class="old-price"></span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-3 col-md-4 col-12 col-sm-6">
-                                            <div class="product-cart-wrap small hover-up">
-                                                <div class="product-img-action-wrap">
-                                                    <div class="product-img product-img-zoom">
-                                                        <a href="#" tabindex="0">
-                                                            <img class="default-img" src="#" alt="">
-                                                            <img class="hover-img" src="#" alt="">
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-action-1">
-                                                        <a aria-label="Quick view" class="action-btn small hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal"><i class="fi-rs-search"></i></a>
-                                                        <a aria-label="Add To Wishlist" class="action-btn small hover-up" href="#" tabindex="0"><i class="fi-rs-heart"></i></a>
-                                                        <a aria-label="Compare" class="action-btn small hover-up" href="#" tabindex="0"><i class="fi-rs-shuffle"></i></a>
-                                                    </div>
-                                                    <div class="product-badges product-badges-position product-badges-mrg">
-                                                        <span class="new">New</span>
-                                                    </div>
-                                                </div>
-                                                <div class="product-content-wrap">
-                                                    <h2><a href="#" tabindex="0"></a></h2>
-                                                    <div class="rating-result" title="90%">
-                                                        <span>
-                                                        </span>
-                                                    </div>
-                                                    <div class="product-price">
-                                                        <span></span>
-                                                        <span class="old-price"></span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        </div>          
                                         <div class="col-lg-3 col-md-4 col-12 col-sm-6">
                                             <div class="product-cart-wrap small hover-up mb-0">
                                                 <div class="product-img-action-wrap">
@@ -462,6 +542,117 @@
                 });
             }
         }
-    </script>
+
+    async function proceedCheckoutPage(productId, countInStock) {
+    try {
+        let response = await fetch('/add-to-cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                productId,
+            })
+        });
+
+        if (response.status === 200) {
+            window.location.href = '/checkout';
+        } else if (response.status === 205) {
+            await Swal.fire({
+                title: 'Sorry! Out of Stock',
+                text: 'Stock limit exceeded',
+                icon: 'Sorry',
+                timer: 1500
+            });
+        } else if(response.status === 403){
+            await Swal.fire({
+            title: 'Warning',
+            text: 'You have already stored maximum stock in the cart',
+            icon: 'warning',
+            timer: 3000
+    });
+        }
+    } catch (error) {
+        console.log(error.message);
+        await Swal.fire({
+            title: 'Error',
+            text: 'An error occurred.',
+            icon: 'error',
+            timer: 2000,
+        });
+    }
+}
+        function openModal(imageUrl) {
+        var modal = document.getElementById("imageModal");
+        var modalImg = document.getElementById("zoomedImage");
+        modal.style.display = "block";
+        modalImg.src = imageUrl;
+    }
+
+    // Close the modal when the close button is clicked
+    var span = document.getElementsByClassName("close")[0];
+    span.onclick = function() {
+        var modal = document.getElementById("imageModal");
+        modal.style.display = "none";
+    }
+
+
+function sendReview() {
+    const rating = document.querySelector('input[name="rating"]:checked');
+    const reviewText = document.querySelector('#reviewText').value;
+    const productId = document.querySelector('input[name="productId"]').value;
+
+    if (!rating || !reviewText || !productId) {
+        swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Please fill in all required fields!'
+        });
+        return;
+    }
+
+    const requestData = {
+        productId: productId,
+        rating: rating.value,
+        reviewText: reviewText
+    };
+
+    fetch('/submit-review', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            throw new Error('Network response was not ok.');
+        }
+    })
+    .then(data => {
+        if (data.success) {
+            swal.fire({
+                title: 'Review submitted successfully',
+                text: '',
+                icon: "success",
+                type: 'success',
+                showConfirmButton: false, 
+                timer: 2000
+        });
+            
+        } else {
+            swal.fire('Error sending the request', data.message, 'error');
+        }
+    })
+    
+    .catch(error => {
+        swal.fire('Error', 'An error occurred while sending the request.', 'error');
+        console.error('Fetch Error:', error);
+    });
+}
+
+ </script>
 </body>
 </html>

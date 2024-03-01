@@ -13,7 +13,29 @@
     <link rel="shortcut icon" type="image/x-icon" href="assets/imgs/theme/favicon.svg">
     <link rel="stylesheet" href="/assets/css/main.css?v=3.4">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-    <link rel="stylesheet" href="/assets/css/navbar-menu.css">   
+    <link rel="stylesheet" href="/assets/css/navbar-menu.css">  
+    <style>
+        #searchResults {
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            position: absolute;
+            z-index: 1000;
+            top: 70px;
+            max-width: 648px;
+            width:100%;
+            display:none;
+            background-color: #fff;
+            border-radius: 10px;
+        }
+        #searchResults div {
+            cursor: pointer;
+        }
+        #searchResults div:hover {
+            background-color: #66ff00;
+        }
+    </style> 
 </head>
 <body>
     <!-- Quick view -->
@@ -156,9 +178,12 @@
                     </div>
                     <div class="header-right">
                         <div class="search-style-2">
-                            <form action="#">
-                                <input type="text" placeholder="Search for items...">
+                            <form id="searchForm">
+                                <input type="text" id="searchInput" placeholder="Search for items...">
                             </form>
+                        </div>
+                        <div id="searchResults">
+                            
                         </div>
                         <div class="header-action-right">
                             <div class="header-action-2">
@@ -176,7 +201,7 @@
                                             shopping_bag
                                         </i>
                                         <% if (cartItemCount >0) { %>
-                                            <span class="pro-count blue"><%= cartItemCount %></span>
+                                            <span id="cartItemCount" class="pro-count blue"><%= cartItemCount %></span>
                                             <% } else { %>
                                              <span></span>
                                         <% } %>                                      
@@ -203,7 +228,7 @@
                                 <ul>
                                     <% if (category) { %>
                                         <% for (let i = 0; i < category.length; i++) { %>
-                                            <li><a href="#"><%= category[i].name %></a></li>
+                                            <li><a href="/category?category=<%= category[i].name %>"><%= category[i].name %></a></li>
                                         <% } %>
                                     <% } %>
                                 </ul>
@@ -334,4 +359,49 @@
                 </div>
             </div>
         </div>
-    </header>
+     </header>
+     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function (){
+    $('#searchInput').on('input', function () {
+        console.log('Input event fired');
+        const query = $(this).val().trim();
+        if (query.length >= 1) {
+            $.get('/search', { query: query }, function(data) {
+                console.log('Received search results:', data);
+                $('#searchResults').empty();
+                data.forEach(function(product) {
+                    // Highlight the matched text in the product title
+                    const highlightedTitle = product.title.replace(new RegExp(query, 'gi'), match => `<span class="highlight">${match}</span>`);
+                    // Append the search result with the highlighted title
+                    $('#searchResults').append('<div data-product-id="' + product._id + '">' + highlightedTitle + '</div>');
+                });
+                $('#searchResults').show();
+            });
+        } else {
+            $('#searchResults').empty().hide();
+        }
+    });
+
+    // Event listener for clicking on a search result
+    $(document).on('click', '#searchResults div', function() {
+        console.log('Clicked on search result');
+        const productId = $(this).data('product-id');
+        window.location.href = '/product-view?id=' + productId;
+    });
+
+    // Event listener for Enter key press
+    $('#searchInput').keypress(function(event) {
+        if (event.which === 13) {
+            const productId = $('#searchResults div:first').data('product-id');
+            window.location.href = '/product-view?id=' + productId;
+        }
+    });
+});
+
+
+</script>
+ </body>
+
+
+        

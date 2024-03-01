@@ -212,26 +212,46 @@
                     </div>
                 </header> <!-- card-header end// -->
                 <div class="card-body">
-                    <div class="row gx-3 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 row-cols-xxl-5">
-                        <% product.forEach(productItem => { %>
-                        <div class="col">
-                            <div class="card card-product-grid">
-                                <a href="#" class="img-wrap"> <img src="/assets-admin/productImages/<%= productItem.images[productItem.images.length - 1]%>" alt="Product"> </a>
-                                <div class="info-wrap">
-                                    <a href="#" class="title text-truncate"><%= productItem.title %></a>
-                                    <div class="price mb-2">Rs.<%= productItem.afterDiscount %>/-</div>
-                                    <a href="/admin/product/update?id=<%= productItem._id %>" class="btn btn-sm font-sm rounded btn-brand">
-                                        <i class="material-icons md-edit"></i> Edit
+                    <article class="itemlist">
+                        <% product.forEach((productItem) => { %>
+                            <div class="row align-items-center">
+                                <div class="col col-check flex-grow-0">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox">
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-sm-4 col-8 flex-grow-1 col-name">
+                                    <a class="itemside" href="/admin/product/update?id=<%= productItem._id %>">
+                                        <div class="left">
+                                            <img src="/assets-admin/productImages/<%= productItem.images[productItem.images.length-1]%>" class="img-sm img-thumbnail" alt="Item" max-width="100px">
+                                        </div>
+                                        <div class="info">
+                                            <h6 class="mb-0"><%= productItem.title %></h6>
+                                        </div>
                                     </a>
-                                    <a href="#" onclick="confirmSoftDelete('<%= productItem._id %>')" class="btn btn-sm font-sm btn-danger rounded">
+                                </div>
+                                <div class="col-lg-2 col-sm-2 col-4 col-price"> <span></span>Rs.<%= productItem.afterDiscount %>/-</div>
+                                
+                                <div class="col-lg-2 col-sm-2 col-4 col-status">
+                                    <span class="badge rounded-pill <%= productItem.status === 'active' ? 'alert-success' : (productItem.status === 'inactive' ? 'alert-warning' : 'alert-danger') %>">
+                                        <%= productItem.status %>
+                                    </span>
+                                </div> 
+                                                              
+                                <div class="col-lg-1 col-sm-2 col-4 col-date">
+                                    <span><%= productItem.updated_at.toDateString() %></span>
+                                </div>
+                                <div class="col-lg-2 col-sm-2 col-4 col-action text-end">
+                                    <!--  -->
+                                    <a href="#" onclick="confirmSoftDelete('<%= productItem._id %>')" class="btn btn-sm font-sm btn-light rounded">
                                         <i class="material-icons md-delete_forever"></i> Delete
                                     </a>
                                 </div>
                             </div>
-                        </div> 
-                        <% }); %>
-                    </div> 
-                </div>                
+                            <hr>
+                        <% }) %> 
+                    <hr>
+                </div>               
             </div> 
             <div class="pagination-area mt-30 mb-50">
                 <nav aria-label="Page navigation example">

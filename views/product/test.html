@@ -1,137 +1,368 @@
+const mongoose = require("mongoose");
+const User = require('../models/userModel');
+const Product = require('../models/productModel');
+const Category = require('../models/categoryModel');
+const Cart = require('../models/cartModel');
 
-//         function validateInput(inputElement, errorMessageElement, validationRegex, minLength, maxLength, emptyErrorMessage, invalidErrorMessage, consecutiveSameDigitsErrorMessage) {
-//     let input = document.getElementById(inputElement);
-//     let error = document.getElementById(errorMessageElement);
+//***********loadCartPage***************** */
+const loadCartPage = async(req,res) => {
+    try{
+        const categoryData = await Category.find({status:'active'})
+        const userId = req.session.user_id;
+        const cart = await Cart.findOne({owner:userId});
 
-//     if (inputElement === 'category') {
-//         let select = document.getElementById(inputElement);
-//         select.addEventListener('change', function() {
-//             if (select.value === '') {
-//                 select.classList.add('invalid');
-//                 error.innerHTML = `<span style="color: red;">${emptyErrorMessage}</span>`;
-//             } else {
-//                 select.classList.remove('invalid');
-//                 error.innerHTML = '';
-//             }
-//         });
-//     } else {
-//         input.addEventListener('blur', function() {
-//             const inputValue = input.value.trim();
+        if(cart) {
+            cart.items = await Promise.all(cart.items.map(async (item) => {
+                const product = await Product.findById(item.productId);
+                if (product && (product.status === 'active' || product.status === 'out-of-stock')) {
+                    return { ...item, data: product };
+                }
+            }));
+            cart.items = cart.items.filter(item => item !== null && item !== undefined);
+        }
+       
+        for(const item of cart.items){
+            let data = await Product.findById(item.productId);
+            item.data = data;
+        }
+        const userData = await User.findOne({
+            _id: new mongoose.Types.ObjectId(userId)
+        });
 
-//             if (inputElement === 'image') {
-//                 if (input.files.length === 0) {
-//                     input.classList.add('invalid');
-//                     error.innerHTML = `<span style="color: red;">${emptyErrorMessage}</span>`;
-//                 } else {
-//                     input.classList.remove('invalid');
-//                     error.innerHTML = '';
-//                 }
-//             } else {
-//                 if (inputValue === '') {
-//                     input.classList.add('invalid');
-//                     error.innerHTML = `<span style="color: red;">${emptyErrorMessage}</span>`;
-//                 } else if (inputValue.length < minLength || (maxLength !== false && inputValue.length > maxLength) || !validationRegex.test(inputValue)) {
-//                     input.classList.add('invalid');
-//                     error.innerHTML = `<span style="color: red;">${invalidErrorMessage}</span>`;
-//                 } else if (inputElement === 'title' && hasConsecutiveSameCharacters(inputValue)) {
-//                     input.classList.add('invalid');
-//                     error.innerHTML = `<span style="color: red;">${consecutiveSameDigitsErrorMessage}</span>`;
-//                 } else if (inputElement === 'ISBN' && hasConsecutiveSameCharacters(inputValue)) {
-//                     input.classList.add('invalid');
-//                     error.innerHTML = `<span style="color: red;">${consecutiveSameDigitsErrorMessage}</span>`;
-//                 } else {
-//                     input.classList.remove('invalid');
-//                     error.innerHTML = '';
-//                 }
-//             }
-//         });
-
-//         input.addEventListener('focus', function() {
-//             if (input.classList.contains('invalid')) {
-//                 input.classList.remove("invalid");
-//                 error.innerHTML = '';
-//             }
-//         });
-//     }
-// }
-
-// validateInput('title', 'tittleErrorMessage', /^[A-Za-z0-9\s\-']+$/, 1, 30, 'Title should be required.', 'Title name cannot exceed more than 30 letters', 'Consecutive same letters are not allowed.');
-// validateInput('authorname', 'AuthorErrorMessage', /^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/, 1, 50, 'Author name should be required.', 'Author name should only contain letters and spaces.', null);
-// validateInput('ISBN', 'ISBNErrorMessage', null, null, 13, 'ISBN should be required.', null,'ISBN must contain exactly 13 digits.');
-// validateInput('description', 'descriptionErrorMessage', /^[A-Za-z0-9\s\-']+$/, 1, false, 'Description should be required.', '');
-// validateInput('image', 'imageErrorMessage', null, null, null, 'Please select an image.', null);
-// validateInput('category', 'categoryErrorMessage', null, null, null, 'Please select a category', null);
-// validateInput('price', 'priceErrorMessage', /^[0-9,.]+$/, null, null, 'Price should be required', 'Price cannot contain any letters', null);
-
-// function hasConsecutiveSameCharacters(inputValue) {
-//     for (let i = 0; i < inputValue.length - 1; i++) {
-//         if (inputValue[i] === inputValue[i + 1]) {
-//             return true;
-//         }
-//     }
-//     return false;
-// }
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Form Validation</title>
-<style>
-    .error {
-        color: red;
+        const cartItemCount = cart ? cart.items.length : 0;
+        return res.render('user-cart-page',{
+            user:userData,
+            category:categoryData,
+            cart:cart,
+            cartItemCount: cartItemCount
+        });
+       
+    }catch(error){
+        console.log(error.message);
+        return res.status(500).json({ message: "Internal server error" });
     }
-</style>
-</head>
-<body>
+}
 
-<form id="myForm">
-    <label for="name">Name:</label><br>
-    <input type="text" id="name" name="name"><br>
-    <span id="nameError" class="error"></span><br>
-    <label for="email">Email:</label><br>
-    <input type="email" id="email" name="email"><br>
-    <span id="emailError" class="error"></span><br><br>
-    <button type="submit">Submit</button>
-</form>
 
-<script>
-document.getElementById("myForm").addEventListener("submit", function(event) {
-    event.preventDefault(); // Prevent the form from submitting
+//***********AddToCart***************** */
+const addToCart = async(req,res) => {
+    try{
+        const {productId} = req.body;
+        const product = await Product.findById(productId);
+        // console.log(product);
+        if(!product){
+            return res.status(404).json({sucess:false, message: "Product Not Found" })
+        }
 
-    var nameInput = document.getElementById("name");
-    var emailInput = document.getElementById("email");
-    var nameError = document.getElementById("nameError");
-    var emailError = document.getElementById("emailError");
+        if(product.countInStock === 0 || product.status === 'out-of-stock'){
+            return res.status(205).json({success: false, message: "Product is out of stock" })
+        }
 
-    // Clear previous error messages
-    nameError.textContent = "";
-    emailError.textContent = "";
+        if(product.status !== 'active'){
+            return res.status(403).json({ success: false, message: "Product is temporarily unavailable" }); 
+        }
 
-    var errorMessages = [];
+        let userId = req.session.user_id;
+        const user = await User.findById(userId);
+        if(!user){
+            return res.status(404).json({ success: false, message: "user is not found" });
+        }
 
-    if (nameInput.value.trim() === "") {
-        nameError.textContent = "Name is required";
-        errorMessages.push("Name is required");
+        let cart = await Cart.findOne({owner: userId});
+        
+        if(!cart){
+            cart = new Cart({
+                owner:userId,
+                items:[],
+                billTotal: 0,
+            });
+        }
+        const cartItem = cart.items.find((item) => 
+          item.productId.toString() === productId
+        )
+
+        let outOfStock = false;
+        if (cartItem) {
+            if (cartItem.quantity < 5) {
+                cartItem.quantity += 1;
+                cartItem.productPrice = product.afterDiscount;
+                cartItem.price = cartItem.quantity * product.afterDiscount;
+                cartItem.image = product.images;
+                cartItem.title = product.title;
+                
+            } else {
+                cartItem.productStatus = 'Limit-Exceeded';
+                await product.save();
+                outOfStock = true;
+            }
+        } else{
+            cart.items.push({
+                productId: productId,
+                image: product.images,
+                productPrice: product.afterDiscount,
+                quantity:1,
+                price: product.afterDiscount,
+                title:product.title
+            });
+        }
+        cart.billTotal = cart.items.reduce((total,item) => total + item.price, 0)
+        await cart.save();
+
+        if(!outOfStock && product.countInStock > 0){
+            product.countInStock -=1;
+            if(product.countInStock === 0){
+                product.status = 'out-of-stock'
+            }
+            await product.save();
+        }
+
+        console.log('remaining:',product.countInStock);
+        if(outOfStock===true) {
+            res.status(205).json({ status: true });
+        }else{
+            res.status(200).json({ status: true});
+        }
+
+    }catch(error){
+        console.log(error.message);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
+
+//***********UpdateCart***************
+const updateQuantity = async(req,res) => {
+    const { userId, productId, newQuantity } = req.body;
+    try{
+        let cart = await Cart.findOne({ owner: userId });
+        if (!cart) {
+            return res.status(404).json({ error: "Cart not found." });
+        }
+
+        const cartItem = cart.items.find(item => item.productId.toString() === productId);
+        if (!cartItem) {
+            return res.status(404).json({ error: "Item not found in the cart." });
+        }
+
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ error: "Product not found." });
+        }  
+
+        if (newQuantity > 5) {
+            return res.status(404).json({ error: true, message: "Maximum Limit Execceded" });
+        }
+        const oldQuantity = cartItem.quantity;
+        console.log('oldQuanity:',oldQuantity);
+        console.log('newQuantity:',newQuantity);
+
+        let quantityDifference = newQuantity- oldQuantity;
+        console.log('QuantityDiffernce',quantityDifference);
+ 
+        console.log('totalStock',product.countInStock);
+        if (quantityDifference > 0) {
+            // Quantity is increasing
+            if (product.countInStock < quantityDifference) {
+                return res.status(400).json({ error: "Insufficient stock." });
+            }
+            product.countInStock -= quantityDifference;
+        } else if (quantityDifference < 0) {
+            // Quantity is decreasing
+            const remainingQuantity = product.countInStock + Math.abs(quantityDifference);
+            console.log('remainingQuantity',remainingQuantity); 
+            if (remainingQuantity < 0) { 
+                return res.status(400).json({ error: "Invalid quantity." });
+            }
+            product.countInStock = remainingQuantity;
+        }
+
+        product.status = product.countInStock === 0 ? 'out-of-stock' : 'active';
+        await product.save();
+
+        const newPrice = product.afterDiscount * newQuantity;
+        
+        cartItem.quantity = newQuantity;
+        cartItem.price = newPrice;
+        let billTotal = cart.items.reduce((total, item) => total + item.price, 0);
+        cart.billTotal = billTotal;
+
+
+        if(newQuantity > 4 && cartItem.productStatus !== 'Limit-Exceeded'){
+            cartItem.productStatus = 'Limit-Exceeded';
+            await product.save();
+        }else if(newQuantity <= 5 && cartItem.productStatus ==='Limit-Exceeded'){
+            cartItem.productStatus = 'active';
+            await product.save();
+        }
+        // console.log(newQuantity);
+        // console.log(product.status)
+        
+        await cart.save();
+        res.status(200).json({ success: true, message: "Cart updated successfully.", newPrice: cartItem.price, billTotal:cart.billTotal, countInStock: product.countInStock});
+    }catch(error){
+        console.log(error.message);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
+
+//***********RemoveProductFromTheCart***************
+const removeProduct = async(req,res) => {
+    const {userId,productId} = req.body;
+    try{
+    //    console.log(userId);
+    //    console.log(productId);
+       const cart = await Cart.findOne({owner:userId});
+
+    if (!cart) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Cart Not Found" });
     }
 
-    if (emailInput.value.trim() === "") {
-        emailError.textContent = "Email is required";
-        errorMessages.push("Email is required");
+    const removedItem = cart.items.find(item => item.productId == productId);
+        if (!removedItem) {
+            return res.status(404).json({ success: false, message: "Product Not Found in Cart" });
+        }
+        const quantityRemoved = removedItem.quantity;
+
+    cart.items.find((item) => {
+        if (item.productId + "" === productId + "") {
+          console.log(item);
+          cart.billTotal = (cart.billTotal-item.price < 0)?0:cart.billTotal-item.price       
+          console.log(cart.billTotal);
+          return true;
+        } else {
+          return false;
+        }
+    });
+
+    await Cart.findByIdAndUpdate(cart._id, {
+        $set: { billTotal: cart.billTotal },
+        $pull: { items: { productId: productId } },
+    });
+
+    const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product Not Found" });
+        }
+
+        product.countInStock += quantityRemoved;
+        product.status = product.countInStock > 0 ? 'active' : 'out-of-stock';
+        await product.save();
+
+        console.log('after deleting:',product.countInStock);
+    return res.status(200).json({ success: true, message: "Product removed from the cart" });
+
+    }catch(error){
+        console.log(error.message);
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
+}
 
-    // If there are any errors, prevent form submission
-    if (errorMessages.length > 0) {
-        return false;
+//***********ClearCart***************
+const clearEntireCart = async(req,res) => {
+    const {userId} = req.body;  
+    try{
+        const cart = await Cart.findOne({owner:userId})
+        const product = await Product.find();
+        if(!cart){
+            return res
+            .status(404)
+            .json({ success: false, message: "Cart Not Found" }); 
+        }
+
+        //updating the status
+        for(const item of cart.items){
+            const product = await Product.findById(item.productId);
+
+            if(product){
+                product.countInStock += item.quantity;
+                if(product.status === 'out-of-stock'){
+                    product.status = 'active';
+                    
+                }
+                await product.save();
+            }
+        }
+
+        cart.items = [];
+        cart.billTotal = 0;
+
+        await cart.save();
+        
+        return res.status(200).json({success:true, message:"Cart Cleared Successfully"});
+    }catch(error){
+        console.log(error.message);
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
+}
 
-    // If no errors, submit the form
-    event.target.submit();
-});
-</script>
 
-</body>
-</html>
 
+module.exports = {
+    addToCart,
+    loadCartPage,
+    updateQuantity,
+    removeProduct,
+    clearEntireCart,
+}
+
+async function updateQuantity(productId, userId, newQuantity) {
+    try {
+        let res = await fetch('/updateQuantity', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                productId,
+                userId,
+                newQuantity
+            })
+        });
+        
+        if (res.ok) {
+            const data = await res.json();
+            console.log(data);
+            document.getElementById(`quantity-${productId}`).value = newQuantity;
+            document.getElementById(`price-${productId}`).innerHTML = `Rs.${data.newPrice.toFixed(2)}/-`;
+            const remainingStockElement = document.getElementById(`countInStock-${productId}`);
+            remainingStockElement.innerText = `Stock Left: ${data.countInStock}`;
+
+            if (data.billTotal !== undefined) {
+                 document.getElementById('billTotal').innerHTML = `Rs.${data.billTotal.toFixed(2)}/-`;
+                 document.getElementById('totalAmount').innerHTML = `Rs.${data.billTotal.toFixed(2)}/-`;
+            }
+
+            // To update the remaining quantity
+            
+            await Swal.fire({
+                title: 'Success',
+                text: 'Quantity updated successfully.',
+                icon: 'success',
+                showConfirmButton: false,
+                timer: 1500 
+            });
+        } else {
+            const data = await res.json();
+        if (res.status === 404 ) {
+        await Swal.fire({
+            title: 'Limit Excceded',
+            text: 'You cannot add more than 5 items in a cart', 
+            icon: 'error',
+            showConfirmButton: true
+        });
+        window.location.reload();
+    } else {
+        await Swal.fire({
+            title: 'Sorry😞',
+            text: 'Product is out of stock',
+            icon: 'error',
+            showConfirmButton: true
+        });
+        window.location.reload();
+    }
+}
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}

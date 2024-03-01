@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Example</title>
+    <style>
+        /* Add your CSS styles for search box and results here */
+        #searchResults {
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        #searchResults div {
+            cursor: pointer;
+        }
+        #searchResults div:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-style-2">
+        <form id="searchForm">
+            <input type="text" id="searchInput" placeholder="Search for items...">
+        </form>
+    </div>
+    <div id="searchResults">
+        <!-- Search results will be displayed here -->
+    </div>
+
+    <script>
+        // Mock array of product names
+        var products = ["Product 1", "Product 2", "Product 3", "Television", "Table", "Toaster", "T-shirt", "Computer", "Chair"];
+
+        // Function to perform search and display suggestions
+        function displaySuggestions(query) {
+            // Filter products based on the query
+            var filteredProducts = products.filter(function(product) {
+                return product.toLowerCase().startsWith(query.toLowerCase());
+            });
+
+            // Display search suggestions
+            displayResults(filteredProducts);
+        }
+
+        // Function to display search suggestions
+        function displayResults(results) {
+            var resultsContainer = document.getElementById("searchResults");
+            resultsContainer.innerHTML = ""; // Clear previous results
+
+            if (results.length === 0) {
+                resultsContainer.innerHTML = "No suggestions found.";
+            } else {
+                results.forEach(function(result) {
+                    var resultElement = document.createElement("div");
+                    resultElement.textContent = result;
+                    // Add click event listener to each suggestion
+                    resultElement.addEventListener("click", function() {
+                        document.getElementById("searchInput").value = result;
+                        resultsContainer.innerHTML = ""; // Clear suggestions after selection
+                    });
+                    resultsContainer.appendChild(resultElement);
+                });
+            }
+        }
+
+        // Event listener for input change (typing in the search box)
+        document.getElementById("searchInput").addEventListener("input", function(event) {
+            var query = event.target.value.trim(); // Get the search query
+            if (query.length >= 1) {
+                displaySuggestions(query); // Display suggestions if at least one character is typed
+            } else {
+                document.getElementById("searchResults").innerHTML = ""; // Clear suggestions if search box is empty
+            }
+        });
+    </script>
+</body>
+</html>

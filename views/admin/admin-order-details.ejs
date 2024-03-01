@@ -1,6 +1,5 @@
 <!DOCTYPE HTML>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <title>BOOKHUB</title>
@@ -12,6 +11,12 @@
     <meta property="og:url" content="">
     <meta property="og:image" content="">
     <link href="/assets-admin/css/main.css" rel="stylesheet" type="text/css" />
+    <style>
+    hr {
+    background-color:  black;
+    }
+   
+    </style>
 </head>
 
 <body>
@@ -182,8 +187,8 @@
         <section class="content-main">
             <div class="content-header">
                 <div>
-                    <h2 class="content-title card-title">Order detail</h2>
-                    <p>Details for Order ID: 3453012</p>
+                    <h2 class="content-title card-title">Order Detatils</h2>
+                    <p>Details for Order ID: <%= order.oId %></p>
                 </div>
             </div>
             <div class="card">
@@ -191,9 +196,17 @@
                     <div class="row align-items-center">
                         <div class="col-lg-6 col-md-6 mb-lg-0 mb-15">
                             <span>
-                                <i class="material-icons md-calendar_today"></i> <b>Wed, Aug 13, 2022, 4:34PM</b>
+                                <i class="material-icons md-calendar_today"></i> <b><%= order.createdAt.toDateString() %></b>
                             </span> <br>
-                            <small class="text-muted">Order ID: 3453012</small>
+                            <small class="text-muted">Order ID: <%= order.oId %></small><br>
+                            <p class="badge rounded-pill 
+                            <% if (order.orderStatus === 'Pending') { %> alert-warning
+                            <% } else if (order.orderStatus === 'Confirmed' || order.orderStatus === 'Shipped' || order.orderStatus === 'Delivered') { %> alert-success
+                            <% } else if (order.orderStatus === 'Cancelled' || order.orderStatus === 'Deleted' || order.orderStatus === 'Returned') { %> alert-danger
+                            <% } %>">
+                            <%= order.orderStatus %>
+                            </p>
+                            </span>
                         </div>
                         <div class="col-lg-6 col-md-6 ms-auto text-md-end">
                             <form action="/admin/update-order-status" method="POST" class="d-inline-block mb-lg-0 mb-15 mw-200">
@@ -202,8 +215,9 @@
                                     <option value="Pending">Pending</option>
                                     <option value="Confirmed">Confirmed</option>
                                     <option value="Shipped">Shipped</option>
-                                    <option value="Canceled">Canceled</option>
+                                    <option value="Cancelled">Cancelled</option>
                                     <option value="Delivered">Delivered</option>
+                                    <option value="Deleted">Delete</option>
                                 </select>
                                 <input type="hidden" name="orderId" value="<%= order._id %>">
                                 <button type="submit" class="btn btn-primary">Save</button>
@@ -291,6 +305,7 @@
                                         <tr>
                                             <% }) %>
                                             <td colspan="4">
+                                                <hr>
                                                 <article class="float-end">
                                                     <dl class="dlist">
                                                         <dt>Subtotal:</dt>
@@ -301,9 +316,9 @@
                                                         <dd> <b class="h5">Rs.<%= order.billTotal %>/- </b> </dd>
                                                     </dl>
                                                     <dl class="dlist">
-                                                        <dt class="text-muted">Status:</dt>
+                                                        <dt class="text-muted">Payment Status:</dt>
                                                         <dd>
-                                                            <span class="badge rounded-pill alert-success text-success"><%= order.paymentStatus %></span>
+                                                            <span class="badge rounded-pill alert-warning text-dark"><%= order.paymentStatus %></span>
                                                         </dd>
                                                     </dl>
                                                 </article>
@@ -319,12 +334,18 @@
                         <div class="col-lg-4">
                             <div class="h-25 pt-4">
                                 <div class="mb-3">
-                                    <label>Notes</label>
-                                    <textarea class="form-control" name="notes" id="notes" placeholder="Type some note"></textarea>
-                                </div>
-                                <button class="btn btn-primary">Save note</button>
+                                    <% if (returnData) { %>
+                                        <label class="text-danger">Reason For Returning Order</label>
+                                        <textarea class="form-control" name="notes" id="notes" placeholder="Type some note"><%= returnData.reason %></textarea>
+                                    <% } else if (order.cancellationReason) { %>
+                                        <label class="text-danger">Reason For Cancelation:</label>
+                                        <textarea class="form-control" name="notes" id="notes" placeholder="Type some note"><%= order.cancellationReason %></textarea>
+                                    <% } else { %>
+
+                                    <% } %>
+                                </div>                                
                             </div>
-                        </div>
+                        </div>               
                     </div>
                 </div> 
             </div> 

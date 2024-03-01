@@ -8,6 +8,7 @@ const randomstring = require('randomstring');
 const Product = require('../models/productModel');
 const Category = require('../models/categoryModel');
 const Cart = require('../models/cartModel');
+const Review = require('../models/reviewModel');
 
 
 const transporter = nodemailer.createTransport({
@@ -257,6 +258,7 @@ const verifyLogin = async (req, res) => {
 //************* LoadHome Page**************
 const loadHomePage = async(req,res) => {
     try{
+       const categoryData = await Category.find({status:'active'})
        const  userData = await User.findById({_id:req.session.user_id})
        const productData=await Product.find({is_published:1})
        const cartData = await Cart.findOne({owner:userData});
@@ -264,7 +266,7 @@ const loadHomePage = async(req,res) => {
         if(cartData && cartData.items){
             cartItemCount = cartData.items.length;
         }
-       res.render('home',{user:userData,product:productData,cartItemCount:cartItemCount,cart:cartData})
+       res.render('home',{user:userData,product:productData,cartItemCount:cartItemCount,cart:cartData,category:categoryData})
     }catch(error){
         console.log(error.message)
     }
@@ -499,13 +501,20 @@ const resetPassword = async(req,res) => {
 const loadProduct = async(req,res) => {
     try{
         const  userData = await User.findById({_id:req.session.user_id})
-        const productData=await Product.find({is_published:1})
+        const productData=await Product.find({is_published:1,status:{$ne:'inactive'}})
         const categoryData = await Category.find({status:'active'})
         const cartData = await Cart.findOne({owner:userData}).populate('items.productId');
-        let cartItemCount = 0;
-        if(cartData && cartData.items){
-            cartItemCount = cartData.items.length;
+        
+        if(cartData) {
+            cartData.items = await Promise.all(cartData.items.map(async (item) => {
+                const product = await Product.findById(item.productId);
+                if (product && (product.status === 'active' || product.status === 'out-of-stock')) {
+                    return { ...item, data: product };
+                }
+            }));
+            cartData.items = cartData.items.filter(item => item !== null && item !== undefined);
         }
+
 
         const productWithStatus = productData.map(productItem => {
             let productStat = 'active';
@@ -525,7 +534,10 @@ const loadProduct = async(req,res) => {
                 productStatus: productStat
             };
         })
-        // console.log(productWithStatus)
+        let cartItemCount = 0;
+        if (cartData && cartData.items) {
+            cartItemCount = cartData.items.length;
+        }
 
         res.render('user-product-list',{user:userData,                  
         product:productWithStatus, category: categoryData,cartItemCount:cartItemCount})
@@ -535,44 +547,49 @@ const loadProduct = async(req,res) => {
 }
 
 // ***************LoadIndividualProduct***************
-const LoadIndIvidualProduct = async (req,res) => {
-    try{
+const LoadIndIvidualProduct = async (req, res) => {
+    try {
         const id = req.query.id;
-        const userData = await User.findById({_id:req.session.user_id})
-        const productData = await Product.findById({_id:id})
-        const categoryData = await Category.find({status:'active'});
-        const cartData = await Cart.findOne({owner:userData});
+        const userData = await User.findById(req.session.user_id);
+        const productData = await Product.findById(id);
+        const categoryData = await Category.find({ status: 'active' });
+        const reviewData = await Review.find({productId:id}).populate({path:'userId',select:'firstname'})
+        
+        const cartData = await Cart.findOne({ owner: userData }).populate('items.productId');
+
         let cartItemCount = 0;
-        if(cartData && cartData.length){
-           cartItemCount = cartData.items.length;  
+        if (cartData && cartData.items) {
+            cartItemCount = cartData.items.length;
         }
-        if(productData){
+
+        if (productData) {
             productData.views++;
             await productData.save();
-            res.render('user-product-view',{product:productData
-            ,user:userData
-            ,category:categoryData,
-            cartItemCount:cartItemCount
-        })
 
-        }else{
-            res.redirect('//product-list')
+            // Find related products with the same category
+            const relatedCategory = await Product.find({category:productData.category,_id:{$ne:productData._id}}).limit(4);
+          
+            res.render('user-product-view', {
+                product: productData,
+                user: userData,
+                category: categoryData,
+                cartItemCount: cartItemCount,
+                relatedCategory:relatedCategory,
+                review:reviewData
+            });
+        } else {
+            res.redirect('/product-list');
         }
-    }catch(error){
+    } catch (error) {
         console.log(error);
     }
 }
 
  
 //************* Logut **************
-const userLogout = async(req,res) => {
-    try{
-        req.session.destroy();
+const userLogout = (req,res) => {
+        req.session.user_id = "";
         res.redirect('/');
-    }catch(error){
-        console.log(error.message);
-        
-    }
 }
 
 const getPopularProducts = async(req,res) => {
@@ -589,7 +606,6 @@ const getPopularProducts = async(req,res) => {
 
 const getAllProducts = async(req,res) => {
     try{
-
         const getAllProudcts = await Product.find();
         res.json(getAllProudcts)
     }catch(error){
@@ -597,6 +613,188 @@ const getAllProducts = async(req,res) => {
         res.status(500).json({ message: 'Internal server error' }); 
     }
 }
+
+const loadCategoryPage = async (req, res) => {
+    try {
+        const categoryName = req.query.category;
+        const userData = await User.findById(req.session.user_id);
+        const categoryData = await Category.find({ status: 'active' });
+        const category = await Category.findOne({ name: categoryName });
+        if (!category) {
+            return res.status(404).send('Category not found');
+        }
+        
+        const products = await Product.find({ category: categoryName,status:{$ne:'inactive'} });
+        const cartData = await Cart.findOne({ owner: userData }).populate('items.productId');
+        let cartItemCount = 0;
+        if (cartData && cartData.items) {
+            cartItemCount = cartData.items.length;
+        }
+
+        res.render('user-category', {
+            product: products,
+            user: userData,
+            cartItemCount: cartItemCount,
+            category: categoryData,
+            categoryname: categoryName
+        });
+
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).send('Internal Server Error');
+    }
+};
+
+const filterProducts = async (req, res) => {
+    try {
+        const categoryName = req.query.category;
+        const sortBy = req.query.sortBy;
+        let productData;
+
+        const baseQuery = { category: categoryName, status: { $ne: 'inactive' } };
+
+        if (sortBy === 'lowToHigh') {
+            productData = await Product.find(baseQuery).sort({ afterDiscount: 1 });
+        } else if (sortBy === 'highToLow') {
+            productData = await Product.find(baseQuery).sort({ afterDiscount: -1 });
+        }else if (sortBy === 'averageRating') {
+            productData = await Product.aggregate([
+                { $match: baseQuery },
+                {
+                    $lookup: {
+                        from: 'reviews',
+                        localField: '_id',
+                        foreignField: 'productId',
+                        as: 'ratings'
+                    }
+                },
+                {
+                    $addFields: {
+                        averageRating: { $avg: '$ratings.rating' }
+                    }
+                },
+                { $sort: { averageRating: -1 } }
+            ]);
+        } else {
+            productData = await Product.find(baseQuery);
+        }
+
+        res.json(productData);
+    } catch (error) {
+        console.log('Error fetching products:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+   
+const filterPopularity = async(req,res) => {
+    try{
+        console.log('start')
+        const categoryName = req.query.category;
+        const showBy = req.query.showBy;
+        let productPopularity;
+        console.log('started')
+        const baseQuery = { category: categoryName, status: { $ne: 'inactive' } };
+        if (showBy === 'Trending'){
+            productPopularity = await Product.find(baseQuery).sort({views:-1});
+            console.log('trending',productPopularity)
+        }else if(showBy === 'NewArrivals'){
+            productPopularity = await Product.find(baseQuery).sort({ updated_at: 1 })
+        }else if(showBy === 'AZ'){
+            productPopularity = await Product.find(baseQuery).sort({ title: 1 });
+        }else if(showBy === 'ZA'){
+            productPopularity = await Product.find(baseQuery).sort({title:-1});
+
+        }else{
+            productPopularity = await Product.find(baseQuery);
+        }
+
+        res.json(productPopularity);
+
+    }catch(error){
+        console.log('Error fetching products:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+
+
+const sendReview = async(req,res) => {
+    try{
+        const {productId, rating, reviewText} = req.body;
+        if (!productId || !rating || !reviewText) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }       
+        const userId = req.session.user_id; 
+        const newReview = new Review({
+            productId:productId,
+            userId:userId,
+            rating:rating,
+            reviewText:reviewText
+        });
+        await newReview.save();
+        res.status(200).json({ success: true, message: 'Review submitted successfully' });
+    }catch(error){
+        console.log(error.message);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+const searchProduct = async(req,res) => {
+    try{
+        const query = req.query.query;
+        const result = await Product.find({ title: { $regex: query, $options: 'i' } })
+        console.log(result)
+        res.json(result);
+    }catch(error){
+        console.error('Error searching for books:', error);
+        res.status(500).json({ error: 'An error occurred while searching for books' });
+    }
+}
+
+const loadDistinctCategory = async(req,res) => {
+    try{
+        const categoryName = req.query.category;
+        const products = await Product.find({category:categoryName})
+        res.json(products);
+    }catch(error){
+        console.log(error.message);
+        return res.status(500).send('Internal Server Error');
+    }
+}
+
+const loadProductFilter = async (req, res) => {
+    try {
+        const sortBy = req.query.sortBy;
+
+        let sortCriteria = {};
+        if (sortBy === 'lowToHigh') {
+            sortCriteria = { price: 1 }; 
+        } else if (sortBy === 'highToLow') {
+            sortCriteria = { afterDiscount: -1 };
+        } else if (sortBy === 'averageRating') {
+            const productData = await Product.aggregate([
+                { $lookup: {
+                    from: 'reviews',
+                    localField: '_id',
+                    foreignField: 'productId',
+                    as: 'ratings'
+                }},
+                { $addFields: {
+                    averageRating: { $avg: '$ratings.rating' }
+                }},
+                { $sort: { averageRating: -1 } }
+            ]);
+            return res.json(productData);
+        }
+
+        const products = await Product.find().sort(sortCriteria);
+        res.json(products);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
 
 
 
@@ -626,5 +824,12 @@ module.exports = {
     updateUserAddress,
     deleteUserAddress,
     getPopularProducts,
-    getAllProducts
+    getAllProducts,
+    loadCategoryPage,
+    filterProducts,
+    sendReview,
+    filterPopularity,
+    searchProduct,
+    loadDistinctCategory,
+    loadProductFilter
 };

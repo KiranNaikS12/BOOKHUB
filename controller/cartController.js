@@ -11,6 +11,15 @@ const loadCartPage = async(req,res) => {
         const userId = req.session.user_id;
         const cart = await Cart.findOne({owner:userId});
 
+        if(cart) {
+            cart.items = await Promise.all(cart.items.map(async (item) => {
+                const product = await Product.findById(item.productId);
+                if (product && (product.status === 'active' || product.status === 'out-of-stock')) {
+                    return { ...item, data: product };
+                }
+            }));
+            cart.items = cart.items.filter(item => item !== null && item !== undefined);
+        }
        
         for(const item of cart.items){
             let data = await Product.findById(item.productId);
@@ -58,6 +67,7 @@ const addToCart = async(req,res) => {
         let cart = await Cart.findOne({owner: userId});
         
         if(!cart){
+            
             cart = new Cart({
                 owner:userId,
                 items:[],
@@ -77,10 +87,11 @@ const addToCart = async(req,res) => {
                 cartItem.image = product.images;
                 cartItem.title = product.title;
                 
-            } else {
+            } else if(cartItem.quantity === 5){
                 cartItem.productStatus = 'Limit-Exceeded';
                 await product.save();
                 outOfStock = true;
+                return res.status(403).json({ success: false, message: "Cart item limit exceeded" });
             }
         } else{
             cart.items.push({
@@ -95,13 +106,13 @@ const addToCart = async(req,res) => {
         cart.billTotal = cart.items.reduce((total,item) => total + item.price, 0)
         await cart.save();
 
-        if(!outOfStock && product.countInStock > 0){
-            product.countInStock -=1;
-            if(product.countInStock === 0){
-                product.status = 'out-of-stock'
-            }
-            await product.save();
-        }
+        // if(!outOfStock && product.countInStock > 0){
+        //     product.countInStock -=1;
+        //     if(product.countInStock === 0){
+        //         product.status = 'out-of-stock'
+        //     }
+        //     await product.save();
+        // }
 
         console.log('remaining:',product.countInStock);
         if(outOfStock===true) {
@@ -137,33 +148,7 @@ const updateQuantity = async(req,res) => {
 
         if (newQuantity > 5) {
             return res.status(404).json({ error: true, message: "Maximum Limit Execceded" });
-        }
-        const oldQuantity = cartItem.quantity;
-        console.log('oldQuanity:',oldQuantity);
-        console.log('newQuantity:',newQuantity);
-
-        let quantityDifference = newQuantity- oldQuantity;
-        console.log('QuantityDiffernce',quantityDifference);
- 
-        console.log('totalStock',product.countInStock);
-        if (quantityDifference > 0) {
-            // Quantity is increasing
-            if (product.countInStock < quantityDifference) {
-                return res.status(400).json({ error: "Insufficient stock." });
-            }
-            product.countInStock -= quantityDifference;
-        } else if (quantityDifference < 0) {
-            // Quantity is decreasing
-            const remainingQuantity = product.countInStock + Math.abs(quantityDifference);
-            console.log('remainingQuantity',remainingQuantity); 
-            if (remainingQuantity < 0) { 
-                return res.status(400).json({ error: "Invalid quantity." });
-            }
-            product.countInStock = remainingQuantity;
-        }
-
-        product.status = product.countInStock === 0 ? 'out-of-stock' : 'active';
-        await product.save();
+        }  
 
         const newPrice = product.afterDiscount * newQuantity;
         
@@ -180,8 +165,7 @@ const updateQuantity = async(req,res) => {
             cartItem.productStatus = 'active';
             await product.save();
         }
-        // console.log(newQuantity);
-        // console.log(product.status)
+        
         
         await cart.save();
         res.status(200).json({ success: true, message: "Cart updated successfully.", newPrice: cartItem.price, billTotal:cart.billTotal, countInStock: product.countInStock});
@@ -232,12 +216,8 @@ const removeProduct = async(req,res) => {
             return res.status(404).json({ success: false, message: "Product Not Found" });
         }
 
-        product.countInStock += quantityRemoved;
-        product.status = product.countInStock > 0 ? 'active' : 'out-of-stock';
-        await product.save();
-
         console.log('after deleting:',product.countInStock);
-    return res.status(200).json({ success: true, message: "Product removed from the cart" });
+        return res.status(200).json({ success: true, message: "Product removed from the cart" });
 
     }catch(error){
         console.log(error.message);
@@ -250,30 +230,14 @@ const clearEntireCart = async(req,res) => {
     const {userId} = req.body;  
     try{
         const cart = await Cart.findOne({owner:userId})
-        const product = await Product.find();
         if(!cart){
             return res
             .status(404)
             .json({ success: false, message: "Cart Not Found" }); 
         }
 
-        //updating the status
-        for(const item of cart.items){
-            const product = await Product.findById(item.productId);
-
-            if(product){
-                product.countInStock += item.quantity;
-                if(product.status === 'out-of-stock'){
-                    product.status = 'active';
-                    
-                }
-                await product.save();
-            }
-        }
-
         cart.items = [];
         cart.billTotal = 0;
-
         await cart.save();
         
         return res.status(200).json({success:true, message:"Cart Cleared Successfully"});

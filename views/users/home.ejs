@@ -287,6 +287,16 @@
                             <a class="categori-button-active" href="#">
                                 <span class="fi-rs-apps" ></span> Browse Categories
                             </a>
+                            <div class="categori-dropdown-wrap categori-dropdown-active-large">
+                                <ul>
+                                    <% if (category) { %>
+                                        <% for (let i = 0; i < category.length; i++) { %>
+                                            <li><a href="/category?category=<%= category[i].name %>"><%= category[i].name %></a></li>
+                                        <% } %>
+                                    <% } %>
+                                </ul>
+                                <div class="more_categories">Show more...</div>
+                            </div>
                         </div>
                         <div class="main-menu main-menu-padding-1 main-menu-lh-2 d-none d-lg-block">
                             <nav>
@@ -461,46 +471,63 @@
                     </ul>
                     <a href="/product-list" class="view-more d-none d-md-flex">View More<i class="fi-rs-angle-double-small-right"></i></a>
                 </div>
-                <!--End nav-tabs-->
+                <!--End nav-tabs .col-lg-3--> 
                 <div class="tab-content wow fadeIn animated" id="myTabContent">
                     <div class="tab-pane fade show active" id="tab-one" role="tabpanel" aria-labelledby="tab-one">
-                        <div class="row product-grid-4">
+                        <div class="row product-grid-3">
                             <% product.forEach(productItem => { %>
-                            <div class="col-lg-3 col-md-4 col-12 col-sm-6">
-                                <div class="product-cart-wrap mb-30">
-                                    <div class="product-img-action-wrap">
-                                        <div class="product-img product-img-zoom">
-                                            <a href="#">
-                                                <img class="default-img" src="/assets-admin/productImages/<%= productItem.images[productItem.images.length - 1]%>" alt="">
-                                            </a>
+                                <div class="col-lg-3 col-md-4 col-12 col-sm-6">
+                                    <div class="product-cart-wrap mb-30 <%= productItem.productStatus === 'Limit-Exceeded' ? 'Limit-Exceeded-product' : '' %> <%= productItem.status === 'out-of-stock' ? 'out-of-stock-product' : '' %>">
+                                        
+                                        <div class="product-img-action-wrap">
+                                            <% if (productItem.productStatus === 'Limit-Exceeded') { %>
+                                                <div class="product-label limit-exceeded-label">
+                                                    <span class="badge bg-warning text-dark">Limit Exceeded</span>
+                                                </div>
+                                                <% } else if (productItem.status === 'out-of-stock') { %>
+                                                    <div class="product-label">
+                                                        <span class="badge bg-danger">Out of stock</span>
+                                                    </div>
+                                            <% } %>
+                                            <div class="product-img product-img-zoom">
+                                                <a href="/product-view?id=<%= productItem._id %>">
+                                                    <img class="default-img" src="/assets-admin/productImages/<%= productItem.images[productItem.images.length - 1]%>"  alt="">
+                                                    <img class="hover-img" src="<%= productItem.imageUrl %>" alt="">
+                                                </a>
+                                            </div>
+                                            <div class="product-action-1">
+                                                <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal">
+                                                    <i class="fi-rs-search"></i>
+                                                </a>
+                                                <a aria-label="Add To Wishlist" class="action-btn hover-up" href="#">
+                                                    <i class="fi-rs-heart"></i>
+                                                </a>
+                                                <a aria-label="Compare" class="action-btn hover-up" href="#">
+                                                    <i class="fi-rs-shuffle"></i>
+                                                </a>
+                                            </div>
                                         </div>
-                                        <div class="product-action-1">
-                                            <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal"><i class="fi-rs-eye"></i></a>
-                                            <a aria-label="Add To Wishlist" class="action-btn hover-up" href="#"><i class="fi-rs-heart"></i></a>
-                                            <a aria-label="Compare" class="action-btn hover-up" href="#"><i class="fi-rs-shuffle"></i></a>
-                                        </div>
-                                        <div class="product-badges product-badges-position product-badges-mrg">
-                                            <span class="hot">Hot</span>
-                                        </div>
-                                    </div>
-                                    <div class="product-content-wrap">
-                                        <div class="product-category">
-                                            <a href="#"><%= productItem.category %></a>
-                                        </div>
-                                        <h2><a href=""><%= productItem.title %></a></h2>
-                    
-                                        <div class="product-price">
-                                            <span>Rs.<%= productItem.afterDiscount %> /-</span>
-                                            <span class="old-price">Rs.<%= productItem.price %> /-</span>
-                                        </div>
-                                        <div class="product-action-1 show">
-                                            <a aria-label="Add To Cart" class="action-btn hover-up" onclick="addToCart('<%= productItem._id %>', '<%= productItem.countInStock %>')">
-                                                <i class="fi-rs-shopping-bag-add"></i>
-                                            </a>
+                                        <div class="product-content-wrap">
+                                            <div class="product-category">
+                                                <a href="#"><%= productItem.category %></a>
+                                            </div>
+                                            <h2><a href=""><%= productItem.title %></a></h2>
+                        
+                                            <div class="product-price">
+                                                <span>Rs.<%= productItem.afterDiscount %>/-</span>
+                                                <span class="old-price">Rs.<%= productItem.price %> /-</span>
+                                            </div>
+                                            <div class="product-status">
+                                                <span class="<%= productItem.status === 'out-of-stock' ? 'out-of-stock' : 'active' %>"><%= productItem.status %></span>
+                                            </div>
+                                            <div class="product-action-1 show">
+                                                <a aria-label="Add To Cart" class="action-btn hover-up"  onclick="addToCart('<%= productItem._id %>')">
+                                                    <i class="fi-rs-shopping-bag-add"></i>
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
                             <% }); %>
                         </div>
                         <!--End product-grid-4-->

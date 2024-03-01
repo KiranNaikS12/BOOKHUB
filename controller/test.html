@@ -1,277 +1,327 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <style>
-     @import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');body{font-family: 'Montserrat', sans-serif}.card{border:none}.totals tr td{font-size: 13px}.footer{background-color: #eeeeeea8}.footer span{font-size: 12px}.product-qty span{font-size: 12px;color: #dedbdb}
-        .div-container{
-              background-color: #eeeeeea8
+<script>
+    const categoryName = '<%= categoryname %>';
+    document.getElementById('sortDropdown').addEventListener('click', function (event){
+     console.log('Event listener fired!');
+     if (event.target.tagName === 'A') {
+         const selectedSortOption = event.target.dataset.value;  
+         fetch(`/category/filter?category=${categoryName}&sortBy=${selectedSortOption}`)
+             .then(response => {
+                 if (!response.ok) {
+                     throw new Error('Network response was not ok');
+                 }
+                 return response.json();
+             })
+             .then(data => {
+                 console.log('data', data);
+                 const productsContainer = document.getElementById('productsContainer');
+                 productsContainer.innerHTML = '';
+                 data.forEach(productItem => {
+                     const productHTML = `
+                         <div class="col-lg-3 col-md-4">
+                             <div class="product-cart-wrap mb-30">
+                                 <div class="product-img-action-wrap">
+                                     <div class="product-img product-img-zoom">
+                                         <a href="/product-view?id=${productItem._id}">
+                                             <img class="default-img" src="/assets-admin/productImages/${productItem.images[productItem.images.length - 1]}"  alt="">
+                                             <img class="hover-img" src="${productItem.imageUrl}" alt="">
+                                         </a>
+                                     </div>
+                                     <div class="product-action-1">
+                                         <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal">
+                                             <i class="fi-rs-search"></i>
+                                         </a>
+                                         <a aria-label="Add To Wishlist" class="action-btn hover-up" href="#">
+                                             <i class="fi-rs-heart"></i>
+                                         </a>
+                                         <a aria-label="Compare" class="action-btn hover-up" href="#">
+                                             <i class="fi-rs-shuffle"></i>
+                                         </a>
+                                     </div>
+                                 </div>
+                                 <div class="product-content-wrap">
+                                     <h2><a href="">${productItem.title}</a></h2>
+                                     <div class="product-price">
+                                         <span>Rs.${productItem.afterDiscount}/-</span>
+                                         <span class="old-price">Rs.${productItem.price} /-</span>
+                                     </div>
+                                     <div class="product-status">
+                                         <span class="${productItem.status === 'out-of-stock' ? 'out-of-stock' : 'active'}">${productItem.status}</span>
+                                     </div>
+                                     <div class="product-action-1 show">
+                                         <a aria-label="Add To Cart" class="action-btn hover-up"  onclick="addToCart('${productItem._id}')">
+                                             <i class="fi-rs-shopping-bag-add"></i>
+                                         </a>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                     `;
+                     productsContainer.insertAdjacentHTML('beforeend', productHTML);
+                 });
+             })
+             .catch(error => {
+                 console.error('Error fetching product data:', error);
+             });
+     }
+ });
+
+
+
+ <script>
+    //for sort dropdown
+    document.getElementById('sortDropdown').addEventListener('click', function (event) {
+        console.log('Sort dropdown clicked'); 
+        if (event.target.tagName === 'A') {
+           const selectedSortOption = event.target.dataset.value;
+           const selectedShowOption = document.querySelector('.sort-by-dropdown#showDropdown .active').dataset.value;
+           fetchProducts(selectedSortOption, selectedShowOption); 
         }
-         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+    });
+    // for show dropdown
+    document.getElementById('showDropdown').addEventListener('click', function (event) {
+        console.log('Show dropdown clicked');
+        if (event.target.tagName === 'A') {
+           const selectedSortOption = document.querySelector('.sort-by-dropdown#sortDropdown .active').dataset.value;
+           const selectedShowOption = event.target.dataset.value;
+           fetchProducts(selectedSortOption, selectedShowOption); // Fetch products with updated show option
+        }
+    });
+
+    function fetchProducts(sortOption, showOption) {
+    const categoryName = '<%= categoryname %>';
+    const url = `/category/filter?category=${categoryName}&sortBy=${sortOption}&showBy=${showOption}`;
+
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Fetched products:', data);
+            updateProductsUI(data);
+        })
+        .catch(error => {
+            console.error('Error fetching product data:', error);
+        });
+    }
+
+    // Function to update the UI with fetched products
+    function updateProductsUI(products) {
+    const productsContainer = document.getElementById('productsContainer');
+    productsContainer.innerHTML = '';
+    products.forEach(productItem => {
+        // Generate HTML for each product item
+        const productHTML = `
+        <div class="col-lg-3 col-md-4">
+                             <div class="product-cart-wrap mb-30">
+                                 <div class="product-img-action-wrap">
+                                     <div class="product-img product-img-zoom">
+                                         <a href="/product-view?id=${productItem._id}">
+                                             <img class="default-img" src="/assets-admin/productImages/${productItem.images[productItem.images.length - 1]}"  alt="">
+                                             <img class="hover-img" src="${productItem.imageUrl}" alt="">
+                                         </a>
+                                     </div>
+                                     <div class="product-action-1">
+                                         <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal">
+                                             <i class="fi-rs-search"></i>
+                                         </a>
+                                         <a aria-label="Add To Wishlist" class="action-btn hover-up" href="#">
+                                             <i class="fi-rs-heart"></i>
+                                         </a>
+                                         <a aria-label="Compare" class="action-btn hover-up" href="#">
+                                             <i class="fi-rs-shuffle"></i>
+                                         </a>
+                                     </div>
+                                 </div>
+                                 <div class="product-content-wrap">
+                                     <h2><a href="">${productItem.title}</a></h2>
+                                     <div class="product-price">
+                                         <span>Rs.${productItem.afterDiscount}/-</span>
+                                         <span class="old-price">Rs.${productItem.price} /-</span>
+                                     </div>
+                                     <div class="product-status">
+                                         <span class="${productItem.status === 'out-of-stock' ? 'out-of-stock' : 'active'}">${productItem.status}</span>
+                                     </div>
+                                     <div class="product-action-1 show">
+                                         <a aria-label="Add To Cart" class="action-btn hover-up"  onclick="addToCart('${productItem._id}')">
+                                             <i class="fi-rs-shopping-bag-add"></i>
+                                         </a>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+        `;
+        productsContainer.insertAdjacentHTML('beforeend', productHTML);
+    });
+}
+    </script>
+
+    const filterProducts = async (req, res) => {
+    try {
+        const categoryName = req.query.category;
+        const sortBy = req.query.sortBy;
+        const showBy = req.query.showBy;
+        let productData;
+
+        const baseQuery = { category: categoryName, status: { $ne: 'inactive' } };
+
+        if (sortBy === 'lowToHigh') {
+            productData = await Product.find(baseQuery).sort({ afterDiscount: 1 });
+        } else if (sortBy === 'highToLow') {
+            productData = await Product.find(baseQuery).sort({ afterDiscount: -1 });
+        } else if (sortBy === 'releaseDate') {
+            productData = await Product.find(baseQuery).sort({ updated_at: 1 });
+        } else if (sortBy === 'averageRating') {
+            productData = await getProductsByAverageRating(baseQuery);
+        } else {
+            productData = await sortProductsByShowByOption(baseQuery, showBy);
         }
 
-        .container {
-            width: 80%;
+        res.json(productData);
+    } catch (error) {
+        console.log('Error fetching products:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+async function sortProductsByShowByOption(baseQuery, showBy, sortBy) {
+    let productData;
+    if(sortBy === 'lowToHigh') {
+        if(showBy === 'Trending'){
+            productData = await Product.find(baseQuery).sort({ afterDiscount: 1, views: -1 });
+        } else if(showBy === 'NewArrivals'){
+            productData = await Product.find(baseQuery).sort({ afterDiscount: 1, updated_at: -1 });
+        } else if (showBy === 'AZ') {
+            productData = await Product.find(baseQuery).sort({ afterDiscount: 1, title: 1 });
+        } else if (showBy === 'ZA') {
+            productData = await Product.find(baseQuery).sort({ afterDiscount: 1, title: -1 });
+        } else {
+            productData = await Product.find(baseQuery).sort({ afterDiscount: 1 });
         }
-    </style>
-</head>
-<body>
-    <body>
-        <div class="container mt-5 mb-5 ">
-        
-            <div class="row d-flex justify-content-center">
-        
-                <div class="col-md-8">
-        
-                    <div class="card div-container" >
-        
-        
-                            <div class="text-left logo p-2 px-5 text-white">
-        
-                                <p>NYRA - Order confirmation</p>
-                               
-                                
-        
-                            </div>
-        
-                            <div class="invoice p-5">
-        
-                                <h5>Your order Confirmed!</h5>
-        
-                                <span class="font-weight-bold d-block mt-4">Hello, </span>
-                                <span>You order has been confirmed and will be shipped in next two days!</span>
-        
-                                <div class="payment border-top mt-3 mb-3 border-bottom table-responsive">
-        
-                                    <table class="table table-borderless">
-                                        
-                                        <tbody>
-                                            <tr>
-                                                <td>
-                                                    <div class="py-2">
-                                                        <%if(typeof order!=='undefined'){%>
-                                                        <span class="d-block text-muted">Order Date</span>
-                                                    <span><%=order.orderDate%></span>
-                                                        
-                                                    </div>
-                                                </td>
-        
-                                                <td>
-                                                    <div class="py-2">
-        
-                                                        <span class="d-block text-muted">Order No</span>
-                                                    <span><%=order.oId%></span>
-                                                        
-                                                    </div>
-                                                </td>
-        
-                                                <td>
-                                                    <div class="py-2">
-        
-                                                        <span class="d-block text-muted">Payment</span>
-                                                    <span>
-                                                        COD
-                                                        <!-- <img src="https://img.icons8.com/color/48/000000/mastercard.png" width="20" /></span> -->
-                                                        
-                                                    </div>
-                                                </td>
-        
-                                                <td>
-                                                    <div class="py-2">
-        
-                                                        <span class="d-block text-muted">Shiping Address</span>
-                                                    <span><%=order.deliveryAddress[0]%></span>
-                                                        
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-        
-                                    </table>
-        
-        
-        
-        
-                                    
-                                </div>
-        
-        
-        
-        
-                                    <div class="product border-bottom table-responsive">
-        
-                                        <table class="table table-borderless">
-        
-                                        <tbody>
-                                            <tr>
-                                                <td>Image</td>
-                                                <td>
-                                                    Product name
-                                                </td>
-                                                <td>Quantity</td>
-                                                <td>price</td>
-                                            </tr>
-                                            <%for(let i=0;i<order.items.length;i++){%>
-                                            <tr>
-                                                
-                                                <td class="product_thumb"><a href="/productdetails?id=<%=order.items[i].productId %>"><img
-                                                            src="uploads/productImages/<%=order.items[i].image%>"
-                                                            alt="" style="width: 60px;"></a></td>
-                                                <td class="product_name"><a href="/productdetails?id=<%=order.items[i].productId %>"><%=order.items[i].name%></a></td>
-                                                
-                                                    <td>
-                                                <div class="detail-qty  radius  m-auto">
-                                               
-                                                <span class="qty-val me-3"
-                                                    id="qty-<%= order.items[i]._id  %>"><%= order.items[i].quantity %></span>
-                                                
-                                            </div>
-                                                </td>
-                                                <td class="product_total">Rs.<%=order.items[i].price%>.00</td>
-                                            </tr> <!-- End Cart Single Item-->
-                                            <%}%>
-                                        </tbody> 
-                                            
-                                        </table>
-                                        
-        
-        
-                                    </div>
-        
-        
-        
-                                    <div class="row d-flex justify-content-end">
-        
-                                        <div class="col-md-5">
-        
-                                            <table class="table table-borderless">
-        
-                                                <tbody class="totals">
-        
-                                                    <tr>
-                                                        <td>
-                                                            <div class="text-left">
-        
-                                                                <span class="text-muted">Subtotal</span>
-                                                                
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <div class="text-right">
-                                                                <span>Rs.<%=order.billTotal%>.00</span>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-        
-        
-                                                     <!-- <tr>
-                                                        <td>
-                                                            <div class="text-left">
-        
-                                                                <span class="text-muted">Shipping Fee</span>
-                                                                
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <div class="text-right">
-                                                                <span>$22</span>
-                                                            </div>
-                                                        </td>
-                                                    </tr> -->
-        
-        
-                                                     <!-- <tr>
-                                                        <td>
-                                                            <div class="text-left">
-        
-                                                                <span class="text-muted">Tax Fee</span>
-                                                                
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <div class="text-right">
-                                                                <span>$7.65</span>
-                                                            </div>
-                                                        </td>
-                                                    </tr> -->
-        
-        <!-- 
-                                                     <tr>
-                                                        <td>
-                                                            <div class="text-left">
-        
-                                                                <span class="text-muted">Discount</span>
-                                                                
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <div class="text-right">
-                                                                <span class="text-success">$168.50</span>
-                                                            </div>
-                                                        </td>
-                                                    </tr> -->
-        
-        
-                                                     <tr class="border-top border-bottom">
-                                                        <td>
-                                                            <div class="text-left">
-        
-                                                                <span class="font-weight-bold">Subtotal</span>
-                                                                
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <div class="text-right">
-                                                                <span class="font-weight-bold">Rs.<%=order.billTotal%>.00</span>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                    
-                                                </tbody>
-                                                
-                                            </table>
-                                            
-                                        </div>
-                                        
-        
-                                        <% } %>
-                                    </div>
-        
-        
-                                    <p>We will be sending shipping confirmation email when the item shipped successfully!</p>
-                                    <p class="font-weight-bold mb-0">Thanks for shopping with us!</p>
-                                    <span>NYRA Team</span>
-        
-                                    <a href="/myOrder" class="text-white btn btn-primary">Go back to my order</a>
-        
-                                
-        
-                            </div>
-        
-        
-                            <div class="d-flex justify-content-between footer p-3">
-                                
-                                <span>Need Help? visit our <a href="#"> help center</a></span>
-                                 <span>12 feb, 2024</span>
-                                
-                            </div>
-        
-        
-        
-                
-            </div>
-                    
-                </div>
-                
-            </div>
-            
-        </div>
-</body>
-</html>
+    } else if(sortBy === 'highToLow') {
+        if(showBy === 'Trending'){
+            productData = await Product.find(baseQuery).sort({ afterDiscount: -1, views: -1 });
+        } else if(showBy === 'NewArrivals'){
+            productData = await Product.find(baseQuery).sort({ afterDiscount: -1, updated_at: -1 });
+        } else if (showBy === 'AZ') {
+            productData = await Product.find(baseQuery).sort({ afterDiscount: -1, title: 1 });
+        } else if (showBy === 'ZA') {
+            productData = await Product.find(baseQuery).sort({ afterDiscount: -1, title: -1 });
+        } else {
+            productData = await Product.find(baseQuery).sort({ afterDiscount: -1 });
+        }
+    } else if(sortBy === 'releaseDate') {
+        if(showBy === 'Trending'){
+            productData = await Product.find(baseQuery).sort({ updated_at: 1, views: -1 });
+        } else if(showBy === 'NewArrivals'){
+            productData = await Product.find(baseQuery).sort({ updated_at: 1 });
+        } else if (showBy === 'AZ') {
+            productData = await Product.find(baseQuery).sort({ title: 1 });
+        } else if (showBy === 'ZA') {
+            productData = await Product.find(baseQuery).sort({ title: -1 });
+        } else {
+            productData = await Product.find(baseQuery).sort({ updated_at: 1 });
+        }
+    } else if(sortBy === 'averageRating') {
+        if(showBy === 'Trending'){
+            productData = await Product.aggregate([
+                { $match: baseQuery },
+                {
+                    $lookup: {
+                        from: 'reviews',
+                        localField: '_id',
+                        foreignField: 'productId',
+                        as: 'ratings'
+                    }
+                },
+                {
+                    $addFields: {
+                        averageRating: { $avg: '$ratings.rating' }
+                    }
+                },
+                { $sort: { averageRating: -1, views: -1 } }
+            ]);
+        } else if(showBy === 'NewArrivals'){
+            productData = await Product.aggregate([
+                { $match: baseQuery },
+                {
+                    $lookup: {
+                        from: 'reviews',
+                        localField: '_id',
+                        foreignField: 'productId',
+                        as: 'ratings'
+                    }
+                },
+                {
+                    $addFields: {
+                        averageRating: { $avg: '$ratings.rating' }
+                    }
+                },
+                { $sort: { averageRating: -1, updated_at: -1 } }
+            ]);
+        } else if (showBy === 'AZ') {
+            productData = await Product.aggregate([
+                { $match: baseQuery },
+                {
+                    $lookup: {
+                        from: 'reviews',
+                        localField: '_id',
+                        foreignField: 'productId',
+                        as: 'ratings'
+                    }
+                },
+                {
+                    $addFields: {
+                        averageRating: { $avg: '$ratings.rating' }
+                    }
+                },
+                { $sort: { averageRating: -1, title: 1 } }
+            ]);
+        } else if (showBy === 'ZA') {
+            productData = await Product.aggregate([
+                { $match: baseQuery },
+                {
+                    $lookup: {
+                        from: 'reviews',
+                        localField: '_id',
+                        foreignField: 'productId',
+                        as: 'ratings'
+                    }
+                },
+                {
+                    $addFields: {
+                        averageRating: { $avg: '$ratings.rating' }
+                    }
+                },
+                { $sort: { averageRating: -1, title: -1 } }
+            ]);
+        } else {
+            productData = await getProductsByAverageRating(baseQuery);
+        }
+    } else {
+        // Handle other sorting options if needed
+        productData = await Product.find(baseQuery);
+    }
+    return productData;
+}
+
+//  <!-- // Event listener for input change (typing in the search box)
+//  document.getElementById("searchInput").addEventListener("input", function(event) {
+//      var query = event.target.value.trim(); // Get the search query
+//      if (query.length >= 1) {
+//          displaySuggestions(query); // Display suggestions if at least one character is typed
+//      } else {
+//          document.getElementById("searchResults").innerHTML = ""; // Clear suggestions if search box is empty
+//      }
+//  });
+
+//  document.getElementById("searchInput").addEventListener("focus", function(event) {
+//  document.getElementById("searchResults").style.display = "block"; // Display search results
+// });
+
+// // Event listener for search input blur (loss of focus)
+// document.getElementById("searchInput").addEventListener("blur", function(event) {
+//  document.getElementById("searchResults").style.display = "none"; // Hide search results
+//  }); -->

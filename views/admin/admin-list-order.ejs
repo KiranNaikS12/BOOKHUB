@@ -237,17 +237,14 @@
                                         <td><%= order[i].user.email %></td>
                                         <td><%= order[i].billTotal %></td>
                                         <td><%= order[i].items.length %></td>                      
-                                        <td><span class="badge rounded-pill alert-warning"><%= order[i].orderStatus %></span></td>
+                                        <td><span class="badge rounded-pill alert-dark"><%= order[i].orderStatus %></span></td>
                                         <td class="text-end">
                                             <a href="/admin/order-details?id=<%= order[i]._id %>" class="btn btn-md rounded font-sm">Detail</a>
                                             <div class="dropdown">
                                                 <a href="#" data-bs-toggle="dropdown" class="btn btn-light rounded btn-sm font-sm"> <i class="material-icons md-more_horiz"></i> </a>
                                                 <div class="dropdown-menu">
-                                                    <a class="dropdown-item" href="">View detail</a>
-
-                                                <a class="dropdown-item" href="#">Edit info</a>
                                                 <a href="#" class=" text-danger" onclick="removeOrderData('<%= order[i]._id %>')">
-                                                    <i class="fi-rs-trash"></i>Cancel Order
+                                                    <i class="fi-rs-trash"></i>Delete Order
                                                 </a>
                                             </div>
                                             </div> 

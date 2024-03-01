@@ -66,6 +66,7 @@ user_route.get('/product-list',auth.isLogin,userController.loadProduct)
 user_route.get('/product-view',auth.isLogin,userController.LoadIndIvidualProduct)
 user_route.get('/api/popular-products',auth.isLogin,userController.getPopularProducts);
 user_route.get('/api/all-products',auth.isLogin,userController.getAllProducts);
+
 //cart
 user_route.get('/cart',auth.isLogin,cart.loadCartPage)
 user_route.post('/add-to-cart',auth.isLogin,cart.addToCart);
@@ -75,11 +76,28 @@ user_route.post('/clear-cart',auth.isLogin,cart.clearEntireCart);
 
 //checkout
 user_route.get('/checkout',auth.isLogin,order.loadCheckoutPage);
+user_route.post('/add-to-checkout',order.addToCheckout)
+user_route.post('/updateInQuantity',order.updateInQuantity);
 user_route.post('/order-page',auth.isLogin,order.addOrderDetails);
+user_route.post('/remove-order',order.removeProductOrder)
 
-user_route.get('/order-summary',auth.isLogin,order.loadOrderSummary);
-user_route.get('/order-history',auth.isLogin,order.loadOrderHistory);
-user_route.post('/cancel-order',auth.isLogin,order.cancelOrder);
+user_route.get('/orders',auth.isLogin,order.loadOrderSummary);
+user_route.get('/orders/history',auth.isLogin,order.loadOrderHistory);
+user_route.patch('/orders/:orderId',auth.isLogin,order.cancelOrder);
+user_route.get('/track-order',auth.isLogin,order.loadOrderTrack);
+user_route.put('/orders/return',order.sendReturnRequest);
+
+//category
+user_route.get('/category',auth.isLogin,userController.loadCategoryPage);
+user_route.get('/category/filter',auth.isLogin,userController.filterProducts);
+user_route.get('/category/popularity',auth.isLogin,userController.filterPopularity);
+
+//search and sorting
+user_route.get('/search',auth.isLogin,userController.searchProduct)
+user_route.get('/products-by-category',auth.isLogin,userController.loadDistinctCategory);
+user_route.get('/products/filter',auth.isLogin,userController.loadProductFilter)
+
+user_route.post('/submit-review',userController.sendReview)
 
 user_route.get('/logout', auth.isLogin, userController.userLogout)
 

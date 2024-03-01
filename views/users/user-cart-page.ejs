@@ -41,7 +41,11 @@
                                                 <td class="product-des product-name">
                                                     <h5 class="product-name"><a href="#"><%= item.data.title %></a></h5>
                                                     <p class="font-xs">Category: <%= item.data.category %></p>
-                                                    <p class="font-xs" id="countInStock-<%= item.data._id %>">Stock Left: <%= item.data.countInStock %> </p>
+                                                    <% if (item.data.countInStock <= 10) { %>
+                                                        <p class="font-xs text-danger" id="countInStock-<%= item.data._id %>">Only  <%= item.data.countInStock %>  stocks Left</p>
+                                                        <% } else { %>
+                                                         
+                                                    <% } %>
                                                 </td>
                                                 <td class="price" data-title="Price"><span>Rs.<%= item.data.afterDiscount.toFixed(2) %>/-</span></td>
                                                 <td class="text-center" data-title="Stock">
@@ -199,21 +203,13 @@
                     const data = await res.json();
                 if (res.status === 404 ) {
                 await Swal.fire({
-                    title: 'Oops!',
-                    text: 'Maximum Limit Excceded', 
+                    title: 'Limit Excceded',
+                    text: 'You cannot add more than 5 items in a cart', 
                     icon: 'error',
                     showConfirmButton: true
                 });
                 window.location.reload();
-            } else {
-                await Swal.fire({
-                    title: 'Sorry😞',
-                    text: 'Product is out of stock',
-                    icon: 'error',
-                    showConfirmButton: true
-                });
-                window.location.reload();
-            }
+            } 
         }
             } catch (error) {
                 console.error('Error:', error);
@@ -349,6 +345,15 @@
                     position:'center',
                     timer: 2000
                 });
+            }else if(response.status === 400){
+                const data = await response.json();
+                await Swal.fire({
+                title: 'Out of Stock',
+                text: `Sorry! ${data.message}`,
+                icon: 'error',
+                position: 'center'
+            });
+            
             }else{
                 await Swal.fire({
                 title: 'Error',

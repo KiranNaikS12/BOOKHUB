@@ -27,8 +27,8 @@ const bookSchema = mongoose.Schema({
         unique:true
     },
     category: {
-        type: String, 
-        required: true,
+        type: String,
+        required:true 
     },
     is_published:{
         type:Number,

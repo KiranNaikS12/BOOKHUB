@@ -1,0 +1,167 @@
+<%- include('../userLayout/header') %> 
+<style>
+    @import url('https://fonts.googleapis.com/css?family=Open+Sans&display=swap');.card{position: relative;display: -webkit-box;display: -ms-flexbox;display: flex;-webkit-box-orient: vertical;-webkit-box-direction: normal;-ms-flex-direction: column;flex-direction: column;min-width: 0;word-wrap: break-word;background-color: #fff;background-clip: border-box;border: 1px solid rgba(0, 0, 0, 0.1);border-radius: 0.10rem}.card-header:first-child{border-radius: calc(0.37rem - 1px) calc(0.37rem - 1px) 0 0}.card-header{padding: 0.75rem 1.25rem;margin-bottom: 0;background-color: #fff;border-bottom: 1px solid rgba(0, 0, 0, 0.1)}.track{position: relative;background-color: #ddd;height: 7px;display: -webkit-box;display: -ms-flexbox;display: flex;margin-bottom: 60px;margin-top: 50px}.track .step{-webkit-box-flex: 1;-ms-flex-positive: 1;flex-grow: 1;width: 25%;margin-top: -18px;text-align: center;position: relative}.track .step.active:before{background: #004309}.track .step::before{height: 7px;position: absolute;content: "";width: calc(25% - 10px);left: calc(50% - 12.5%);background-color: #ddd;z-index: -1;top: 18px}.track .step.active::before{background-color: #39FF14;} 
+    .track .step.active .icon{background: #39FF14;color: #fff}.track .icon{display: inline-block;width: 40px;height: 40px;line-height: 40px;position: relative;border-radius: 100%;background: #ddd}.track .step.active .text{font-weight: 400;color: #000}.track .text{display: block;margin-top: 7px}.itemside{position: relative;display: -webkit-box;display: -ms-flexbox;display: flex;width: 100%}.itemside .aside{position: relative;-ms-flex-negative: 0;flex-shrink: 0}.img-sm{width: 80px;height: 80px;padding: 7px}ul.row, ul.row-sm{list-style: none;padding: 0}.itemside .info{padding-left: 15px;padding-right: 7px}.itemside .title{display: block;margin-bottom: 5px;color: #212529}p{margin-top: 0;margin-bottom: 1rem}.btn-warning{color: #ffffff;background-color: #004309;border-color: #004309;border-radius: 1px}.btn-warning:hover{color: #ffffff;background-color: #004309cf;border-color: #004309;border-radius: 1px}
+</style>
+<main>
+    <div class="container" style="margin-top: 20px;">
+        <article class="card">
+            <header class="card-header"> My Orders / Tracking </header>
+            <div class="card-body">
+                <h6>Order ID: <%= order.oId %></h6>
+                <article class="card">
+                    <div class="card-body row">
+                        <div class="col"> <strong>Estimated Delivery time:</strong> <br>29 nov 2019 </div>
+                        <div class="col"> <strong>Shipping BY:</strong> <br> BOOKHUB | <i class="fa fa-phone"></i> +6282378312 </div>
+                        <div class="col"> <strong>Status:</strong> <br><%= order.orderStatus %></div>
+                        <div class="col"> <strong>Tracking #:</strong> <br> BD045903594059 </div>
+                    </div>
+                </article>
+                <div class="track">
+                    <div class="step <%= order.orderStatus === 'Pending' ? 'active' : '' %>"> <span class="icon"> <i class="fa fa-check"></i> </span> <span class="text">Pending</span> </div>
+                    <div class="step <%= order.orderStatus === 'Confirmed' ? 'active' : '' %>"> <span class="icon"> <i class="fa fa-check"></i> </span> <span class="text">Order confirmed</span> </div>
+                    <div class="step <%= order.orderStatus === 'Shipped' ? 'active' : '' %>"> <span class="icon"> <i class="fa fa-user"></i> </span> <span class="text"> Shipped </span> </div>
+                    <div class="step <%= order.orderStatus === 'Delivered' ? 'active' : '' %>"> <span class="icon"> <i class="fa fa-truck"></i> </span> <span class="text"> Delivered</span> </div>
+                    <div class="step <%= order.orderStatus === 'Cancelled' ? 'active' : '' %>"> <span class="icon"> <i class="fa fa-close"></i> </span> <span class="text">Cancelled</span> </div>
+                    <div class="step <%= order.orderStatus === 'Returned' ? 'active' : '' %>"> <span class="icon"> <i class="fa fa-close"></i> </span> <span class="text">Returned</span> </div>
+                </div>
+                
+                
+                <hr>
+                <ul class="row">
+                    <% order.items.forEach((item, index) => { %>
+                        <li class="col-md-4">
+                            <figure class="itemside mb-3">
+                                <div class="aside"><img src="/assets-admin/productImages/<%= item.image[item.image.length - 1] %>" class="img-sm border"></div>
+                                <figcaption class="info align-self-center">
+                                    <p class="title"><%= item.title %></p>
+                                    <p class="text-grey">Category: <%= item.category %></p>
+                                    <span class="text-muted">Rs.<%= item.price %>/-</span>
+                                </figcaption>
+                            </figure>
+                        </li>
+                    <% }) %> 
+                </ul>
+                <div>
+                    Total Amount: Rs.<%= order.billTotal %> /-
+                    <% if (returnStatus) { %>
+                        <p>You'r request for return order is <%= returnStatus %> please wait for further updates...</p>
+                    <% } else { %>
+                        <p>No return status available</p>
+                    <% } %>                    
+                </div>                
+                <hr>
+                <a href="#" class="btn btn-warning" data-abc="true"> <i class="fa fa-chevron-left"></i> Back to orders</a>
+                <% if (order.orderStatus === 'Delivered') { %>
+                    <a href="#" class="btn btn-info return-order-btn" data-abc="true"> <i class="fa fa-chevron-left"></i>Return Order</a>
+                <% } else { %>
+                       
+                <% } %>
+                <div id="returnOrderModal" class="modal" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Return Order</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="returnOrderForm" method="POST">
+                                    <div class="form-group">
+                                        <label for="returnReason">Reason for Return</label>
+                                        <textarea class="form-control" id="returnReason" rows="3" name="returnReason"></textarea>
+                                        <input type="hidden" name="orderId" value="<%= order._id %>"> 
+                                    </div>                                                                                                            
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>        
+                                        <button type="button" class="btn btn-secondary" onclick="returnOrder()">Send</button>                         
+                                    </div>
+                                </form>                              
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+</main>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const returnOrderBtn = document.querySelector('.return-order-btn');
+    if (returnOrderBtn) {
+        returnOrderBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+            $('#returnOrderModal').modal('show');
+        });
+    }
+    const submitReturnOrderBtn = document.getElementById('submitReturnOrder');
+    if (submitReturnOrderBtn) {
+        submitReturnOrderBtn.addEventListener('click', function () {
+            const returnReason = document.getElementById('returnReason').value;
+            console.log('Return Reason:', returnReason);
+            $('#returnOrderModal').modal('hide');
+        });
+    }
+});
+
+function returnOrder() {
+    swal.fire({
+        title: "Are you sure?",
+        text: "Do you want to return the order",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Confirm'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const returnReason = document.getElementById('returnReason').value;
+            const orderId = document.querySelector('input[name="orderId"]').value;
+
+            fetch('/orders/return', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify({
+                    orderId: orderId,
+                    returnReason: returnReason
+                })
+            })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Network response was not ok.');
+                }
+            })
+            .then((data) => {
+                if (data.success) {
+                    swal.fire({
+                        title: 'Request sent',
+                        text: '',
+                        icon: "success",
+                        type: 'success',
+                        timer: 1500,
+                        timerProgressBar: true,
+                    })
+                    setTimeout(() => {
+                        window.location.reload('/track-order')
+                    },1500)                   
+                } else {
+                    swal.fire('Error sending the request', data.message, 'error');
+                }
+            })
+            .catch((error) => {
+                swal.fire('Error', 'An error occurred while sending the request.', 'error');
+                console.error('Fetch Error:', error);
+            });
+        }
+    })
+}
+
+</script>

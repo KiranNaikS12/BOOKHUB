@@ -1,6 +1,7 @@
 const Product = require('../models/productModel');
 const { body, validationResult } = require('express-validator');
 const Category = require('../models/categoryModel');
+const mongoose = require("mongoose");
 
 
 // *******LoadProductPage************
@@ -32,7 +33,8 @@ const insertProduct = async(req,res) => {
         if(!errors.isEmpty()){
              res.render('product-page', {errorMessage:errors.array()[0].msg, category: req.body.category })
         }else{           
-            const {title,author,ISBN,description,price,countInStock,category,discountPrice} = req.body;
+            const {title,author,ISBN,description,price,countInStock,discountPrice} = req.body;
+            const category = mongoose.Types.ObjectId(req.body.category);
             const existingProduct = await Product.findOne({$or:[{title},{ISBN}]});
             if(existingProduct){
                 const errorMessage = existingProduct.title === title ? 'Product title is already exists' : 'ISBN code is already exists';
@@ -87,10 +89,11 @@ const LoadProductList = async(req,res) => {
 // *********EditProductDetails**********
 const loadEditProductDetails = async(req,res) => {
     try{
+        const category = await Category.find({status:'active'});
         const id = req.query.id;
         const productData = await Product.findById({_id:id});
         if(productData){
-            res.render('product-edit', {product:productData})
+            res.render('product-edit', {product:productData,category:category})
         }else{
             res.redirect('/admin/product/list')
         }
@@ -104,26 +107,22 @@ const loadUpdateProductDetails = async (req, res) => {
     try {
         const id = req.body.product_id;
         const existingProduct = await Product.findById({_id:id});
+        const categoryData = await Category.find({status:'active'});
         let existingImages = [];
-        let replacedImages = [];
+        let removedImages = req.body.remove_image || [];
         if( existingProduct && existingProduct.images && Array.isArray(existingProduct.images)){
             existingImages = existingProduct.images;
-            replacedImages = req.body.replace_image || [];
         }
 
-        let newImages = req.files.map((file) => file.filename)
-        const updatedImages = existingImages.map((images,index) => {
-            if(replacedImages.includes(images)){
-                return newImages.shift();
-            }
-            return images;
-        })
+        const updatedImages = existingImages.filter(image => !removedImages.includes(image));
+
+        let newImages = req.files.map((file) => file.filename);
 
         updatedImages.push(...newImages);
         if (newImages.length > 0) {
             if (updatedImages.length > 4) {
                 const productData = await Product.findById({ _id: id });
-                return res.render('product-edit', { errorMessage: 'You cannot upload more than 4 images', product: productData });
+                return res.render('product-edit', { errorMessage: 'You cannot upload more than 4 images', product: productData,category:categoryData });
             }
         }
         const { title, author, description, ISBN, price, category, status, countInStock, discountPrice } = req.body;

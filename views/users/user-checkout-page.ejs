@@ -47,26 +47,36 @@
                                             <th>Image</th>
                                             <th colspan="1">Product</th>
                                             <th>Total</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <% if (cart.items.length > 0) { %>
                                             <% cart.items.forEach((item,index) => { %>
                                                 <tr>
-                                                    <td class="image product-thumbnail"><img src="/assets-admin/productImages/<%= item.image[item.image.length -1] %>" alt="#"></td>
-                                                    <td>
-                                                        <h5><a href="#"><%= item.data.title %></a></h5> <span class="product-qty">x<%= item.quantity %></span>
+                                                    <td class="image product-thumbnail">
+                                                        <img src="/assets-admin/productImages/<%= item.image[item.image.length -1] %>" alt="#">
+                                                        <% if (item.data.countInStock <= 10) { %>
+                                                            <p class="font-xs text-danger" id="countInStock-<%= item.data._id %>">Only <%= item.data.countInStock %> left</p>
+                                                         <% } else { %>
+                                                          
+                                                        <% } %>
                                                     </td>
-                                                    <td>Rs.<%= item.price %>/-</td>
+                                                    <td>
+                                                        <h5><a href="#"><%= item.data.title %></a></h5>Qunatity:<div class="cart-product-quantity" style="width: 70px; margin: 0 auto;">
+                                                            <input type="number" class="form-control black-border  black-spin-buttons" style="background-color: aliceblue; padding: -10px;" id="quantity-<%= item.data._id %>" value="<%= item.quantity %>" min="1" max="6" step="1" data-decimals="0" required onchange="updateInQuantity('<%= item.data._id %>', '<%= user._id %>', this.value)">
+                                                        </div>
+                                                    </td>
+                                                    <td id="price-<%= item.data._id %>">Rs.<%= item.price.toFixed(2) %>/-</td>
+                                                    <td class="action" data-title="Remove">
+                                                        <a href="#" class="text-muted" onclick="removeProductFromOrder('<%= item.data._id %>','<%= user._id %>')">
+                                                            Remove<i class="fi-rs-trash"></i>
+                                                        </a>
+                                                    </td>  
                                                 </tr>
-                                                <td class="action" data-title="Remove">
-                                                    <a href="#" class="text-muted" onclick="removeProductCart('<%= item.data._id %>','<%= user._id %>')">
-                                                        Remove Product<i class="fi-rs-trash"></i>
-                                                    </a>
-                                                </td> 
                                            <% }) %>
                                         <% } %>
-                                    </tbody>
+                                    </tbody>                                    
                                 </table>
                                 <div class="table-responsive">
                                     <table class="table">
@@ -166,13 +176,13 @@
                                     </div>
                                     <div id="collapseAddress" class="shipping_address collapse in">
                                         <div class="form-group">
-                                            <input type="text"  name="street" placeholder="Enter Street Name">
+                                            <input type="text"  name="street" placeholder="Enter Street Name" required>
                                         </div>
                                         <div class="form-group">
-                                            <input type="text" name="city" placeholder="Enter City">
+                                            <input type="text" name="city" placeholder="Enter City" required >
                                         </div>
                                         <div class="form-group">
-                                            <input  type="text" name="state" placeholder="Enter State">
+                                            <input  type="text" name="state" placeholder="Enter State" required>
                                         </div>
                                         <div class="form-group">
                                             <div class="custom_select">
@@ -426,16 +436,16 @@
                                             </div>
                                           </div>
                                         <div class="form-group">
-                                            <input type="number" name="postalCode"  placeholder="Enter postal code">
+                                            <input type="number" name="postalCode"  placeholder="Enter postal code" required>
                                         </div>
                                         <div class="form-group">
                                             <label for="addressType">Address Type</label><br>
                                             <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="addressType" id="homeRadio" value="home">
+                                                <input class="form-check-input" type="radio" name="addressType" id="homeRadio" value="home" required>
                                                 <label class="form-check-label" for="homeRadio">Home</label>
                                             </div>
                                             <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="addressType" id="workRadio" value="work">
+                                                <input class="form-check-input" type="radio" name="addressType" id="workRadio" value="work" required>
                                                 <label class="form-check-label" for="workRadio">Work</label>
                                             </div>
                                             <div id="addressTypeError" class="error" style="color: red;"></div>
@@ -507,8 +517,8 @@
     <script src="/assets/js/plugins/isotope.js"></script>
     <script src="/assets/js/plugins/scrollup.js"></script>
     <script src="/assets/js/plugins/jquery.vticker-min.js"></script>
-    <script src=".//assets/js/main.js?v=3.4"></script>
-    <script src=".//assets/js/shop.js?v=3.4"></script>
+    <script src="/assets/js/main.js?v=3.4"></script>
+    <script src="/assets/js/shop.js?v=3.4"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
@@ -551,7 +561,7 @@
     .then(response => {
         if (response.status === 200) {
             Swal.fire({
-                title:'Successfully procceded to checkout',
+                title:'Order Successfull',
                 text:'',
                 icon:'success',
                 type:'success',
@@ -559,12 +569,28 @@
                 confirmButtonText: 'Order Summary'
             });
             setTimeout(() => {
-                window.location.href = '/order-summary';
+                window.location.href = '/orders';
             }, 2000);
+        } else if (response.status === 400) {   
+        response.json().then(data => {
+            if (data.message === 'User does not have a default address') {
+                Swal.fire({
+                    title: 'Warning',
+                    text: 'User does not have a default address. Please set a default address.',
+                    icon: 'warning'
+                });
+            } else {               
+                Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred while processing your request',
+                    icon: 'error'
+                });
+            }
+        });
         }else{
                 Swal.fire({
                 title: 'Error',
-                text: 'Failed to procced checkout',
+                text: 'Failed to order',
                 icon: 'error'
             });
         }
@@ -588,7 +614,7 @@ document.getElementById("additionalMobile").addEventListener("input", function()
 });
 
 
-function removeProductCart(productId, userId) {
+function removeProductFromOrder(productId, userId) {
         swal.fire({
             title: "Are you sure?",
             text: "Do you want to remove this product",
@@ -599,7 +625,7 @@ function removeProductCart(productId, userId) {
             confirmButtonText: 'Yes, remove it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                fetch('/remove-product', {
+                fetch('/remove-order', {
                         method: "POST",
                         headers: {
                             'Content-Type': 'application/json'
@@ -638,6 +664,69 @@ function removeProductCart(productId, userId) {
                     });
             }
         });
+    }
+
+
+    async function updateInQuantity(productId, userId, newQuantity) {
+            try {
+                let res = await fetch('/updateInQuantity', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        productId,
+                        userId,
+                        newQuantity
+                    })
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    console.log(data);
+                    document.getElementById(`quantity-${productId}`).value = newQuantity;
+                    document.getElementById(`price-${productId}`).innerHTML = `Rs.${data.newPrice.toFixed(2)}/-`;
+                    const remainingStockElement = document.getElementById(`countInStock-${productId}`);
+                    remainingStockElement.innerText = `Stock Left: ${data.countInStock}`;
+
+                    if (data.billTotal !== undefined) {
+                        document.getElementById('billTotal').innerHTML = `Rs.${data.billTotal.toFixed(2)}/-`;
+                         document.getElementById('totalAmount').innerHTML = `Rs.${data.billTotal.toFixed(2)}/-`;
+                    }
+                    console.log(billTotal);
+
+                    // To update the remaining quantity                   
+                    await Swal.fire({
+                        title: 'Success',
+                        text: 'Quantity updated successfully.',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1500 
+                    });
+                } else {
+                    const data = await res.json();
+                if (res.status === 404 ) {
+                await Swal.fire({
+                    title: 'Limit Excceded',
+                    text: 'You cannot add more than 5 quantities', 
+                    icon: 'error',
+                    showConfirmButton: true
+                });
+                window.location.reload();
+            } else if(res.status === 400 && data.error === "OutOfStock"){
+                await Swal.fire({
+                   title: 'Sorry😞',
+                   text: 'Product is out of stock',
+                   icon: 'error',
+                   showConfirmButton: true
+            });
+              window.location.reload();
+    
+            } 
+        }
+        }catch (error) {
+            console.error('Error:', error);
+        }
     }
 </script>
 </body>

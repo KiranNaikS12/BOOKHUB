@@ -8,6 +8,7 @@ const orderSchema = mongoose.Schema({
         ref:'User',
         required: true
     },
+    
     cart:{
         type: ObjectId,
         ref:'Cart'
@@ -18,7 +19,7 @@ const orderSchema = mongoose.Schema({
     },
     orderStatus:{
         type:String,
-        enum:['Pending','Confirmed','Shipped','Delivered','Canceled'],
+        enum:['Pending','Confirmed','Shipped','Delivered','Cancelled','Deleted','Returned'],
         default:'Pending',
     },
     items:[{
@@ -79,7 +80,11 @@ const orderSchema = mongoose.Schema({
       orderNotes: {
         type: String,
         default:''
-    }
+    },
+    cancellationReason:{
+        type: String,
+        default: ''
+    },
 },{
     timestamps: true,
 });

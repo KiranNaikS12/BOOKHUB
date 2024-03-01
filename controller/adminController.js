@@ -5,6 +5,7 @@ const randomstring = require('randomstring')
 const config = require('../config/config');
 const Order = require('../models/orderModel');
 const Product = require('../models/productModel');
+const Return = require('../models/orderReturn');
 
 
 // **********Hash password**********
@@ -45,7 +46,7 @@ const verifyLogin = async (req,res) =>{
             if(userData.is_admin === 0){
                 res.render('admin-login',{message:"Email and password is incorrect"})
             }else{
-                req.session.user_id = userData._id;
+                req.session.admin_id = userData._id;
                 res.redirect('/admin/home');
             }
          }else{
@@ -62,7 +63,7 @@ const verifyLogin = async (req,res) =>{
 // **********Load Admin Dashboard**********
 const loadHome = async(req,res) => {
     try{
-        const userData = await User.findById({_id:req.session.user_id})
+        const userData = await User.findById({_id:req.session.admin_id})
         res.render('admin-home',{admin:userData})
 
     }catch(error){
@@ -74,7 +75,7 @@ const loadHome = async(req,res) => {
 const loadProfile = async(req,res) => {
     try{
 
-        const adminProfile = await User.findById({_id:req.session.user_id});
+        const adminProfile = await User.findById({_id:req.session.admin_id});
         res.render('admin-profile-page',{admin:adminProfile})
 
     }catch(error){
@@ -86,13 +87,8 @@ const loadProfile = async(req,res) => {
 // **********Logout**********
 
 const logout = async(req,res) => {
-    try{
-        req.session.destroy();
-        res.redirect('/admin')
-
-    } catch(error){
-        console.log(error.message)
-    }
+    req.session.admin_id = "";
+        res.redirect('/admin');
 }
 
 //************* Forget Password ***********
@@ -326,7 +322,7 @@ const deleteUserLoad = async(req,res) => {
 const LoadOrderDetails = async(req,res) => {
     try{
 
-        const orderData = await Order.find().populate('user');
+        const orderData = await Order.find({orderStatus:{$ne:'Deleted'}}).populate('user');
         res.render('admin-list-order',{order:orderData})
 
     }catch(error){
@@ -338,8 +334,9 @@ const ViewOrderDetails = async(req,res) => {
     try{
         const id = req.query.id;
         const orderData = await Order.findById({_id:id}).populate('user');
+        const returnData = await Return.findOne({orderId:id})
         if(orderData){
-            res.render('admin-order-details',{order:orderData})
+            res.render('admin-order-details',{order:orderData,returnData: returnData})
         }else{
             res.redirect('/admin/list-orders')
         }
@@ -372,7 +369,7 @@ const deleteOrderData = async(req,res) => {
     try{
         const {orderId} = req.body
         console.log(orderId);
-        const deleteOrderData = await Order.findByIdAndDelete(orderId);
+        const deleteOrderData = await Order.findByIdAndUpdate(orderId, {orderStatus:'Deleted'}, {new:true});
         if (!deleteOrderData) {
             return res.status(404).json({ success: false, message: "Order not found" });
           }
