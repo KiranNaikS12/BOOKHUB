@@ -490,7 +490,7 @@
                                                     </div>
                                             <% } %>
                                             <div class="product-img product-img-zoom">
-                                                <a href="/product-view?id=<%= productItem._id %>">
+                                                <a href="/product/view?id=<%= productItem._id %>">
                                                     <img class="default-img" src="/assets-admin/productImages/<%= productItem.images[productItem.images.length - 1]%>"  alt="">
                                                     <img class="hover-img" src="<%= productItem.imageUrl %>" alt="">
                                                 </a>
@@ -1890,7 +1890,7 @@
     <script>
         async function addToCart(productId, countInStock) {
             try{
-                let response = await fetch('/add-to-cart',{
+                let response = await fetch('/add/cart',{
                     method:'POST',
                     headers:{
                         'Content-Type':'application/json',

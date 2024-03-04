@@ -184,7 +184,12 @@
                                         <a class="nav-link active text-secondary" id="Description-tab" data-bs-toggle="tab" href="#Description">Description</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link text-secondary" id="Reviews-tab" data-bs-toggle="tab" href="#Reviews">Reviews (<%= review.length %>)</a>
+                                        <% if (review.length > 0) { %>
+                                            <a class="nav-link text-secondary" id="Reviews-tab" data-bs-toggle="tab" href="#Reviews">Reviews (<%= review.length %>)</a>
+                                            <% } else { %>
+                                                <a class="nav-link text-secondary" id="Reviews-tab" data-bs-toggle="tab" href="#Reviews">Reviews (0)</a>
+                                        <% } %>
+                                        
                                     </li>
                                 </ul>
                                 <div class="tab-content shop_info_tab entry-main-content">
@@ -265,69 +270,34 @@
                                 </div>
                                 <div class="col-12">
                                     <div class="row related-products">
+                                        <% relatedCategory.forEach(product => { %>
                                         <div class="col-lg-3 col-md-4 col-12 col-sm-6">
                                             <div class="product-cart-wrap small hover-up">
                                                 <div class="product-img-action-wrap">
                                                     <div class="product-img product-img-zoom">
-                                                        <a href="shop-product-right.html" tabindex="0">
-                                                            <img class="default-img" src="#" alt="">
-                                                            <img class="hover-img" src="#" alt="">
+                                                        <a href="/product-view?id=<%= product._id %>">
+                                                            <img class="default-img" src="/assets-admin/productImages/<%= product.images[product.images.length - 1]%>"  alt="">
+                                                            <img class="hover-img" src="<%= product.imageUrl %>" alt="">
                                                         </a>
-                                                    </div>
-                                                    <div class="product-action-1">
-                                                        <a aria-label="Quick view" class="action-btn small hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal
-                                                         "><i class="fi-rs-search"></i></a>
-                                                        <a aria-label="Add To Wishlist" class="action-btn small hover-up" href="#" tabindex="0"><i class="fi-rs-heart"></i></a>
-                                                        <a aria-label="Compare" class="action-btn small hover-up" href="#" tabindex="0"><i class="fi-rs-shuffle"></i></a>
                                                     </div>
                                                     <div class="product-badges product-badges-position product-badges-mrg">
                                                         <span class="hot">Hot</span>
                                                     </div>
                                                 </div>
                                                 <div class="product-content-wrap">
-                                                    <h2><a href="shop-product-right.html" tabindex="0"></a></h2>
+                                                    <h2><a href="#" tabindex="0"><%= product.title  %></a></h2>
                                                     <div class="rating-result" title="90%">
                                                         <span>
                                                         </span>
                                                     </div>
                                                     <div class="product-price">
-                                                        <span></span>
-                                                        <span class="old-price"></span>
+                                                        <span>Rs.<%= product.afterDiscount  %>/-</span>
+                                                        <span class="old-price">Rs.<%= product.price  %>/-</span>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>          
-                                        <div class="col-lg-3 col-md-4 col-12 col-sm-6">
-                                            <div class="product-cart-wrap small hover-up mb-0">
-                                                <div class="product-img-action-wrap">
-                                                    <div class="product-img product-img-zoom">
-                                                        <a href="#" tabindex="0">
-                                                            <img class="default-img" src="" alt="">
-                                                            <img class="hover-img" src="" alt="">
-                                                        </a>
-                                                    </div>
-                                                    <div class="product-action-1">
-                                                        <a aria-label="Quick view" class="action-btn small hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal"><i class="fi-rs-search"></i></a>
-                                                        <a aria-label="Add To Wishlist" class="action-btn small hover-up" href="#" tabindex="0"><i class="fi-rs-heart"></i></a>
-                                                        <a aria-label="Compare" class="action-btn small hover-up" href="#" tabindex="0"><i class="fi-rs-shuffle"></i></a>
-                                                    </div>
-                                                    <div class="product-badges product-badges-position product-badges-mrg">
-                                                        <span class="hot">Hot</span>
-                                                    </div>
-                                                </div>
-                                                <div class="product-content-wrap">
-                                                    <h2><a href="#" tabindex="0"></a></h2>
-                                                    <div class="rating-result" title="90%">
-                                                        <span>
-                                                        </span>
-                                                    </div>
-                                                    <div class="product-price">
-                                                        <span></span>
-                                                        <span class="old-price"></span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        </div>   
+                                        <% }); %>       
                                     </div>
                                 </div>
                             </div>
@@ -351,95 +321,7 @@
                                                        
                         </div>
                         <!-- Fillter By Price -->
-                        <div class="sidebar-widget price_range range mb-30">
-                            <div class="widget-header position-relative mb-20 pb-10">
-                                <h5 class="widget-title mb-10">Fill by price</h5>
-                                <div class="bt-1 border-color-1"></div>
-                            </div>
-                            <div class="price-filter">
-                                <div class="price-filter-inner">
-                                    <div id="slider-range"></div>
-                                    <div class="price_slider_amount">
-                                        <div class="label-input">
-                                            <span>Range:</span><input type="text" id="amount" name="price" placeholder="Add Your Price" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="list-group">
-                                <div class="list-group-item mb-10 mt-10">
-                                    <label class="fw-900 text-dark">BOOKHUB</label>
-                                    <div class="custome-checkbox">
-                                        <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox1" value="">
-                                        <label class="form-check-label" for="exampleCheckbox1"><span>Popular</span></label>
-                                        <br>
-                                        <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox2" value="">
-                                        <label class="form-check-label" for="exampleCheckbox2"><span>Trending</span></label>
-                                        <br>
-                                        <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox3" value="">
-                                        <label class="form-check-label" for="exampleCheckbox3"><span>Latest</span></label>
-                                        <br>
-                                        <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox3" value="">
-                                        <label class="form-check-label" for="exampleCheckbox3"><span>Most buyed</span></label>
-                                    </div>
-                                    <label class="fw-900 mt-15 text-dark">Item Condition</label>
-                                    <div class="custome-checkbox">
-                                        <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox11" value="">
-                                        <label class="form-check-label" for="exampleCheckbox11"><span>Hard copy (100)</span></label>
-                                        <br>
-                                        <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox21" value="">
-                                        <label class="form-check-label" for="exampleCheckbox21"><span>soft copy (27)</span></label>
-                                        <br>
-                                        <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox31" value="">
-                                        <label class="form-check-label" for="exampleCheckbox31"><span>Audio books(111)</span></label>
-                                    </div>
-                                </div>
-                            </div>
-                            <a href="#" class="btn btn-sm btn-default"><i class="fi-rs-filter mr-5"></i> Fillter</a>
-                        </div>
                         <!-- Product sidebar Widget -->
-                        <div class="sidebar-widget product-sidebar  mb-30 p-30 bg-grey border-radius-10">
-                            <div class="widget-header position-relative mb-20 pb-10">
-                                <h5 class="widget-title mb-10">New products</h5>
-                                <div class="bt-1 border-color-1"></div>
-                            </div>
-                            <div class="single-post clearfix">
-                                <div class="image">
-                                    <img src="" alt="#">
-                                </div>
-                                <div class="content pt-10">
-                                    <h5><a href="#"></a></h5>
-                                    <p class="price mb-0 mt-5"></p>
-                                    <div class="product-rate">
-                                        <div class="product-rating" style="width:90%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="single-post clearfix">
-                                <div class="image">
-                                    <img src="" alt="#">
-                                </div>
-                                <div class="content pt-10">
-                                    <h6><a href="#"></a></h6>
-                                    <p class="price mb-0 mt-5"></p>
-                                    <div class="product-rate">
-                                        <div class="product-rating" style="width:80%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="single-post clearfix">
-                                <div class="image">
-                                    <img src="" alt="#">
-                                </div>
-                                <div class="content pt-10">
-                                    <h6><a href="shop-product-detail.html"></a></h6>
-                                    <p class="price mb-0 mt-5"></p>
-                                    <div class="product-rate">
-                                        <div class="product-rating" style="width:60%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                         <div class="banner-img wow fadeIn mb-45 animated d-lg-block d-none">
                             <img src="" alt="">
                             <div class="banner-text">
@@ -496,7 +378,7 @@
     <script>
         async function addToCart(productId, countInStock) {
             try{
-                let response = await fetch('/add-to-cart',{
+                let response = await fetch('/add/cart',{
                     method:'POST',
                     headers:{
                         'Content-Type':'application/json',
@@ -545,7 +427,7 @@
 
     async function proceedCheckoutPage(productId, countInStock) {
     try {
-        let response = await fetch('/add-to-cart', {
+        let response = await fetch('/product/checkout', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -596,62 +478,69 @@
         modal.style.display = "none";
     }
 
-
-function sendReview() {
+    
+async function sendReview() {
     const rating = document.querySelector('input[name="rating"]:checked');
     const reviewText = document.querySelector('#reviewText').value;
     const productId = document.querySelector('input[name="productId"]').value;
 
     if (!rating || !reviewText || !productId) {
-        swal.fire({
+        await Swal.fire({
             icon: 'error',
             title: 'Oops...',
             text: 'Please fill in all required fields!'
         });
         return;
     }
-
     const requestData = {
         productId: productId,
         rating: rating.value,
         reviewText: reviewText
     };
+    try {
+        const response = await fetch('/reviews', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
 
-    fetch('/submit-review', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestData)
-    })
-    .then(response => {
-        if (response.ok) {
-            return response.json();
-        } else {
-            throw new Error('Network response was not ok.');
-        }
-    })
-    .then(data => {
-        if (data.success) {
-            swal.fire({
-                title: 'Review submitted successfully',
+        if (response.status === 200) {
+            await Swal.fire({
+                title: 'Review added successfully',
                 text: '',
                 icon: "success",
                 type: 'success',
-                showConfirmButton: false, 
-                timer: 2000
-        });
-            
-        } else {
-            swal.fire('Error sending the request', data.message, 'error');
+                timer: 1500,
+                timerProgressBar: true,
+            })
+            window.location.reload();
+        }else if(response.status === 405){
+            await Swal.fire({
+                title:'Sorry! Out of Stock',
+                text:'You have already submitted a review for this product',
+                icon: 'Sorry',
+                timer: 1500
+            }); 
+        }else {
+            title = 'Error';
+            text = 'Failed to add item to the cart.';
+            iconClass = 'error';
         }
-    })
-    
-    .catch(error => {
-        swal.fire('Error', 'An error occurred while sending the request.', 'error');
-        console.error('Fetch Error:', error);
-    });
+    }catch(error){
+        console.log(error.message);
+        await Swal.fire({
+            title: 'Error',
+            text: 'An error occurred.',
+            icon: 'error',
+            position: 'center',
+            showConfirmButton: false,
+            timer: 2000,
+        });
+    }
 }
+
 
  </script>
 </body>

@@ -324,4 +324,100 @@ async function sortProductsByShowByOption(baseQuery, showBy, sortBy) {
 // // Event listener for search input blur (loss of focus)
 // document.getElementById("searchInput").addEventListener("blur", function(event) {
 //  document.getElementById("searchResults").style.display = "none"; // Hide search results
+
 //  }); -->
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    const categoryLinks = document.querySelectorAll('.category-link');
+    categoryLinks.forEach(categoryLink => {
+        categoryLink.addEventListener('click', function(event) {
+            event.preventDefault(); 
+            const categoryName = this.dataset.category; 
+            
+            fetch(`/products-by-category?category=${categoryName}`)
+                .then(response => response.json())
+                .then(data => {
+                    updateProductList(data); 
+                })
+                .catch(error => console.log("Error fetching products by category", error));
+        });
+    });
+
+    
+    function updateProductList(products) {
+        const productListContainer = document.querySelector('.product-grid-3');
+        productListContainer.innerHTML = ""; 
+        
+        products.forEach(product => {
+            const productElement = document.createElement("div");
+            productElement.classList.add("col-lg-4", "col-md-4", "col-12", "col-sm-6");
+            productElement.innerHTML = `
+                <div class="product-cart-wrap mb-30 ${product.productStatus === 'Limit-Exceeded' ? 'Limit-Exceeded-product' : ''} ${product.status === 'out-of-stock' ? 'out-of-stock-product' : ''}">
+                    <div class="product-img-action-wrap">
+                        ${product.productStatus === 'Limit-Exceeded' ? 
+                        `<div class="product-label limit-exceeded-label">
+                            <span class="badge bg-warning text-dark">Limit Exceeded</span>
+                        </div>` : 
+                        product.status === 'out-of-stock' ? 
+                        `<div class="product-label">
+                            <span class="badge bg-danger">Out of stock</span>
+                        </div>` : ''}
+                        <div class="product-img product-img-zoom">
+                            <a href="/product-view?id=${product._id}">
+                                <img class="default-img" src="/assets-admin/productImages/${product.images[product.images.length - 1]}" alt="">
+                                <img class="hover-img" src="${product.imageUrl}" alt="">
+                            </a>
+                        </div>
+                        <div class="product-action-1">
+                            <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal">
+                                <i class="fi-rs-search"></i>
+                            </a>
+                            <a aria-label="Add To Wishlist" class="action-btn hover-up" href="#">
+                                <i class="fi-rs-heart"></i>
+                            </a>
+                            <a aria-label="Compare" class="action-btn hover-up" href="#">
+                                <i class="fi-rs-shuffle"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="product-content-wrap">
+                        <div class="product-category">
+                            <a href="#">${product.category}</a>
+                        </div>
+                        <h2><a href="">${product.title}</a></h2>
+
+                        <div class="product-price">
+                            <span>Rs.${product.afterDiscount}/-</span>
+                            <span class="old-price">Rs.${product.price} /-</span>
+                        </div>
+                        <div class="product-status">
+                            <span class="${product.status === 'out-of-stock' ? 'out-of-stock' : 'active'}">${product.status}</span>
+                        </div>
+                        <div class="product-action-1 show">
+                            <a aria-label="Add To Cart" class="action-btn hover-up"  onclick="addToCart('${product._id}')">
+                                <i class="fi-rs-shopping-bag-add"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            productListContainer.appendChild(productElement);
+        });
+    }
+});
+
+<div class="widget-category mb-20" id="category-list-container">
+                            <h5 class="section-title style-1 mb-30 wow fadeIn animated">Category</h5>
+                            <ul id="category-list">
+                                <% if (category) { %>
+                                    <% for (let i = 0; i < category.length; i++) { %>
+                                        <li><a href="#" class="category-link" data-category="<%= category[i].name %>"><%= category[i].name %></a></li>
+                                    <% } %>
+                                <% } %>
+                            </ul>
+                        </div>
+                        <div id="products-container">
+                            <!-- Products will be dynamically listed here -->
+                            <!-- Each product element may have data attributes indicating its categories -->
+                        </div> 

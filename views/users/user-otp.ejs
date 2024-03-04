@@ -37,8 +37,9 @@
         </div>
         <span class="error-message" id="otpErrorMessage"></span>
       </form>
+      <a id="resendOTP">Resend OTP</a>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
       function validateOTP(
         inputElement,
@@ -100,6 +101,42 @@
                 event.preventDefault(); //preventing navigation if the user rejects
             }
         });
-    </script>
-  </body>
+
+document.getElementById('resendOTP').addEventListener('click', function() {
+    fetch('/resend-otp', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'OTP Resend Successfully',
+                text:'',
+                text: data.message
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Failed to Resend OTP',
+                text: 'Failed to resend OTP. Please try again later.'
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Failed to Resend OTP',
+            text: 'Failed to resend OTP. Please try again later.'
+        });
+    });
+});
+
+</script>
+</body>
 </html>

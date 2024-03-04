@@ -53,7 +53,7 @@
                     </a>
                     <div class="submenu">
                         <a href="/admin/product/add">Add product</a>
-                        <a href="/admin/product/list">View Product</a>
+                        <a href="/admin/product/lists">View Product</a>
                     </div>
                 </li>
                 <li class="menu-item has-submenu">
@@ -263,6 +263,17 @@
                     </div> 
                 </div> 
             </div> 
+            <div class="pagination-area mt-30 mb-50">
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination justify-content-start">
+                        <% for(let i = 1; i<=totalPages;i++) { %>
+                            <li class="page-item <%= i === currentPage ? 'active' : ' ' %>">
+                                <a class="page-link" href="/admin/category/?page=<%= i %>"><%= i %></a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </nav>
+            </div>
         </section> 
     </main>
     <script src="/assets-admin/js/vendors/jquery-3.6.0.min.js"></script>

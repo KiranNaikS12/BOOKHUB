@@ -53,7 +53,6 @@ const loadRegister = async (req, res) => {
     }
 };
 
-//************** */ 1.2 - InsertUser *******************
 const insertUser = async (req, res) => {
     try {
         // Trimming white space for all string fields
@@ -82,11 +81,13 @@ const insertUser = async (req, res) => {
                 return res.redirect('register');
             }
         }
+
         // checkbox
         if (!req.body.checkbox || req.body.checkbox !== 'agree') {
             req.flash('errorMessage', 'Please accept terms and conditions');
             return res.redirect('register');
         }
+
         // username validation
         const userName = req.body.username;
         const userNameLength = /^.{3,}$/;
@@ -94,6 +95,7 @@ const insertUser = async (req, res) => {
             req.flash('errorMessage', 'Username must have at least 3 characters');
             return res.redirect('register');
         }
+
         // password validation
         const passwordInput = req.body.password;
         const checkPassword = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z0-9!@#$%^&*(),.?":{}|<>]{8,}$/;
@@ -101,11 +103,13 @@ const insertUser = async (req, res) => {
             req.flash('errorMessage', 'Please add a valid password');
             return res.redirect('register');
         }
+
         const confirmPassword = req.body.confirm_password;
         if (passwordInput !== confirmPassword) {
             req.flash('errorMessage', 'Passwords do not match');
             return res.redirect('register');
         }
+
         // validation for email, mobileNumber, and uniqueness...
         const emailInput = req.body.email;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -113,6 +117,7 @@ const insertUser = async (req, res) => {
             req.flash('errorMessage', 'Invalid Email address');
             return res.redirect('register');
         }
+
         const mobileNumber = req.body.mobile;
         const mobileRegex = /^\d{10}$/;
         const hasConsecutiveZeros = /0000000000/.test(mobileNumber);
@@ -120,9 +125,13 @@ const insertUser = async (req, res) => {
             req.flash('errorMessage', 'Invalid Mobile Number');
             return res.redirect('register');
         }
-        const existingUsername = await User.findOne({ username: req.body.username });
-        const existingEmail = await User.findOne({ email: req.body.email });
-        const existingPhone = await User.findOne({ mobile: req.body.mobile });
+
+        const [existingUsername, existingEmail, existingPhone] = await Promise.all([
+            User.findOne({ username: req.body.username }),
+            User.findOne({ email: req.body.email }),
+            User.findOne({ mobile: req.body.mobile })
+        ]);
+
         if (existingUsername) {
             req.flash('errorMessage', 'Username already taken!');
             return res.redirect('register');
@@ -133,12 +142,15 @@ const insertUser = async (req, res) => {
             req.flash('error', 'Phone number already exists!');
             return res.redirect('register');
         }
-        if(req.body.password==req.body.confirm_password){
-            res.redirect('/verify-otp')
+
+        // If all validations pass, generate OTP and redirect to OTP verification page
+        if (req.body.password === req.body.confirm_password) {
+            res.redirect('/verify-otp');
         }
-         const otp = generateOTP();
-         const {firstname,lastname,username,email,mobile,password,confirm_password} = req.body
-         const data = {
+
+        const otp = generateOTP();
+        const { firstname, lastname, username, email, mobile, password, confirm_password } = req.body;
+        const data = {
             firstname,
             lastname,
             username,
@@ -147,35 +159,74 @@ const insertUser = async (req, res) => {
             password,
             confirm_password,
             otp
-         }
-         req.session.Data = data
-         req.session.save()
-         console.log(otp,'this is otp');
-         const mailOptions ={
-              from: 'skirannaikz@gmail.com',
-              to: req.body.email,
-              subject: 'Your OTP for verification',
-              text: `You OTP ${otp}`
-         }
-         if(mailOptions){
+        };
+        req.session.Data = data;
+        req.session.save();
+        console.log(otp, 'this is otp');
+        const mailOptions = {
+            from: 'skirannaikz@gmail.com',
+            to: req.body.email,
+            subject: 'Your OTP for verification',
+            text: `You OTP ${otp}`
+        }
+        if (mailOptions) {
             transporter.sendMail(mailOptions, (err) => {
-                if(err){
+                if (err) {
                     console.log(err.message);
-                }else{
-                    console.log('Mail send Successfully')
+                } else {
+                    console.log('Mail send Successfully');
                 }
-            })
-         }       
+            });
+        }
     } catch (error) {
         console.error('Error in insertUser:', error);
         req.flash('errorMessage', 'Something went wrong. Try again later');
         return res.redirect('register');
     }
 };
+//**************To send otp mail************** */
+const sendOTP = (email, otp) => {
+    const mailOptions ={
+        from: 'skirannaikz@gmail.com',
+        to: email,
+        subject: 'Your OTP for verification',
+        text: `Your OTP: ${otp}`
+    };
+
+    transporter.sendMail(mailOptions, (err) => {
+        if(err) {
+            console.error(err.message);
+        } else {
+            console.log('Mail sent successfully');
+        }
+    });
+};
+
+//**************FunctionToGenerateOTP and send mail************** 
+const generateAndSendOTP = (email) => {
+    const otp = generateOTP();
+    sendOTP(email, otp);
+    return otp;
+};
+
+//**************Resend OTP************** */
+const resendOTP = async(req,res) => {
+    try{
+       const data = req.session.Data;
+       const otp = generateAndSendOTP(data.email);
+       console.log('newOTP',otp);
+       req.session.Data.otp = otp;
+       req.session.save();
+       res.json({ success: true, message: 'OTP resend successfully' });
+    }catch(error){
+        console.log(error.message);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}
+    
 
 
 //**************Load otpPage************** */
-
 const loadOtp = async(req,res) => {
     console.log(req.session.Data+"from here");
     try{
@@ -186,7 +237,6 @@ const loadOtp = async(req,res) => {
 }
 
 //****************Verify OTP************** 
-
 const verifyOTP = async (req, res) => {
     try {       
         const otpReceived = await req.body.otp;
@@ -236,10 +286,11 @@ const verifyLogin = async (req, res) => {
         if(userData){
             const passwordMatch = await bcrypt.compare(password,userData.password)
             if(passwordMatch){
-                if(userData.is_verified === 0){
+                if(userData.is_verified == 0){
                     res.render('user-login-page',{message1:"Your account is not verified."})
                 }else{
                     req.session.user_id = userData._id;
+                    req.session.user = true;
                     res.redirect('/home');
                 }
             }else{
@@ -261,7 +312,16 @@ const loadHomePage = async(req,res) => {
        const categoryData = await Category.find({status:'active'})
        const  userData = await User.findById({_id:req.session.user_id})
        const productData=await Product.find({is_published:1})
-       const cartData = await Cart.findOne({owner:userData});
+       const cartData = await Cart.findOne({owner:userData}).populate('items.productId');
+        if(cartData) {
+            cartData.items = await Promise.all(cartData.items.map(async (item) => {
+                const product = await Product.findById(item.productId);
+                if (product && (product.status === 'active' || product.status === 'out-of-stock')) {
+                    return { ...item, data: product };
+                }
+            }));
+            cartData.items = cartData.items.filter(item => item !== null && item !== undefined);
+        }
         let cartItemCount = 0;
         if(cartData && cartData.items){
             cartItemCount = cartData.items.length;
@@ -500,11 +560,18 @@ const resetPassword = async(req,res) => {
 // ***************LoadProduct***************
 const loadProduct = async(req,res) => {
     try{
+        const page = parseInt(req.query.page) || 1; //getting current page from the query parameter by setting default to 1;
+        const perPage= 9;
+        const startIndex = (page - 1) * perPage;
         const  userData = await User.findById({_id:req.session.user_id})
-        const productData=await Product.find({is_published:1,status:{$ne:'inactive'}})
+        const productData=await Product.find({is_published:1,status:{$ne:'inactive'}}).skip(startIndex).limit(perPage);
+        
+        
+        const productCount = await Product.countDocuments({ is_published: 1, status: { $ne: 'inactive' } }); // Total number of products
+        const totalPages = Math.ceil(productCount / perPage); //calculating total number of pages
+
         const categoryData = await Category.find({status:'active'})
         const cartData = await Cart.findOne({owner:userData}).populate('items.productId');
-        
         if(cartData) {
             cartData.items = await Promise.all(cartData.items.map(async (item) => {
                 const product = await Product.findById(item.productId);
@@ -538,9 +605,13 @@ const loadProduct = async(req,res) => {
         if (cartData && cartData.items) {
             cartItemCount = cartData.items.length;
         }
-
         res.render('user-product-list',{user:userData,                  
-        product:productWithStatus, category: categoryData,cartItemCount:cartItemCount})
+        product:productWithStatus,
+        category: categoryData,
+        cartItemCount:cartItemCount,
+        totalPages: totalPages,
+        currentPage: page
+    })
     }catch(error){
         console.log(error.message)
     }
@@ -554,9 +625,17 @@ const LoadIndIvidualProduct = async (req, res) => {
         const productData = await Product.findById(id);
         const categoryData = await Category.find({ status: 'active' });
         const reviewData = await Review.find({productId:id}).populate({path:'userId',select:'firstname'})
-        
-        const cartData = await Cart.findOne({ owner: userData }).populate('items.productId');
 
+        const cartData = await Cart.findOne({owner:userData}).populate('items.productId');
+        if(cartData) {
+            cartData.items = await Promise.all(cartData.items.map(async (item) => {
+                const product = await Product.findById(item.productId);
+                if (product && (product.status === 'active' || product.status === 'out-of-stock')) {
+                    return { ...item, data: product };
+                }
+            }));
+            cartData.items = cartData.items.filter(item => item !== null && item !== undefined);
+        }
         let cartItemCount = 0;
         if (cartData && cartData.items) {
             cartItemCount = cartData.items.length;
@@ -588,7 +667,8 @@ const LoadIndIvidualProduct = async (req, res) => {
  
 //************* Logut **************
 const userLogout = (req,res) => {
-        req.session.user_id = "";
+        req.session.user_id = null;
+        req.session.user = false;
         res.redirect('/');
 }
 
@@ -616,6 +696,9 @@ const getAllProducts = async(req,res) => {
 
 const loadCategoryPage = async (req, res) => {
     try {
+        const page = req.query.page || 1;
+        const perPage = 6;
+        const startIndex = (page - 1) * perPage;
         const categoryName = req.query.category;
         const userData = await User.findById(req.session.user_id);
         const categoryData = await Category.find({ status: 'active' });
@@ -624,7 +707,7 @@ const loadCategoryPage = async (req, res) => {
             return res.status(404).send('Category not found');
         }
         
-        const products = await Product.find({ category: categoryName,status:{$ne:'inactive'} });
+        const products = await Product.find({ category: categoryName,status:{$ne:'inactive'} }).skip(startIndex).limit(perPage);
         const cartData = await Cart.findOne({ owner: userData }).populate('items.productId');
         let cartItemCount = 0;
         if (cartData && cartData.items) {
@@ -636,7 +719,9 @@ const loadCategoryPage = async (req, res) => {
             user: userData,
             cartItemCount: cartItemCount,
             category: categoryData,
-            categoryname: categoryName
+            categoryname: categoryName,
+            currentPage: page,
+            totalPages: Math.ceil(await Product.countDocuments({ category: categoryName, status: { $ne: 'inactive' } })/perPage)
         });
 
     } catch (error) {
@@ -651,13 +736,17 @@ const filterProducts = async (req, res) => {
         const sortBy = req.query.sortBy;
         let productData;
 
-        const baseQuery = { category: categoryName, status: { $ne: 'inactive' } };
+        let baseQuery = { status: { $ne: 'inactive' } };
+
+        if (categoryName) {
+            baseQuery.category = categoryName;
+        }
 
         if (sortBy === 'lowToHigh') {
             productData = await Product.find(baseQuery).sort({ afterDiscount: 1 });
         } else if (sortBy === 'highToLow') {
             productData = await Product.find(baseQuery).sort({ afterDiscount: -1 });
-        }else if (sortBy === 'averageRating') {
+        } else if (sortBy === 'averageRating') {
             productData = await Product.aggregate([
                 { $match: baseQuery },
                 {
@@ -675,6 +764,7 @@ const filterProducts = async (req, res) => {
                 },
                 { $sort: { averageRating: -1 } }
             ]);
+            
         } else {
             productData = await Product.find(baseQuery);
         }
@@ -685,6 +775,7 @@ const filterProducts = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
    
 const filterPopularity = async(req,res) => {
     try{
@@ -696,7 +787,7 @@ const filterPopularity = async(req,res) => {
         const baseQuery = { category: categoryName, status: { $ne: 'inactive' } };
         if (showBy === 'Trending'){
             productPopularity = await Product.find(baseQuery).sort({views:-1});
-            console.log('trending',productPopularity)
+            // console.log('trending',productPopularity)
         }else if(showBy === 'NewArrivals'){
             productPopularity = await Product.find(baseQuery).sort({ updated_at: 1 })
         }else if(showBy === 'AZ'){
@@ -716,15 +807,16 @@ const filterPopularity = async(req,res) => {
     }
 }
 
-
-
 const sendReview = async(req,res) => {
     try{
         const {productId, rating, reviewText} = req.body;
+        const userId = req.session.user_id; 
+
+        
         if (!productId || !rating || !reviewText) {
             return res.status(400).json({ message: 'Missing required fields' });
         }       
-        const userId = req.session.user_id; 
+        
         const newReview = new Review({
             productId:productId,
             userId:userId,
@@ -765,6 +857,14 @@ const loadDistinctCategory = async(req,res) => {
 const loadProductFilter = async (req, res) => {
     try {
         const sortBy = req.query.sortBy;
+        const maxPrice = req.query.maxPrice;
+        const minPrice = req.query.minPrice;
+
+        let query = {}
+
+        if(minPrice && maxPrice){
+            query.afterDiscount = {$gte: parseInt(minPrice), $lte: parseInt(maxPrice)};
+        }
 
         let sortCriteria = {};
         if (sortBy === 'lowToHigh') {
@@ -773,12 +873,14 @@ const loadProductFilter = async (req, res) => {
             sortCriteria = { afterDiscount: -1 };
         } else if (sortBy === 'averageRating') {
             const productData = await Product.aggregate([
+                { $match: query }, 
                 { $lookup: {
                     from: 'reviews',
                     localField: '_id',
                     foreignField: 'productId',
                     as: 'ratings'
                 }},
+                { $match: { ratings: { $exists: true, $ne: [] } } }, // Exclude products without the products having review
                 { $addFields: {
                     averageRating: { $avg: '$ratings.rating' }
                 }},
@@ -787,23 +889,100 @@ const loadProductFilter = async (req, res) => {
             return res.json(productData);
         }
 
-        const products = await Product.find().sort(sortCriteria);
+        const products = await Product.find(query).sort(sortCriteria);
         res.json(products);
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ error: "Internal server error" });
     }
+} 
+
+const productFilterPopularity = async(req,res) => {
+    try{
+        const showBy = req.query.showBy;
+        const maxPrice = req.query.maxPrice;
+        const minPrice = req.query.minPrice;
+
+        let query = {}
+        if(minPrice && maxPrice){
+            query.afterDiscount = {$gte: parseInt(minPrice), $lte: parseInt(maxPrice)};
+        }
+
+        let sortCriteria = {};
+        if(showBy === 'Trending'){
+            sortCriteria = {views:-1}
+        }else if(showBy === 'NewArrivals'){
+            sortCriteria = {updated_at: 1}
+        }else if(showBy === 'AZ'){
+            sortCriteria = {title: 1}
+        }else if(showBy === 'ZA'){
+            sortCriteria = {title:-1}
+        }
+
+        const products = await Product.find(query).sort(sortCriteria);
+        res.json(products);
+
+    }catch(error){
+        console.error(error.message);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+//************* changePassword **************
+const LoadchangePassword = async(req,res) => {
+    try{
+        const id = req.query.id;
+        const userData = await User.findById({_id:id});
+        const cart = await Cart.findOne({owner:userData})
+        const cartItemCount = cart ? cart.items.length : 0;
+        if(userData){
+            res.render('change-password',{
+                user:userData,
+                cartItemCount:cartItemCount
+            });
+        }else{
+            redirect('/profile')
+        }
+
+    }catch(error){
+        console.log(error.message);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+const changePassword = async(req,res) => {
+    try{
+        console.log('aaa');
+        const userId = req.body.userId;
+        const userData = await User.findById({_id:userId})
+        const categoryData = await Category.find({status:'active'})
+        const cart = await Cart.findOne({owner:userData})
+        const cartItemCount = cart ? cart.items.length : 0;
+        const {currentPassword,newPassword,confirmPassword} = req.body;
+
+        const passwordMatch = await bcrypt.compare(currentPassword,userData.password);
+        
+        if(!passwordMatch){
+            return res.render('change-password',{errorMessage:"Current password does not exists.",user:userData,cartItemCount:cartItemCount})
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword,10);
+        await User.findByIdAndUpdate(userId, { $set: { password: hashedPassword }});
+        return res.render('user-profile',{successMessage:'Your password is changed successfully',user:userData,cartItemCount:cartItemCount,category:categoryData})
+
+    }catch(error){
+        console.log(error.message);
+        res.status(500).json({ error: "Internal server error" });
+    }
 }
 
 
-
-
-
-
+ 
 module.exports = {
     loadLandindPage,
     loadRegister,
     insertUser,
+    resendOTP,
     loadOtp,
     verifyOTP,
     loadLoginPage,
@@ -830,6 +1009,10 @@ module.exports = {
     sendReview,
     filterPopularity,
     searchProduct,
+    productFilterPopularity,
+    loadProductFilter,
     loadDistinctCategory,
-    loadProductFilter
+    LoadchangePassword,
+    changePassword
+    
 };

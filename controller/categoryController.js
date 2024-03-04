@@ -3,8 +3,18 @@ const { body, validationResult } = require('express-validator');
 // *******LoadCategoryPage************
 const loadCategorypage = async(req,res) => {
     try{
-        const categoryData = await Category.find({deleted_at:null})
-        res.render('admin-category-page',{category:categoryData})
+        const currentPage = parseInt(req.query.page) || 1;4
+        const perPage = 6;
+        const startIndex = (currentPage - 1) * perPage;
+        const categoryData = await Category.find({deleted_at:null}).skip(startIndex).limit(perPage);
+
+        const categoryCount = await Category.countDocuments({deleted_at:null});
+        const totalPages = Math.ceil(categoryCount / perPage);
+        res.render('admin-category-page',{
+            category:categoryData,
+            totalPages:totalPages,
+            currentPage:currentPage
+        })
     }catch(error){
         console.log(error.message)
     }

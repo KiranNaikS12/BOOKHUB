@@ -11,14 +11,6 @@ const user_route = express();
 
 
 // Session
-user_route.use(
-    session({
-        secret: config.config.secretKey,
-        resave: false,
-        saveUninitialized: false
-    })
-);
-
 
 //flash-message
 user_route.use(flash());
@@ -44,18 +36,19 @@ user_route.post('/register', userController.insertUser);
 
 user_route.get('/verify-otp', auth.isLogout,userController.loadOtp);
 user_route.post('/verify-otp', userController.verifyOTP);
+user_route.post('/resend-otp',userController.resendOTP);
 
 user_route.get('/login', auth.isLogout, userController.loadLoginPage);
 user_route.post('/login', userController.verifyLogin);
 
 user_route.get('/home', auth.isLogin, userController.loadHomePage);
 user_route.get('/profile',auth.isLogin,userController.loadProfilePage);
-user_route.get('/edit-user',auth.isLogin,userController.loadEditUser);
-user_route.post('/edit-user',userController.userUpdateLoad);
+user_route.get('/user/edit',auth.isLogin,userController.loadEditUser);
+user_route.post('/user/edit',userController.userUpdateLoad);
 user_route.post('/profile',auth.isLogin,userController.insertAddress);
-user_route.get('/edit-address',auth.isLogin,userController.loadupdateUserAddress);
-user_route.post('/edit-address',auth.isLogin,userController.updateUserAddress);
-user_route.get('/delete-address',auth.isLogin,userController.deleteUserAddress)
+user_route.get('/edit/address',auth.isLogin,userController.loadupdateUserAddress);
+user_route.post('/edit/address',auth.isLogin,userController.updateUserAddress);
+user_route.get('/remove/address',auth.isLogin,userController.deleteUserAddress)
 
 user_route.get('/forget', auth.isLogout,userController.forgetLoad);
 user_route.post('/forget', userController.forgetVerify)
@@ -63,23 +56,22 @@ user_route.get('/forget-password',auth.isLogout,userController.forgetPasswordLoa
 user_route.post('/forget-password',userController.resetPassword);
 
 user_route.get('/product-list',auth.isLogin,userController.loadProduct)
-user_route.get('/product-view',auth.isLogin,userController.LoadIndIvidualProduct)
-user_route.get('/api/popular-products',auth.isLogin,userController.getPopularProducts);
-user_route.get('/api/all-products',auth.isLogin,userController.getAllProducts);
+user_route.get('/product/view',auth.isLogin,userController.LoadIndIvidualProduct)
+
 
 //cart
 user_route.get('/cart',auth.isLogin,cart.loadCartPage)
-user_route.post('/add-to-cart',auth.isLogin,cart.addToCart);
+user_route.post('/add/cart',auth.isLogin,cart.addToCart);
 user_route.post('/updateQuantity',auth.isLogin,cart.updateQuantity);
 user_route.post('/remove-product',auth.isLogin,cart.removeProduct);
 user_route.post('/clear-cart',auth.isLogin,cart.clearEntireCart);
 
 //checkout
 user_route.get('/checkout',auth.isLogin,order.loadCheckoutPage);
-user_route.post('/add-to-checkout',order.addToCheckout)
-user_route.post('/updateInQuantity',order.updateInQuantity);
-user_route.post('/order-page',auth.isLogin,order.addOrderDetails);
-user_route.post('/remove-order',order.removeProductOrder)
+user_route.post('/product/checkout',order.addToCheckout)
+user_route.put('/product/quantity',order.updateInQuantity);
+user_route.put('/add/order',auth.isLogin,order.addOrderDetails);
+user_route.patch('/remove/orders',order.removeProductOrder)
 
 user_route.get('/orders',auth.isLogin,order.loadOrderSummary);
 user_route.get('/orders/history',auth.isLogin,order.loadOrderHistory);
@@ -91,13 +83,16 @@ user_route.put('/orders/return',order.sendReturnRequest);
 user_route.get('/category',auth.isLogin,userController.loadCategoryPage);
 user_route.get('/category/filter',auth.isLogin,userController.filterProducts);
 user_route.get('/category/popularity',auth.isLogin,userController.filterPopularity);
+user_route.get('/products/category',auth.isLogin,userController.loadDistinctCategory)
 
 //search and sorting
 user_route.get('/search',auth.isLogin,userController.searchProduct)
-user_route.get('/products-by-category',auth.isLogin,userController.loadDistinctCategory);
-user_route.get('/products/filter',auth.isLogin,userController.loadProductFilter)
+user_route.get('/products/filter',auth.isLogin,userController.loadProductFilter);
+user_route.get('/products/filter/popularity',auth.isLogin,userController.productFilterPopularity)
 
-user_route.post('/submit-review',userController.sendReview)
+user_route.post('/reviews',userController.sendReview);
+user_route.get('/password',auth.isLogin,userController.LoadchangePassword);
+user_route.post('/password',auth.isLogin,userController.changePassword);
 
 user_route.get('/logout', auth.isLogin, userController.userLogout)
 

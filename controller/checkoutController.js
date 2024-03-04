@@ -28,7 +28,7 @@ const loadCheckoutPage = async(req,res) => {
       for(const item of cart.items){
         let data = await Product.findById(item.productId);
         item.data = data;
-        if (!data || item.quantity > data.countInStock) {
+        if (!data || item.quantity > data.countInStock || data.status === 'out-of-stock') {
           return res.status(400).json({ success: false, message: `Product ${item.title} is out of stock` });
         }
       };
@@ -37,7 +37,21 @@ const loadCheckoutPage = async(req,res) => {
         _id: new mongoose.Types.ObjectId(userId)
       });
 
-      const cartItemCount = cart ? cart.items.length : 0;
+      //to set the cart length;
+      const cartData = await Cart.findOne({owner:userData}).populate('items.productId');
+        if(cartData) {
+            cartData.items = await Promise.all(cartData.items.map(async (item) => {
+                const product = await Product.findById(item.productId);
+                if (product && (product.status === 'active' || product.status === 'out-of-stock')) {
+                    return { ...item, data: product };
+                }
+            }));
+            cartData.items = cartData.items.filter(item => item !== null && item !== undefined);
+      }
+      let cartItemCount = 0;
+        if(cartData && cartData.items){
+            cartItemCount = cartData.items.length;
+        }
       return res.render('user-checkout-page',{
         user:userData,
         category:categoryData, 
@@ -305,8 +319,15 @@ const loadOrderHistory = async(req,res) => {
       const categoryData = await Category.find({status:'active'});
       const userId = req.session.user_id;
       const cart = await Cart.findOne({owner:userId});
-      const order = await Order.find({user:userId, orderStatus:{$ne:'Deleted'}},).sort({ createdAt: -1 });
-      // console.log('order',order)
+      let currentPage = parseInt(req.query.page) || 1;
+      const perPage = 4;
+      const skip = (currentPage -1) * perPage;
+
+      const toatlOrders = await Order.countDocuments({user:userId,  orderStatus: { $ne: 'Deleted' }});
+      const totalPages = Math.ceil(toatlOrders / perPage);
+
+      const order = await Order.find({user:userId, orderStatus:{$ne:'Deleted'}},).sort({ createdAt: -1 }).skip(skip).limit(perPage);
+  
 
       const userData = await User.findOne({
         _id: new mongoose.Types.ObjectId(userId)
@@ -319,6 +340,8 @@ const loadOrderHistory = async(req,res) => {
         order:order,
         cart:cart,
         cartItemCount:cartItemCount,
+        currentPage:currentPage,
+        totalPages:totalPages
     })
 
    }catch(error){
@@ -341,6 +364,23 @@ const cancelOrder = async(req,res) => {
     deleteOrder.orderStatus = 'Cancelled';
     deleteOrder.cancellationReason = reason;
     await deleteOrder.save();
+
+    //updating the product stock and it's status if
+    const orderItems = deleteOrder.items;
+    for (const item of orderItems){
+      const product = await Product.findById(item.productId);
+      if(!product){
+        console.log(`Product not found for item: ${item}`);
+        continue;
+      }
+      product.countInStock += item.quantity;
+
+      if(product.status === 'out-of-stock'){
+        product.status = 'active'
+      }
+      await product.save();
+    }
+
     return res.status(200).json({ success: true, message: 'Order cancelled successfully' });
 
     

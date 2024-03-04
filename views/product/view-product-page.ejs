@@ -54,7 +54,7 @@
                     </a>
                     <div class="submenu">
                         <a href="/admin/product/add">Add product</a>
-                        <a href="/admin/product/list">View Product</a>
+                        <a href="/admin/product/lists">View Product</a>
                     </div>
                 </li>
                 <li class="menu-item has-submenu">
@@ -193,23 +193,6 @@
             </div>
             <div class="card mb-4">
                 <header class="card-header">
-                    <div class="row gx-3">
-                        <div class="col-lg-4 col-md-6 me-auto">
-                            <input type="text" placeholder="Search..." class="form-control">
-                        </div>
-                        <div class="col-lg-2 col-6 col-md-3">
-                            <select class="form-select">
-                                
-                            </select>
-                        </div>
-                        <div class="col-lg-2 col-6 col-md-3">
-                            <select class="form-select">
-                                <option>Latest added</option>
-                                <option>Cheap first</option>
-                                <option>Most viewed</option>
-                            </select>
-                        </div>
-                    </div>
                 </header> <!-- card-header end// -->
                 <div class="card-body">
                     <article class="itemlist">
@@ -221,7 +204,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-4 col-sm-4 col-8 flex-grow-1 col-name">
-                                    <a class="itemside" href="/admin/product/update?id=<%= productItem._id %>">
+                                    <a class="itemside" href="/admin/product/edit?id=<%= productItem._id %>">
                                         <div class="left">
                                             <img src="/assets-admin/productImages/<%= productItem.images[productItem.images.length-1]%>" class="img-sm img-thumbnail" alt="Item" max-width="100px">
                                         </div>
@@ -256,12 +239,11 @@
             <div class="pagination-area mt-30 mb-50">
                 <nav aria-label="Page navigation example">
                     <ul class="pagination justify-content-start">
-                        <li class="page-item active"><a class="page-link" href="#">01</a></li>
-                        <li class="page-item"><a class="page-link" href="#">02</a></li>
-                        <li class="page-item"><a class="page-link" href="#">03</a></li>
-                        <li class="page-item"><a class="page-link dot" href="#">...</a></li>
-                        <li class="page-item"><a class="page-link" href="#">16</a></li>
-                        <li class="page-item"><a class="page-link" href="#"><i class="material-icons md-chevron_right"></i></a></li>
+                        <% for(let i = 1; i<=totalPages;i++) { %>
+                            <li class="page-item <%= i === currentPage ? 'active' : ' ' %>">
+                                <a class="page-link" href="/admin/product/lists?page=<%= i %>"><%= i %></a>
+                            </li>
+                        <% } %>
                     </ul>
                 </nav>
             </div>

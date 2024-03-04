@@ -47,6 +47,7 @@ const verifyLogin = async (req,res) =>{
                 res.render('admin-login',{message:"Email and password is incorrect"})
             }else{
                 req.session.admin_id = userData._id;
+                req.session.admin = true;
                 res.redirect('/admin/home');
             }
          }else{
@@ -88,7 +89,8 @@ const loadProfile = async(req,res) => {
 
 const logout = async(req,res) => {
     req.session.admin_id = "";
-        res.redirect('/admin');
+    req.session.admin = false;
+    res.redirect('/admin');
 }
 
 //************* Forget Password ***********
@@ -295,15 +297,40 @@ const editUserLoad = async(req,res) => {
 }
 
 // ***************updateUserDetails***************
-const updateUserLoad = async(req,res) => {
-    try{
-
-        const userData = await User.findByIdAndUpdate({_id:req.body.id},{$set:{firstname:req.body.firstname,lastname:req.body.lastname,username:req.body.username,email:req.body.email,phone:req.body.phone,is_verified:req.body.verify}})
+const updateUserLoad = async (req, res) => {
+    try {
+        const userId = req.body.id;
+        const isAdmin = req.session.is_admin;
+    
+        if (!isAdmin) {
+            await User.findOneAndUpdate(
+                { _id: userId, is_admin: 0 }, 
+                {
+                    $set: {
+                        firstname: req.body.firstname,
+                        lastname: req.body.lastname,
+                        username: req.body.username,
+                        email: req.body.email,
+                        phone: req.body.phone,
+                        is_verified: req.body.verify
+                    }
+                }
+            );
+            if (req.body.verify === '0') {
+                if(!isAdmin){
+                    req.session.user_id = "";
+                    console.log(`Session destroyed for user with ID ${userId}`);
+                }   
+            }
+        }
+        
         res.redirect('/admin/dashboard');
-    }catch(error){
-        console.log(error.message)
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).send('Internal Server Error');
     }
 }
+
 
 // ***************deleteUserDetails***************
 const deleteUserLoad = async(req,res) => {
@@ -321,9 +348,15 @@ const deleteUserLoad = async(req,res) => {
 // ***************LoadOrderDetails***************
 const LoadOrderDetails = async(req,res) => {
     try{
+        const currentPage = parseInt(req.query.page) || 1;
+        const perPage = 5;
+        const startIndex = (currentPage - 1) * perPage;
 
-        const orderData = await Order.find({orderStatus:{$ne:'Deleted'}}).populate('user');
-        res.render('admin-list-order',{order:orderData})
+        const orderData = await Order.find({orderStatus:{$ne:'Deleted'}}).populate('user').skip(startIndex).limit(perPage).sort({orderDate:-1});
+        const orderCount = await Order.countDocuments({orderStatus:{$ne:'Deleted'}}).populate('user');
+
+        const totalPages = Math.ceil(orderCount/perPage)
+        res.render('admin-list-order',{order:orderData,totalPages:totalPages,currentPage:currentPage})
 
     }catch(error){
         console.log(error.message)
@@ -338,7 +371,7 @@ const ViewOrderDetails = async(req,res) => {
         if(orderData){
             res.render('admin-order-details',{order:orderData,returnData: returnData})
         }else{
-            res.redirect('/admin/list-orders')
+            res.redirect('/admin/order/lists')
         }
     }catch(error){
         console.log(error.message);
@@ -354,7 +387,7 @@ const updateOrder = async (req, res) => {
         console.log(orderId,newStatus);
         const updatedOrder = await Order.findByIdAndUpdate(orderId, { orderStatus: newStatus }, { new: true });
         if (updatedOrder) {
-            res.redirect('/admin/order-details?id=' + orderId);
+            res.redirect('/admin/order/detail?id=' + orderId);
         } else {
             res.status(404).json({ message: 'Order not found' });
         }
@@ -364,6 +397,27 @@ const updateOrder = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+const updateReturnOrder = async(req,res) => {
+    try{
+        const returnId = req.body.returnId;
+        const newStatus = req.body.status;
+        console.log(returnId,newStatus);
+
+        const returnDocument = await Return.findById(returnId);
+
+        const orderId = returnDocument.orderId;
+
+        const updateReturnStatus = await Return.findByIdAndUpdate(returnId, {returnStatus: newStatus}, {new: true});
+        if(updateReturnStatus){
+            res.redirect('/admin/order/detail?id=' + orderId);
+        }
+
+    }catch(error){
+        console.log(error.message);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
 
 const deleteOrderData = async(req,res) => {
     try{
@@ -402,5 +456,6 @@ const deleteOrderData = async(req,res) => {
     LoadOrderDetails,
     ViewOrderDetails,
     updateOrder,
-    deleteOrderData
+    deleteOrderData,
+    updateReturnOrder
 }

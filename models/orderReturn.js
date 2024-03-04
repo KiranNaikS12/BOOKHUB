@@ -18,7 +18,7 @@ const returnScehma = mongoose.Schema({
      },
      returnStatus:{
          type:String,
-         enum:['Initiated', 'Processing', 'Completed'],
+         enum:['Initiated', 'Processing', 'Accepted','Declined'],
          default:'Initiated'
      },
 },{

@@ -19,6 +19,8 @@ const loadCartPage = async(req,res) => {
                 }
             }));
             cart.items = cart.items.filter(item => item !== null && item !== undefined);
+            cart.billTotal = cart.items.reduce((total,item) => total + item.price, 0)
+            await cart.save();
         }
        
         for(const item of cart.items){

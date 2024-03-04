@@ -58,8 +58,8 @@
                                                         <img src="/assets-admin/productImages/<%= item.image[item.image.length -1] %>" alt="#">
                                                         <% if (item.data.countInStock <= 10) { %>
                                                             <p class="font-xs text-danger" id="countInStock-<%= item.data._id %>">Only <%= item.data.countInStock %> left</p>
-                                                         <% } else { %>
-                                                          
+                                                        <% } else if (item.data.countInStock >= 10) { %>
+                                                            <p class="font-xs text-info" id="countInStock-<%= item.data._id %>">stocks available</p>
                                                         <% } %>
                                                     </td>
                                                     <td>
@@ -528,20 +528,66 @@
 
     let shippingAddressValue = null;
     if (shippingAddress) {
+        // Validate shipping address fields
+        const street = document.querySelector('input[name="street"]').value;
+        const city = document.querySelector('input[name="city"]').value;
+        const state = document.querySelector('input[name="state"]').value;
+        const country = document.querySelector('select[name="country"]').value;
+        const postalCode = document.querySelector('input[name="postalCode"]').value;
+        const addressType = document.querySelector('input[name="addressType"]:checked');
+
+        
+        if (!street || !city || !state || !country || !postalCode || !addressType) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Please fill in all required shipping address fields',
+                icon: 'error'
+            });
+            return; 
+        }
+
+    
+        const postalCodeRegex = /^[1-9][0-9]{5}$/; 
+        if (!postalCodeRegex.test(postalCode)) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Please enter a valid postal code',
+                icon: 'error'
+            });
+            return; 
+        }
+
         shippingAddressValue = {
-            street: document.querySelector('input[name="street"]').value,
-            city: document.querySelector('input[name="city"]').value,
-            state: document.querySelector('input[name="state"]').value,
-            country: document.querySelector('select[name="country"]').value,
-            postalCode: document.querySelector('input[name="postalCode"]').value,
-            addressType: document.querySelector('input[name="addressType"]:checked').value 
+            street,
+            city,
+            state,
+            country,
+            postalCode,
+            addressType: addressType.value
         };
     }
 
     const additionalMobile = document.querySelector('input[name="additionalMobile"]').value;
-    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
-    const orderNotes = document.querySelector('textarea[name="orderNotes"]').value;
+    // const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+    const paymentMethodRadio = document.querySelectorAll('input[name="paymentMethod"]');
+    
+    let paymentMethod = null;
+    paymentMethodRadio.forEach(method => {
+        if (method.checked) {
+            paymentMethod = method.value;
+        }
+    });
 
+    if (!paymentMethod) {
+        Swal.fire({
+            title: 'Reminder',
+            text: 'Payment method pending',
+            icon: 'warning'
+        });
+        return; 
+    }
+    const orderNotes = document.querySelector('textarea[name="orderNotes"]').value;
+    
     const bodyData = {
         cartId,
         additionalMobile,
@@ -550,8 +596,8 @@
         shippingAddress: shippingAddressValue
     };
 
-    fetch('/order-page', {
-        method: 'POST',
+    fetch('/add/order', {
+        method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
         },
@@ -625,8 +671,8 @@ function removeProductFromOrder(productId, userId) {
             confirmButtonText: 'Yes, remove it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                fetch('/remove-order', {
-                        method: "POST",
+                fetch('/remove/orders', {
+                        method: "PATCH",
                         headers: {
                             'Content-Type': 'application/json'
                         },
@@ -669,8 +715,8 @@ function removeProductFromOrder(productId, userId) {
 
     async function updateInQuantity(productId, userId, newQuantity) {
             try {
-                let res = await fetch('/updateInQuantity', {
-                    method: 'POST',
+                let res = await fetch('product/quantity', {
+                    method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
                     },
@@ -694,8 +740,8 @@ function removeProductFromOrder(productId, userId) {
                          document.getElementById('totalAmount').innerHTML = `Rs.${data.billTotal.toFixed(2)}/-`;
                     }
                     console.log(billTotal);
-
-                    // To update the remaining quantity                   
+                    
+                                       
                     await Swal.fire({
                         title: 'Success',
                         text: 'Quantity updated successfully.',

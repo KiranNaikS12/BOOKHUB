@@ -4,6 +4,7 @@ const config = require('../config/config');
 const bodyParser = require('body-parser')
 const categroyController = require('../controller/categoryController')
 const cat_route = express();
+const auth = require('../middleware/adminauth');
 
 cat_route.use(session({
     secret:config.config.secretKey,
@@ -19,13 +20,13 @@ cat_route.set('views','./views/category');
 cat_route.use(express.static('public'));
 
 
-cat_route.get('/',categroyController.loadCategorypage);
+cat_route.get('/',auth.isAdminLogin,categroyController.loadCategorypage);
 cat_route.post('/',categroyController.insertCategory);
-cat_route.get('/update',categroyController.loadEditCategoryDetails);
+cat_route.get('/update',auth.isAdminLogin,categroyController.loadEditCategoryDetails);
 cat_route.post('/update',categroyController.updateCategoryLoad);
-cat_route.get('/delete',categroyController.loadDeleteCategory)
-cat_route.get('/bin',categroyController.loadCategoryBin);
-cat_route.get('/restore',categroyController.restoreCategory)
+cat_route.get('/delete',auth.isAdminLogin,categroyController.loadDeleteCategory)
+cat_route.get('/bin',auth.isAdminLogin,categroyController.loadCategoryBin);
+cat_route.get('/restore',auth.isAdminLogin,categroyController.restoreCategory)
 
 module.exports = {
     cat_route

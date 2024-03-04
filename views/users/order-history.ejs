@@ -44,10 +44,12 @@
                             <h6 class="mb-0 text-dark">MY STATUS</h6>
                         </div>
                         <ul class="list-group">
+                            <li class="list-group-item"><a href="/profile">My profile</a></li>
                             <li class="list-group-item"><a href="">My Coupons</a></li>
                             <li class="list-group-item"><a href="">Review and Ratings</a></li>
                             <li class="list-group-item"><a href="">MY Notification</a></li>
                             <li class="list-group-item"><a href="">MY Wishlist</a></li>
+                            <li class="list-group-item"><a href="/password?id=<%= user._id %>">Change password</a></li>
                         </ul>
                     </div>
                   </div>
@@ -75,24 +77,54 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <% for (let i = 0; i < order.length; i++) { %>
-                                                <tr>
-                                                    <td><%= order[i].oId %></td>
-                                                    <td><%= order[i].orderDate.toDateString() %></td>
-                                                    <td><%= order[i].orderStatus %></td>
-                                                    <td>Rs<%= order[i].billTotal.toFixed(2) %> for <%= order[i].items.length %> items</td>
-                                                    <td class="action" data-title="View">
-                                                        <a href="/track-order?id=<%= order[i]._id %>" class="text-primary">View</a>
-                                                    </td>
-                                                    <td class="action" data-title="Remove">
-                                                        <a href="#" class=" text-danger" onclick="removeOrder('<%= order[i]._id %>')">
-                                                            <i class="fi-rs-trash"></i>Cancel Order
-                                                        </a>
-                                                    </td> 
-                                                </tr>
-                                            <% } %>
+                                            <% if (order.length > 0) { %>
+                                                <% for (let i = 0; i < order.length; i++) { %>
+                                                    <tr>
+                                                        <td><%= order[i].oId %></td>
+                                                        <td><%= order[i].orderDate.toDateString() %></td>
+                                                        <% if (order[i].orderStatus === 'Delivered') { %>
+                                                            <td>🟢<%= order[i].orderStatus %></td>
+                                                            <% } else if(order[i].orderStatus === 'Cancelled' || order[i].orderStatus === 'Returned'){ %>
+                                                            <td>🔴<%= order[i].orderStatus %></td>
+                                                            <% } else if (order[i].orderStatus === 'Confirmed') { %>
+                                                            <td>🟡<%= order[i].orderStatus %></td>
+                                                            <% } else  if(order[i].orderStatus === 'Pending'){ %>
+                                                            <td>⭕<%= order[i].orderStatus %></td>
+                                                            <% } else { %>
+                                                            <td> <%= order[i].orderStatus %></td>
+                                                        <% } %>      
+                                                        <td>Rs<%= order[i].billTotal.toFixed(2) %> for <%= order[i].items.length %> items</td>
+                                                        <td class="action" data-title="View">
+                                                            <a href="/track-order?id=<%= order[i]._id %>" class="text-primary">View</a>
+                                                        </td>
+                                                        <td class="action" data-title="Remove">
+                                                            <a href="#" class=" text-danger" onclick="removeOrder('<%= order[i]._id %>')">
+                                                                <% if (order[i].orderStatus !== 'Delivered') { %>
+                                                                    <i class="fi-rs-trash"></i>Cancel Order
+                                                                    <% } else { %>
+                                                                     
+                                                                <% } %>
+                                                                
+                                                            </a>
+                                                        </td> 
+                                                    </tr>                    
                                         </tbody>
-                                    </table>                                 
+                                        <% } %>
+                                                <% } else { %>
+                                                 <p>No orders. </p>
+                                            <% } %>   
+                                    </table>
+                                    <% if (order.length > 0) { %>
+                                        <!-- Pagination -->
+                                        <div class="pagination">
+                                            <% if (currentPage > 1) { %>
+                                                <a href="/orders/history?page=<%= currentPage - 1 %>" class="prev">&laquo; Previous  </a>|
+                                            <% } %>
+                                            <% if (currentPage < totalPages) { %>
+                                                <a href="/orders/history?page=<%= currentPage + 1 %>" class="next">  Next &raquo;</a>
+                                            <% } %>
+                                        </div>
+                                    <% } %>                                  
                                 </div>
                             </div>
                         </div>                                   

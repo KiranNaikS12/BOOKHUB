@@ -44,10 +44,14 @@
                 </ul>
                 <div>
                     Total Amount: Rs.<%= order.billTotal %> /-
-                    <% if (returnStatus) { %>
+                    <% if (returnStatus === 'Initiated') { %>
                         <p>You'r request for return order is <%= returnStatus %> please wait for further updates...</p>
-                    <% } else { %>
-                        <p>No return status available</p>
+                    <% } else if(returnStatus === 'Processing'){ %>
+                        <p>You're request for returning order is processing.Please wait</p>
+                        <% } else if (returnStatus === 'Accepted') { %>
+                         <p>You're request for returning order is successfull. Thank you for shopping with us</p>
+                         <% } else if (returnStatus === 'Declined') { %>
+                          <p class="text-danger">Sorry! Due to some reason you're request has been declined</p>
                     <% } %>                    
                 </div>                
                 <hr>
@@ -121,6 +125,11 @@ function returnOrder() {
         if (result.isConfirmed) {
             const returnReason = document.getElementById('returnReason').value;
             const orderId = document.querySelector('input[name="orderId"]').value;
+            if (!returnReason.trim()) {
+                swal.fire('warning', 'Please enter a return reason', 'error');
+                return;
+                
+            }
 
             fetch('/orders/return', {
                 method: 'PUT',

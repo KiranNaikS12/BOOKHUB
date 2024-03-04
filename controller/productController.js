@@ -33,8 +33,8 @@ const insertProduct = async(req,res) => {
         if(!errors.isEmpty()){
              res.render('product-page', {errorMessage:errors.array()[0].msg, category: req.body.category })
         }else{           
-            const {title,author,ISBN,description,price,countInStock,discountPrice} = req.body;
-            const category = mongoose.Types.ObjectId(req.body.category);
+            const {title,author,ISBN,description,price,countInStock,discountPrice,category} = req.body;
+            // const category = mongoose.Types.ObjectId(req.body.category);
             const existingProduct = await Product.findOne({$or:[{title},{ISBN}]});
             if(existingProduct){
                 const errorMessage = existingProduct.title === title ? 'Product title is already exists' : 'ISBN code is already exists';
@@ -42,7 +42,7 @@ const insertProduct = async(req,res) => {
             }else{
                 const images = req.files.map(file => file.filename);
                 const isPublished = req.body.action === 'publish' ? 1 : 0 // Check the action value to determine if it's a publish or draft
-                const product = await Product({
+                const product = await new Product({
                     title,
                     author,
                     ISBN,
@@ -77,9 +77,15 @@ const insertProduct = async(req,res) => {
 // *******LoadProductList************
 const LoadProductList = async(req,res) => {
     try{
-        const product = await Product.find({deleted_at:null,is_published:1})
+        const currentPage = parseInt(req.query.page) || 1;
+        const perPage = 5
+        const startIndex = (currentPage - 1) * perPage;
+        const product = await Product.find({deleted_at:null,is_published:1}).skip(startIndex).limit(perPage);
+
+        const productCount = await Product.countDocuments({deleted_at:null,is_published:1});
+        const totalPages = Math.ceil(productCount / perPage);
         if(product){
-            res.render('view-product-page',{product})
+            res.render('view-product-page',{product,totalPages:totalPages,currentPage:currentPage})
         }
     }catch(error){
         console.log(error.message)
@@ -95,7 +101,7 @@ const loadEditProductDetails = async(req,res) => {
         if(productData){
             res.render('product-edit', {product:productData,category:category})
         }else{
-            res.redirect('/admin/product/list')
+            res.redirect('/admin/product/lists')
         }
     }catch(error){
         console.log(error.message)
@@ -106,7 +112,7 @@ const loadEditProductDetails = async(req,res) => {
 const loadUpdateProductDetails = async (req, res) => {
     try {
         const id = req.body.product_id;
-        const existingProduct = await Product.findById({_id:id});
+        const existingProduct = await Product.findById(id);
         const categoryData = await Category.find({status:'active'});
         let existingImages = [];
         let removedImages = req.body.remove_image || [];
@@ -143,7 +149,7 @@ const loadUpdateProductDetails = async (req, res) => {
             }
         });
         if (productData) {
-            res.redirect('/admin/product/list');
+            res.redirect('/admin/product/lists');
         }
     } catch (error) {
         console.log(error.message);
@@ -166,7 +172,7 @@ async function loadDeleteProduct(req, res) {
             },
             { new: true }
         );
-        res.redirect('/admin/product/list');
+        res.redirect('/admin/product/lists');
     } catch (error) {
         console.log(error.message);
     }
@@ -199,7 +205,7 @@ const restoreDeleteProduct = async (req, res) => {
         );
 
         if (productData) {
-            res.redirect('/admin/product/list');
+            res.redirect('/admin/product/lists');
         } else {
             res.redirect('view-product-page')
         }
@@ -235,7 +241,7 @@ const loadPublishData = async(req,res) => {
             {new:true}
         )
         if (productData) {
-            res.redirect('/admin/product/list');
+            res.redirect('/admin/product/lists');
         }      
     }catch(error){
       console.log(error.message)

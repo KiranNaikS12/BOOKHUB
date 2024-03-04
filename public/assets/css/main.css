@@ -4844,7 +4844,7 @@ table .product-thumbnail img {
 
 .related-products .product-img-action-wrap {
   padding: 0;
-  margin-bottom: 15px;
+  /* margin-bottom: 15px; */
 }
 
 /*BLOG*/
@@ -8863,7 +8863,7 @@ span.fi-rs-apps {
 }
 
 .mb-50 {
-  margin-bottom: 50px !important;
+  padding-bottom: 50px !important;
   background-color: rgb(227 245 239);
 }
 

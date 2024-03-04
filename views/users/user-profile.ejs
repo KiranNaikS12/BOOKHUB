@@ -1,4 +1,5 @@
 <%- include('../userLayout/header') %>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5+nq+3p/aX6WM6a/JiSnvbq4J7f70L3N6f0+J9q2" crossorigin="anonymous">
 <style>
     body {
         margin-top: 20px;
@@ -105,6 +106,7 @@
     .close:hover {
         background-color: darkred; 
     }
+
 </style> 
     <main>
         <div class="page-header breadcrumb-wrap bg-white">
@@ -151,10 +153,12 @@
                                 <h6 class="mb-0 text-dark">   MY STATUS</h6>
                             </div>
                             <ul class="list-group">
+                                <li class="list-group-item"><a href="/profile">My profile</a></li>
                                 <li class="list-group-item"><a href="">My Coupons</a></li>
                                 <li class="list-group-item"><a href="">Review and Ratings</a></li>
                                 <li class="list-group-item"><a href="">MY Notification</a></li>
                                 <li class="list-group-item"><a href="">MY Wishlist</a></li>
+                                <li class="list-group-item"><a href="/password?id=<%= user._id %>">Change password</a></li>
                             </ul>
                         </div>
                       </div>
@@ -165,11 +169,20 @@
                             <button type="button" class="close" aria-label="Close" id="closeAddressFormButton">
                                 <span aria-hidden="true">&times;</span>
                             </button> 
-                            <% if(typeof successMessage !== 'undefined') { %>
-                                <p style="color:green; font-size: 20px;  font-family: 'Times New Roman', Times, serif;"><%= successMessage %></p>
+                            <% if (typeof successMessage !== 'undefined') { %>
+                                <div id="successMessage" style="color:green; font-size: 20px;  font-family: 'Times New Roman', Times, serif;">
+                                    <%= successMessage %>
+                                </div>
+                                <script>
+                                    setTimeout(function() {
+                                        document.getElementById('successMessage').style.display = 'none';
+                                    }, 1500); 
+                                </script>
                             <% } else if (typeof errorMessage !== 'undefined') { %>
-                                <p style="color: red; font-size: 20px;  font-family: 'Times New Roman', Times, serif;" ><%= errorMessage %></p>
-                            <% } %>                           
+                                <div style="color: red; font-size: 20px;  font-family: 'Times New Roman', Times, serif;">
+                                    <%= errorMessage %>
+                                </div>
+                            <% } %>                                                       
                             <form id="newAddressForm" style="display: none;" method="post"  onsubmit="return validateAddressForm()">                               
                                 <div class="form-row">
                                     <div class="form-group col-md-6">
@@ -275,8 +288,8 @@
                                             <p><%= address.street %>, <%= address.city %>, <%= address.state %>, <%= address.postalCode %>, (<%= address.type %>)</p>
                                         </div>                                      
                                     </div>
-                                    <a href="/edit-address?id=<%= user._id %>&addressId=<%= address._id %>"><p style="text-align: right; color: #004643;">Edit</p></a>
-                                    <a href="/delete-address?id=<%= user._id  %>&addressId=<%= address._id %>"><p style="text-align: right; color: #004643;">Delete</p></a>
+                                    <a href="/edit/address?id=<%= user._id %>&addressId=<%= address._id %>"><p style="text-align: right; color: #004643;">Edit</p></a>
+                                    <a href="/remove/address?id=<%= user._id  %>&addressId=<%= address._id %>"><p style="text-align: right; color: #004643;">Delete</p></a>
                                     <hr>
                                 <% }) %>
                             <% } else { %>
@@ -285,7 +298,7 @@
                            
                           <div class="row">
                             <div class="col-sm-12">
-                              <a class="btn cusotm-dark-green "id="EditUserDetails" href="/edit-user?id=<%= user._id %>">Edit</a>
+                              <a class="btn cusotm-dark-green "id="EditUserDetails" href="/user/edit?id=<%= user._id %>">Edit</a>
                             </div>
                           </div>
                         </div>
@@ -336,7 +349,10 @@
                   </div>   
                 </div>
             </div>
-    </main>   
+    </main>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function displayNewAddressForm() {
             document.getElementById("showUserDetails").style.display = "none";
@@ -429,6 +445,10 @@
         return streetErrors.length === 0 && cityErrors.length === 0 && stateErrors.length === 0 && countryErrors.length === 0 && postalCodeErrors.length === 0 && addressTypeErrors.length === 0;
   
     }
+
+
+
+
     </script>   
 </body>
 </html>

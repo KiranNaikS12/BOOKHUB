@@ -58,7 +58,7 @@
                     </a>
                     <div class="submenu">
                         <a href="/admin/product/add">Add product</a>
-                        <a href="/admin/product/list">View Product</a>
+                        <a href="/admin/products/lists">View Product</a>
                     </div>
                 </li>
                 <li class="menu-item has-submenu">
@@ -209,7 +209,7 @@
                             </span>
                         </div>
                         <div class="col-lg-6 col-md-6 ms-auto text-md-end">
-                            <form action="/admin/update-order-status" method="POST" class="d-inline-block mb-lg-0 mb-15 mw-200">
+                            <form action="/admin/order/status" method="POST" class="d-inline-block mb-lg-0 mb-15 mw-200">
                                 <select class="form-select d-inline-block mb-lg-0 mb-15 mw-200" name="status">
                                     <option value="">Change status</option>
                                     <option value="Pending">Pending</option>
@@ -337,6 +337,18 @@
                                     <% if (returnData) { %>
                                         <label class="text-danger">Reason For Returning Order</label>
                                         <textarea class="form-control" name="notes" id="notes" placeholder="Type some note"><%= returnData.reason %></textarea>
+                                        <p>Current Status:(<%= returnData.returnStatus  %>)</p>
+                                            <form action="/admin/order/return-status" method="POST" class="d-inline-block mb-lg-0 mb-15 mw-200">
+                                                <select class="form-select d-inline-block mb-lg-0 mb-15 mw-200" name="status">
+                                                    <option value="">Return Status</option>
+                                                    <option value="Initiated">Initiated</option>
+                                                    <option value="Processing">Processing</option>
+                                                    <option value="Accepted">Accepted</option>
+                                                    <option value="Declined">Declined</option>
+                                                </select>
+                                                <input type="hidden" name="returnId" value="<%= returnData._id %>">
+                                                <button type="submit" class="btn btn-primary">Save</button>
+                                            </form>
                                     <% } else if (order.cancellationReason) { %>
                                         <label class="text-danger">Reason For Cancelation:</label>
                                         <textarea class="form-control" name="notes" id="notes" placeholder="Type some note"><%= order.cancellationReason %></textarea>

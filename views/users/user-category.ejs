@@ -1,122 +1,145 @@
 ﻿<%- include('../userLayout/header') %>
-    <main class="main">
-        <div class="page-header breadcrumb-wrap">
-            <div class="container">
-                <div class="breadcrumb">
-                    <a href="index.html" rel="nofollow">Home</a>
-                    <span></span> Shop
+<main class="main">
+    <div class="page-header breadcrumb-wrap">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="index.html" rel="nofollow">Home</a>
+                <span></span> Shop
+            </div>
+        </div>
+    </div>
+    <section class="mt-50 mb-50">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-9">
+                    <div class="shop-product-fillter">
+                        <div class="totall-product">
+                            <p> We found <strong class="text-dark"><%= product.length %></strong> items related to <b><%= categoryname %></b></p>
+                        </div>
+                        <div class="sort-by-product-area">
+                            <div class="sort-by-cover mr-10">
+                                <div class="sort-by-product-wrap">
+                                    <div class="sort-by">
+                                        <span><i class="fi-rs-apps"></i>Show:</span>
+                                    </div>
+                                    <div class="sort-by-dropdown-wrap">
+                                        <span> Popularity <i class="fi-rs-angle-small-down"></i></span>
+                                    </div>
+                                </div>
+                                <div class="sort-by-dropdown" id="showDropdown">
+                                    <ul>
+                                        <li><a href="#" data-value="All">All</a></li>
+                                        <li><a href="#" data-value="Trending">Trending</a></li>
+                                        <li><a href="#" data-value="NewArrivals">New Arrivals</a></li>
+                                        <li><a href="#" data-value="AZ">aA-zZ</a></li>
+                                        <li><a href="#" data-value="ZA">zZ-aA</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="sort-by-cover">
+                                <div class="sort-by-product-wrap">
+                                    <div class="sort-by">
+                                        <span><i class="fi-rs-apps-sort"></i>Sort by:</span>
+                                    </div>
+                                    <div class="sort-by-dropdown-wrap">
+                                        <span> Featured <i class="fi-rs-angle-small-down"></i></span>
+                                    </div>
+                                </div>
+                                <div class="sort-by-dropdown" id="sortDropdown">
+                                    <ul>
+                                        <li><a href="#" data-value="All">All</a></li>
+                                        <li><a href="#" data-value="lowToHigh">Price: Low to High</a></li>
+                                        <li><a href="#" data-value="highToLow">Price: High to Low</a></li>
+                                        <li><a href="#" data-value="averageRating">Average Ratings</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row product-grid-3"  id="productsContainer">
+                        <% product.forEach(productItem => { %>
+                        <div class="col-lg-4 col-md-4 col-12 col-sm-6">
+                            <div class="product-cart-wrap mb-30">
+                                <div class="product-img-action-wrap">
+                                    <div class="product-img product-img-zoom">
+                                        <a href="/product/view?id=<%= productItem._id %>">
+                                            <img class="default-img" src="/assets-admin/productImages/<%= productItem.images[productItem.images.length - 1]%>"  alt="">
+                                            <img class="hover-img" src="<%= productItem.imageUrl %>" alt="">
+                                        </a>
+                                    </div>
+                                    <div class="product-action-1">
+                                        <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal">
+                                        <i class="fi-rs-search"></i></a>
+                                        <a aria-label="Add To Wishlist" class="action-btn hover-up" href="shop-wishlist.html"><i class="fi-rs-heart"></i></a>
+                                        <a aria-label="Compare" class="action-btn hover-up" href="shop-compare.html"><i class="fi-rs-shuffle"></i></a>
+                                    </div>
+                                </div>
+                                <div class="product-content-wrap">
+                                    <div class="product-category">
+                                        <a href="shop-grid-right.html"><%= productItem.category %></a>
+                                    </div>
+                                    <h2><a href="shop-product-right.html"><%= productItem.title  %></a></h2>
+                                    <div class="rating-result" title="90%">
+                                        <span>
+                                            <span><%= productItem.discountPrice %>% off</span>
+                                        </span>
+                                    </div>
+                                    <div class="product-price">
+                                        <span>Rs.<%= productItem.afterDiscount  %>/-</span>
+                                        <span class="old-price">Rs.<%= productItem.price %>/-</span>
+                                    </div>
+                                    <div class="product-action-1 show">
+                                        <a aria-label="Add To Cart" class="action-btn hover-up"  onclick="addToCart('<%= productItem._id %>')">
+                                            <i class="fi-rs-shopping-bag-add"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <% }) %>                
+                    </div>
+                    <!--pagination-->
+                    <div class="pagination-area mt-15 mb-sm-5 mb-lg-0">
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination justify-content-start">
+                                <ul class="pagination justify-content-start">
+                                    <% for(let i = 1; i<=totalPages;i++) { %>
+                                    <li class="page-item <%= i === currentPage ? 'active' : ' ' %>">
+                                        <a class="page-link" href="/category?category=<%= encodeURIComponent(categoryname) %>&page=<%= i %>"><%= i %></a>
+                                    </li>
+                                    <% } %>
+                                </ul>            
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+                <div class="col-lg-3 primary-sidebar sticky-sidebar">
+                    <div class="row">
+                        <div class="col-lg-12 col-mg-6"></div>
+                        <div class="col-lg-12 col-mg-6"></div>
+                    </div>
+                    <div class="widget-category mb-20" id="category-list-container">
+                        <h5 class="section-title style-1 mb-30 wow fadeIn animated">Category</h5>
+                        <ul id="category-list">
+                            <% if (category) { %>
+                                <% for (let i = 0; i < category.length; i++) { %>
+                                    <li><a href="#" class="category-link" data-category="<%= category[i].name %>"><%= category[i].name %></a></li>
+                                <% } %>
+                            <% } %>
+                        </ul>
+                    </div>
+                    <div id="products-container">
+                        <!-- Products will be dynamically listed here -->
+                        <!-- Each product element may have data attributes indicating its categories -->
+                    </div> 
+                    <!-- Fillter By Price -->
+                    
+                    <!-- Product sidebar Widget -->
                 </div>
             </div>
         </div>
-        <section class="mt-50 mb-50">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="shop-product-fillter">
-                            <div class="totall-product">
-                                <p> We found <strong class="text-dark"><%= product.length %></strong> items related to <%= categoryname %></p>
-                            </div>
-                            <div class="sort-by-product-area">
-                                <div class="sort-by-cover mr-10">
-                                    <div class="sort-by-product-wrap">
-                                        <div class="sort-by">
-                                            <span><i class="fi-rs-apps"></i>Show:</span>
-                                        </div>
-                                        <div class="sort-by-dropdown-wrap">
-                                            <span> Popularity <i class="fi-rs-angle-small-down"></i></span>
-                                        </div>
-                                    </div>
-                                    <div class="sort-by-dropdown" id="showDropdown">
-                                        <ul>
-                                            <li><a href="#" data-value="All">All</a></li>
-                                            <li><a href="#" data-value="Trending">Trending</a></li>
-                                            <li><a href="#" data-value="NewArrivals">New Arrivals</a></li>
-                                            <li><a href="#" data-value="AZ">aA-zZ</a></li>
-                                            <li><a href="#" data-value="ZA">zZ-aA</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="sort-by-cover">
-                                    <div class="sort-by-product-wrap">
-                                        <div class="sort-by">
-                                            <span><i class="fi-rs-apps-sort"></i>Sort by:</span>
-                                        </div>
-                                        <div class="sort-by-dropdown-wrap">
-                                            <span> Featured <i class="fi-rs-angle-small-down"></i></span>
-                                        </div>
-                                    </div>
-                                    <div class="sort-by-dropdown" id="sortDropdown">
-                                        <ul>
-                                            <li><a href="#" data-value="All">All</a></li>
-                                            <li><a href="#" data-value="lowToHigh">Price: Low to High</a></li>
-                                            <li><a href="#" data-value="highToLow">Price: High to Low</a></li>
-                                            <li><a href="#" data-value="averageRating">Average Ratings</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row product-grid-3" id="productsContainer">
-                            <% product.forEach(productItem => { %>
-                                <div class="col-lg-3 col-md-4">
-                                    <div class="product-cart-wrap mb-30">
-                                        <div class="product-img-action-wrap">
-                                            <div class="product-img product-img-zoom">
-                                                <a href="/product-view?id=<%= productItem._id %>">
-                                                    <img class="default-img" src="/assets-admin/productImages/<%= productItem.images[productItem.images.length - 1]%>"  alt="">
-                                                    <img class="hover-img" src="<%= productItem.imageUrl %>" alt="">
-                                                </a>
-                                            </div>
-                                            <div class="product-action-1">
-                                                <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal">
-                                                    <i class="fi-rs-search"></i>
-                                                </a>
-                                                <a aria-label="Add To Wishlist" class="action-btn hover-up" href="#">
-                                                    <i class="fi-rs-heart"></i>
-                                                </a>
-                                                <a aria-label="Compare" class="action-btn hover-up" href="#">
-                                                    <i class="fi-rs-shuffle"></i>
-                                                </a>
-                                            </div>
-                                        </div>
-                                        <div class="product-content-wrap">
-                                            <h2><a href=""><%= productItem.title %></a></h2>
-                        
-                                            <div class="product-price">
-                                                <span>Rs.<%= productItem.afterDiscount %>/-</span>
-                                                <span class="old-price">Rs.<%= productItem.price %> /-</span>
-                                            </div>
-                                            <div class="product-status">
-                                                <span class="<%= productItem.status === 'out-of-stock' ? 'out-of-stock' : 'active' %>"><%= productItem.status %></span>
-                                            </div>
-                                            <div class="product-action-1 show">
-                                                <a aria-label="Add To Cart" class="action-btn hover-up"  onclick="addToCart('<%= productItem._id %>')">
-                                                    <i class="fi-rs-shopping-bag-add"></i>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            <% }) %>     
-                        </div>
-                        <!--pagination-->
-                        <div class="pagination-area mt-15 mb-sm-5 mb-lg-0">
-                            <nav aria-label="Page navigation example">
-                                <ul class="pagination justify-content-start">
-                                    <li class="page-item active"><a class="page-link" href="#">01</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">02</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">03</a></li>
-                                    <li class="page-item"><a class="page-link dot" href="#">...</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">16</a></li>
-                                    <li class="page-item"><a class="page-link" href="#"><i class="fi-rs-angle-double-small-right"></i></a></li>
-                                </ul>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
+    </section>
+</main>
     <!-- Preloader Start -->
     <div id="preloader-active">
         <div class="preloader d-flex align-items-center justify-content-center">
@@ -156,7 +179,65 @@
     <!-- Template  JS -->
     <script src="./assets/js/main.js?v=3.4"></script>
     <script src="./assets/js/shop.js?v=3.4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+      async function addToCart(productId) {
+            try{
+                let response = await fetch('/add/cart',{
+                    method:'POST',
+                    headers:{
+                        'Content-Type':'application/json',
+                    },
+                    body: JSON.stringify({
+                        productId,
+                                             
+                    })
+                });
+                let title, text, iconClass;
+                if (response.status === 200){
+                    await Swal.fire({
+                        title: 'Item added to cart!',
+                        text: '',
+                        icon: "success",
+                        type: 'success',
+                        timer: 1500,
+                        timerProgressBar: true,
+                    });
+                    window.location.reload();
+                    
+                }else if( response.status ===205){
+                    await Swal.fire({
+                        title:'Sorry! Out of Stock',
+                        text:'Stock limit exceeded',
+                        icon: 'error',
+                        
+                    });
+                    window.location.reload();
+                }else if( response.status ===403){
+                    await Swal.fire({
+                    title: 'Limit Excceded',
+                    text: 'You cannot add more than 5 items in a cart', 
+                    icon: 'error',
+                    showConfirmButton: true
+                });  
+                }else {
+                    title = 'Error';
+                    text = 'Failed to add item to the cart.';
+                    iconClass = 'error';
+                }
+            }catch(error){
+                console.log(error.message);
+                await Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred.',
+                    icon: 'error',
+                    position: 'center',
+                    showConfirmButton: false,
+                    timer: 2000,
+
+                });
+            }
+        }
    const categoryName = '<%= categoryname %>';
    document.getElementById('sortDropdown').addEventListener('click', function (event){
     console.log('Event listener fired!');
@@ -175,11 +256,11 @@
                 productsContainer.innerHTML = '';
                 data.forEach(productItem => {
                     const productHTML = `
-                        <div class="col-lg-3 col-md-4">
+                        <div class="col-lg-4 col-md-4 col-12 col-sm-6">
                             <div class="product-cart-wrap mb-30">
                                 <div class="product-img-action-wrap">
                                     <div class="product-img product-img-zoom">
-                                        <a href="/product-view?id=${productItem._id}">
+                                        <a href="/product/view?id=${productItem._id}">
                                             <img class="default-img" src="/assets-admin/productImages/${productItem.images[productItem.images.length - 1]}"  alt="">
                                             <img class="hover-img" src="${productItem.imageUrl}" alt="">
                                         </a>
@@ -197,13 +278,18 @@
                                     </div>
                                 </div>
                                 <div class="product-content-wrap">
-                                    <h2><a href="">${productItem.title}</a></h2>
+                                    <div class="product-category">
+                                        <a href="shop-grid-right.html">${productItem.category}</a>
+                                    </div>
+                                    <h2><a href="shop-product-right.html">${productItem.title}></a></h2>
+                                    <div class="rating-result" title="90%">
+                                        <span>
+                                            <span>${productItem.discountPrice}% off</span>
+                                        </span>
+                                    </div>
                                     <div class="product-price">
                                         <span>Rs.${productItem.afterDiscount}/-</span>
-                                        <span class="old-price">Rs.${productItem.price} /-</span>
-                                    </div>
-                                    <div class="product-status">
-                                        <span class="${productItem.status === 'out-of-stock' ? 'out-of-stock' : 'active'}">${productItem.status}</span>
+                                        <span class="old-price">Rs.${productItem.afterDiscount}/-</span>
                                     </div>
                                     <div class="product-action-1 show">
                                         <a aria-label="Add To Cart" class="action-btn hover-up"  onclick="addToCart('${productItem._id}')">
@@ -238,11 +324,11 @@ document.getElementById('showDropdown').addEventListener('click', function (even
             productsContainer.innerHTML = '';
             data.forEach(productItem => {
                 const productHTML = `
-                <div class="col-lg-3 col-md-4">
+                <div class="col-lg-4 col-md-4 col-12 col-sm-6">
                             <div class="product-cart-wrap mb-30">
                                 <div class="product-img-action-wrap">
                                     <div class="product-img product-img-zoom">
-                                        <a href="/product-view?id=${productItem._id}">
+                                        <a href="/product/view?id=${productItem._id}">
                                             <img class="default-img" src="/assets-admin/productImages/${productItem.images[productItem.images.length - 1]}"  alt="">
                                             <img class="hover-img" src="${productItem.imageUrl}" alt="">
                                         </a>
@@ -260,13 +346,18 @@ document.getElementById('showDropdown').addEventListener('click', function (even
                                     </div>
                                 </div>
                                 <div class="product-content-wrap">
-                                    <h2><a href="">${productItem.title}</a></h2>
+                                    <div class="product-category">
+                                        <a href="shop-grid-right.html">${productItem.category}</a>
+                                    </div>
+                                    <h2><a href="shop-product-right.html">${productItem.title}></a></h2>
+                                    <div class="rating-result" title="90%">
+                                        <span>
+                                            <span>${productItem.discountPrice}% off</span>
+                                        </span>
+                                    </div>
                                     <div class="product-price">
                                         <span>Rs.${productItem.afterDiscount}/-</span>
-                                        <span class="old-price">Rs.${productItem.price} /-</span>
-                                    </div>
-                                    <div class="product-status">
-                                        <span class="${productItem.status === 'out-of-stock' ? 'out-of-stock' : 'active'}">${productItem.status}</span>
+                                        <span class="old-price">Rs.${productItem.afterDiscount}/-</span>
                                     </div>
                                     <div class="product-action-1 show">
                                         <a aria-label="Add To Cart" class="action-btn hover-up"  onclick="addToCart('${productItem._id}')">
@@ -285,6 +376,85 @@ document.getElementById('showDropdown').addEventListener('click', function (even
         });
     }
 })
+
+document.addEventListener("DOMContentLoaded", function() {
+    const categoryLinks = document.querySelectorAll('.category-link');
+    categoryLinks.forEach(categoryLink => {
+        categoryLink.addEventListener('click', function(event) {
+            event.preventDefault(); 
+            const categoryName = this.dataset.category; 
+            
+            fetch(`/products/category?category=${categoryName}`)
+                .then(response => response.json())
+                .then(data => {
+                    updateProductList(data); 
+                })
+                .catch(error => console.log("Error fetching products by category", error));
+        });
+    });
+
+    
+    function updateProductList(products) {
+        const productListContainer = document.querySelector('.product-grid-3');
+        productListContainer.innerHTML = "";    
+        products.forEach(product => {
+            const productElement = document.createElement("div");
+            productElement.classList.add("col-lg-4", "col-md-4", "col-12", "col-sm-6");
+            productElement.innerHTML = `
+                <div class="product-cart-wrap mb-30 ${product.productStatus === 'Limit-Exceeded' ? 'Limit-Exceeded-product' : ''} ${product.status === 'out-of-stock' ? 'out-of-stock-product' : ''}">
+                    <div class="product-img-action-wrap">
+                        ${product.productStatus === 'Limit-Exceeded' ? 
+                        `<div class="product-label limit-exceeded-label">
+                            <span class="badge bg-warning text-dark">Limit Exceeded</span>
+                        </div>` : 
+                        product.status === 'out-of-stock' ? 
+                        `<div class="product-label">
+                            <span class="badge bg-danger">Out of stock</span>
+                        </div>` : ''}
+                        <div class="product-img product-img-zoom">
+                            <a href="/product/view?id=${product._id}">
+                                <img class="default-img" src="/assets-admin/productImages/${product.images[product.images.length - 1]}" alt="">
+                                <img class="hover-img" src="${product.imageUrl}" alt="">
+                            </a>
+                        </div>
+                        <div class="product-action-1">
+                            <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal">
+                                <i class="fi-rs-search"></i>
+                            </a>
+                            <a aria-label="Add To Wishlist" class="action-btn hover-up" href="#">
+                                <i class="fi-rs-heart"></i>
+                            </a>
+                            <a aria-label="Compare" class="action-btn hover-up" href="#">
+                                <i class="fi-rs-shuffle"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="product-content-wrap">
+                        <div class="product-category">
+                            <a href="shop-grid-right.html">${product.category}</a>
+                        </div>
+                        <h2><a href="shop-product-right.html">${product.title}></a></h2>
+                            <div class="rating-result" title="90%">
+                            <span>
+                            <span>${product.discountPrice}% off</span>
+                            </span>
+                        </div>
+                            <div class="product-price">
+                            <span>Rs.${product.afterDiscount}/-</span>
+                            <span class="old-price">Rs.${product.afterDiscount}/-</span>
+                        </div>
+                        <div class="product-action-1 show">
+                            <a aria-label="Add To Cart" class="action-btn hover-up"  onclick="addToCart('${product._id}')">
+                               <i class="fi-rs-shopping-bag-add"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            productListContainer.appendChild(productElement);
+        });
+    }
+});
 
 
 </script>

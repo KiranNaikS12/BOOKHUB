@@ -56,7 +56,7 @@
                           </a>
                           <div class="submenu">
                               <a href="/admin/product/add">Add product</a>
-                              <a href="/admin/product/list">View Product</a>
+                              <a href="/admin/product/lists">View Product</a>
                           </div>
                       </li>
                       <li class="menu-item has-submenu">
@@ -284,9 +284,9 @@
                             <input class="form-control" placeholder="Phone no." type="text" name="mobile" value="<%= user.mobile %>">
                         </div> 
                         <div class="mb-3">
-                            <label class="form-label">verify</label>
+                            <label class="form-label">Unblock</label>
                             <input type="radio" name="verify" value="1" <% if(user.is_verified ===1){%> checked <%} %>>
-                            <label class="form-label">Not verify</label>
+                            <label class="form-label">Block</label>
                             <input type="radio" name="verify" value="0" <% if(user.is_verified ===0){%> checked <%} %>>
                         </div> 
                         <input type="hidden" name="id" value="<%= user._id %>">

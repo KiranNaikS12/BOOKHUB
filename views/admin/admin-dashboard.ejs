@@ -53,7 +53,7 @@
                   </a>
                   <div class="submenu">
                       <a href="/admin/product/add">Add product</a>
-                      <a href="/admin/product/list">View Product</a>
+                      <a href="/admin/product/lists">View Product</a>
                   </div>
               </li>
               <li class="menu-item has-submenu">
@@ -284,8 +284,8 @@
                         <p>Not Verified</p>
                         <% } %>
                     </td>
-                    <td> <a href="/admin/edit-user?id=<%= users[i]._id %>">Edit</a> </td>
-                    <td> <a href="/admin/delet-user?id=<%= users[i]._id %>" style="color:red">Delete</a> </td>
+                    <td> <a href="/admin/edit/user?id=<%= users[i]._id %>">Edit</a> </td>
+                    <td> <a href="/admin/remove/user?id=<%= users[i]._id %>" style="color:red">Delete</a> </td>
                 </tr>
                 <% } }else{ %>
                 <tr>

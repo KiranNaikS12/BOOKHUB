@@ -35,7 +35,7 @@
                     <div class="col-lg-9">
                         <div class="shop-product-fillter">
                             <div class="totall-product">
-                                <p> We found <strong class="text-dark"><%= product.length %></strong> items for you!</p>
+                                <p> We found <strong id="productCount" class="text-dark"><%= product.length %></strong> items for you!</p>
                             </div>
                             <div class="sort-by-product-area">
                                 <div class="sort-by-cover mr-10">
@@ -93,7 +93,7 @@
                                                     </div>
                                             <% } %>
                                             <div class="product-img product-img-zoom">
-                                                <a href="/product-view?id=<%= productItem._id %>">
+                                                <a href="/product/view?id=<%= productItem._id %>">
                                                     <img class="default-img" src="/assets-admin/productImages/<%= productItem.images[productItem.images.length - 1]%>"  alt="">
                                                     <img class="hover-img" src="<%= productItem.imageUrl %>" alt="">
                                                 </a>
@@ -148,28 +148,39 @@
                         </div> -->
                     </div>
                     <div class="col-lg-3 primary-sidebar sticky-sidebar">
-                        <div class="widget-category mb-20" id="category-list-container">
-                            <h5 class="section-title style-1 mb-30 wow fadeIn animated">Category</h5>
-                            <ul id="category-list">
-                                <% if (category) { %>
-                                    <% for (let i = 0; i < category.length; i++) { %>
-                                        <li><a href="#" class="category-link" data-category="<%= category[i].name %>"><%= category[i].name %></a></li>
-                                    <% } %>
-                                <% } %>
-                            </ul>
-                        </div>
-                        <div id="products-container">
-                            <!-- Products will be dynamically listed here -->
-                            <!-- Each product element may have data attributes indicating its categories -->
-                        </div>
-                       
-                        
-                    </div>
+                        <div class="sidebar-widget price_range range mb-30">
+                            <div class="widget-header position-relative mb-20 pb-10">
+                                <h5 class="widget-title mb-10 text-dark">Fill by price</h5>
+                                <div class="bt-1 border-color-1"></div>
+                            </div>
+                            <div class="price-filter">
+                                <div class="price-filter-inner">
+                                        <div class="label-input">
+                                            <span>Minimum Price:</span><input type="number" id="minPrice" name="minPrice" placeholder="Min Price" />
+                                        </div>
+                                        <div class="label-input">
+                                            <span>Maximum Price:</span><input type="number" id="maxPrice" name="maxPrice" placeholder="Max Price" />
+                                        </div>
+                                </div>
+                            </div>                   
+                            <a href="#" id="filterBtn" class="btn btn-sm btn-default mt-10"><i class="fi-rs-filter mr-5"></i> Filter</a>
+                        </div>  
+                    </div>                    
+                </div>
+                <div class="pagination-area mt-15 mb-sm-5 mb-lg-0">
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination justify-content-start">
+                            <% for(let i = 1; i<=totalPages;i++) { %>
+                            <li class="page-item <%= i === currentPage ? 'active' : ' ' %>">
+                                <a class="page-link" href="/product-list?page=<%= i %>"><%= i %></a>
+                            </li>
+                            <% } %>
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </section>
     </main>
-    <!-- Preloader Start -->
     <div id="preloader-active">
         <div class="preloader d-flex align-items-center justify-content-center">
             <div class="preloader-inner position-relative">
@@ -213,7 +224,7 @@
     <script>
         async function addToCart(productId) {
             try{
-                let response = await fetch('/add-to-cart',{
+                let response = await fetch('/add/cart',{
                     method:'POST',
                     headers:{
                         'Content-Type':'application/json',
@@ -269,117 +280,63 @@
             }
         }
 
-    document.addEventListener("DOMContentLoaded", function() {
-    const categoryLinks = document.querySelectorAll('.category-link');
-    categoryLinks.forEach(categoryLink => {
-        categoryLink.addEventListener('click', function(event) {
-            event.preventDefault(); 
-            const categoryName = this.dataset.category; 
-            
-            fetch(`/products-by-category?category=${categoryName}`)
-                .then(response => response.json())
-                .then(data => {
-                    updateProductList(data); 
-                })
-                .catch(error => console.log("Error fetching products by category", error));
-        });
-    });
-
-    
-    function updateProductList(products) {
-        const productListContainer = document.querySelector('.product-grid-3');
-        productListContainer.innerHTML = ""; 
-        
-        products.forEach(product => {
-            const productElement = document.createElement("div");
-            productElement.classList.add("col-lg-4", "col-md-4", "col-12", "col-sm-6");
-            productElement.innerHTML = `
-                <div class="product-cart-wrap mb-30 ${product.productStatus === 'Limit-Exceeded' ? 'Limit-Exceeded-product' : ''} ${product.status === 'out-of-stock' ? 'out-of-stock-product' : ''}">
-                    <div class="product-img-action-wrap">
-                        ${product.productStatus === 'Limit-Exceeded' ? 
-                        `<div class="product-label limit-exceeded-label">
-                            <span class="badge bg-warning text-dark">Limit Exceeded</span>
-                        </div>` : 
-                        product.status === 'out-of-stock' ? 
-                        `<div class="product-label">
-                            <span class="badge bg-danger">Out of stock</span>
-                        </div>` : ''}
-                        <div class="product-img product-img-zoom">
-                            <a href="/product-view?id=${product._id}">
-                                <img class="default-img" src="/assets-admin/productImages/${product.images[product.images.length - 1]}" alt="">
-                                <img class="hover-img" src="${product.imageUrl}" alt="">
-                            </a>
-                        </div>
-                        <div class="product-action-1">
-                            <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal">
-                                <i class="fi-rs-search"></i>
-                            </a>
-                            <a aria-label="Add To Wishlist" class="action-btn hover-up" href="#">
-                                <i class="fi-rs-heart"></i>
-                            </a>
-                            <a aria-label="Compare" class="action-btn hover-up" href="#">
-                                <i class="fi-rs-shuffle"></i>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="product-content-wrap">
-                        <div class="product-category">
-                            <a href="#">${product.category}</a>
-                        </div>
-                        <h2><a href="">${product.title}</a></h2>
-
-                        <div class="product-price">
-                            <span>Rs.${product.afterDiscount}/-</span>
-                            <span class="old-price">Rs.${product.price} /-</span>
-                        </div>
-                        <div class="product-status">
-                            <span class="${product.status === 'out-of-stock' ? 'out-of-stock' : 'active'}">${product.status}</span>
-                        </div>
-                        <div class="product-action-1 show">
-                            <a aria-label="Add To Cart" class="action-btn hover-up"  onclick="addToCart('${product._id}')">
-                                <i class="fi-rs-shopping-bag-add"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            `;
-            productListContainer.appendChild(productElement);
-        });
-    }
-});
-
 document.addEventListener("DOMContentLoaded", function() {
+    //event listener for sort dropdown
     document.getElementById('sortDropdown').addEventListener('click', function (event){
         if (event.target.tagName === 'A') {
             const selectedSortOption = event.target.dataset.value;
-            const category = document.querySelector('.product-category').textContent.trim();
-            let url = "/products/filter?sortBy=" + selectedSortOption;
-
-            if(category){
-                url += "&category" + category;
-            }
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('data', data);
-                    updateProductList(data);
-                })
-                .catch(error => {
-                    console.error('Error fetching product data:', error);
-                });
+            const priceRange = getPriceRange();
+            console.log('selectedSortOption',selectedSortOption);
+            console.log('Selected price range:', priceRange);
+            let url = `/products/filter?sortBy=${selectedSortOption}&minPrice=${priceRange[0]}&maxPrice=${priceRange[1]}`;
+            fetchedProducts(url);
         }
     });
+
+    //event listener for sort dropdown
+    document.getElementById('filterBtn').addEventListener('click', function (event){
+        event.preventDefault();
+        const priceRange = getPriceRange();
+        const url = `/products/filter?minPrice=${priceRange[0]}&maxPrice=${priceRange[1]}`;
+        fetchedProducts(url);
+    })
 });
 
+function fetchedProducts(url){
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+        return response.json();
+        })
+        .then(data => {
+           console.log('data', data);
+           updateProductList(data);
+           updateProductCount(data.length)
+        })
+        .catch(error => {
+            console.error('Error fetching product data:', error);
+        });
+    }
+
+// Function to update the product count
+function updateProductCount(count) {
+    const productCountElement = document.getElementById("productCount");
+    if (productCountElement) {
+        productCountElement.textContent = count;
+    }
+}
+
+function getPriceRange(){
+    const minPrice = document.getElementById('minPrice').value;
+    const maxPrice = document.getElementById('maxPrice').value;
+
+    return [minPrice.trim(), maxPrice.trim()]
+}
 function updateProductList(products) {
     const productListContainer = document.querySelector('.product-grid-3');
     productListContainer.innerHTML = "";
-
 
     products.forEach(product => {
         const productElement = document.createElement("div");
@@ -396,7 +353,123 @@ function updateProductList(products) {
                         <span class="badge bg-danger">Out of stock</span>
                     </div>` : ''}
                     <div class="product-img product-img-zoom">
-                        <a href="/product-view?id=${product._id}">
+                        <a href="?id=${product._id}">
+                            <img class="default-img" src="/assets-admin/productImages/${product.images[product.images.length - 1]}" alt="">
+                            <img class="hover-img" src="${product.imageUrl}" alt="">
+                        </a>
+                    </div>
+                    <div class="product-action-1">
+                        <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal">
+                            <i class="fi-rs-search"></i>
+                        </a>
+                        <a aria-label="Add To Wishlist" class="action-btn hover-up" href="#">
+                            <i class="fi-rs-heart"></i>
+                        </a>
+                        <a aria-label="Compare" class="action-btn hover-up" href="#">
+                            <i class="fi-rs-shuffle"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="product-content-wrap">
+                    <div class="product-category">
+                        <a href="#">${product.category}</a>
+                    </div>
+                    <h2><a href="">${product.title}</a></h2>
+                        
+                    <div class="product-price">
+                        <span>Rs.${product.afterDiscount}/-</span>
+                        <span class="old-price">Rs.${ product.price}  /-</span>
+                    </div>
+                        <div class="product-status">
+                            <span class="${product.status === 'out-of-stock' ? 'out-of-stock' : 'active'}">${product.status }</span>
+                        </div>
+                        <div class="product-action-1 show">
+                            <a aria-label="Add To Cart" class="action-btn hover-up"  onclick="addToCart('${product._id}')">
+                                    <i class="fi-rs-shopping-bag-add"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        productListContainer.appendChild(productElement); 
+    });
+}
+
+//for showDropDown
+document.addEventListener("DOMContentLoaded", function() {
+    //event listener for sort dropdown
+    document.getElementById('showDropdown').addEventListener('click', function (event){
+        if (event.target.tagName === 'A') {
+            const selectedSortOption = event.target.dataset.value;
+            const priceRange = getPriceRange();
+            console.log('selectedSortOption',selectedSortOption);
+            console.log('Selected price range:', priceRange);
+            let url = `/products/filter/popularity?showBy=${selectedSortOption}&minPrice=${priceRange[0]}&maxPrice=${priceRange[1]}`;
+            fetchedProducts(url);
+        }
+    });
+
+    //event listener for sort dropdown
+    document.getElementById('filterBtn').addEventListener('click', function (event){
+        event.preventDefault();
+        const priceRange = getPriceRange();
+        const url = `/products/filter/popularity?minPrice=${priceRange[0]}&maxPrice=${priceRange[1]}`;
+        fetchedProducts(url);
+    })
+});
+
+function fetchedProducts(url){
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+        return response.json();
+        })
+        .then(data => {
+           console.log('data', data);
+           updateProductList(data);
+           updateProductCount(data.length)
+        })
+        .catch(error => {
+            console.error('Error fetching product data:', error);
+        });
+    }
+
+// Function to update the product count
+function updateProductCount(count) {
+    const productCountElement = document.getElementById("productCount");
+    if (productCountElement) {
+        productCountElement.textContent = count;
+    }
+}
+
+function getPriceRange(){
+    const minPrice = document.getElementById('minPrice').value;
+    const maxPrice = document.getElementById('maxPrice').value;
+
+    return [minPrice.trim(), maxPrice.trim()]
+}
+function updateProductList(products) {
+    const productListContainer = document.querySelector('.product-grid-3');
+    productListContainer.innerHTML = "";
+
+    products.forEach(product => {
+        const productElement = document.createElement("div");
+        productElement.classList.add("col-lg-4", "col-md-4", "col-12", "col-sm-6");
+        productElement.innerHTML = `
+            <div class="product-cart-wrap mb-30 ${product.productStatus === 'Limit-Exceeded' ? 'Limit-Exceeded-product' : ''} ${product.status === 'out-of-stock' ? 'out-of-stock-product' : ''}">
+                <div class="product-img-action-wrap">
+                    ${product.productStatus === 'Limit-Exceeded' ? 
+                    `<div class="product-label limit-exceeded-label">
+                        <span class="badge bg-warning text-dark">Limit Exceeded</span>
+                    </div>` : 
+                    product.status === 'out-of-stock' ? 
+                    `<div class="product-label">
+                        <span class="badge bg-danger">Out of stock</span>
+                    </div>` : ''}
+                    <div class="product-img product-img-zoom">
+                        <a href="?id=${product._id}">
                             <img class="default-img" src="/assets-admin/productImages/${product.images[product.images.length - 1]}" alt="">
                             <img class="hover-img" src="${product.imageUrl}" alt="">
                         </a>

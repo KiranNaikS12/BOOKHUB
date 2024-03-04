@@ -43,8 +43,10 @@
                                                     <p class="font-xs">Category: <%= item.data.category %></p>
                                                     <% if (item.data.countInStock <= 10) { %>
                                                         <p class="font-xs text-danger" id="countInStock-<%= item.data._id %>">Only  <%= item.data.countInStock %>  stocks Left</p>
-                                                        <% } else { %>
-                                                         
+                                                        <% } else if(item.data.status === 'out-of-stock'){ %>
+                                                         <p class="text-danger"><%= item.data.status  %></p>
+                                                         <% } else if(item.data.countInStock > 10){ %>
+                                                            <p class="font-xs text-info" id="countInStock-<%= item.data._id %>">stocks available</p>
                                                     <% } %>
                                                 </td>
                                                 <td class="price" data-title="Price"><span>Rs.<%= item.data.afterDiscount.toFixed(2) %>/-</span></td>
