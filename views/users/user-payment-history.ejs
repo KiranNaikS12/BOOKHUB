@@ -1,1 +1,213 @@
 <%- include('../userLayout/header') %>
+<link href="/assets-admin/css/main.css" rel="stylesheet" type="text/css" />
+<main class="main">
+    <div class="page-header breadcrumb-wrap">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="/home" rel="nofollow" style="color: #000000;">Home</a>
+                <span></span> 
+    
+
+                <a id="shopBreadcrumb" href="#" style="color: #000000;">SHOP</a>
+            </div>
+        </div>
+    </div>    
+<section class="content-main">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title card-title">Payment History</h2>
+            <p>Check your payment History here</p>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <header class="card-header">
+            <div class="row gx-3">
+                <div class="col-lg-2 col-6 col-md-3">
+                    <select class="form-select filter-by">
+                        <option>Filter By:Order Status</option>
+                        <option>Pending</option>
+                        <option>Confirmed</option>
+                        <option>Delivered</option>
+                        <option>Cancelled</option>
+                        <option>Returned</option>
+                    </select>
+                </div>
+                <div class="col-lg-2 col-6 col-md-3">
+                    <button id="filterBtn" class="btn btn-primary">Apply Filter</button>
+                </div>
+            </div>
+        </header>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>SLNO.</th>
+                            <th scope="col">OrderID</th>
+                            <th scope="col">ProductName</th>
+                            <th scope="col">Amount Paid</th>
+                            <th scope="col">Order Status</th>
+                            <th scope="col">Payment Method</th>
+                            <th scope="col">Payment Status</th>
+                            <th scope="col">Transaction Date</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (order && order.length > 0) { %>
+                        <% let hasPaymentHistory = false; %>
+                        <% for(let i = 0; i < order.length; i++) { %>
+                            <% const currentOrder = order[i]; %>
+                            <% if (currentOrder.paymentMethod !== 'Cash On Delivery') { %>
+                                <% currentOrder.items.forEach(item => { %>
+                                    <tr>
+                                        <td><%= i+1  %></td>
+                                        <td><%= currentOrder.oId %></td>
+                                        <td><%= item.title %></td> 
+                                        <td>Rs.<%= currentOrder.billTotal  %>.00/-</td>
+                                        <% if (currentOrder.orderStatus === 'Cancelled') { %>
+                                            <td class="text-danger"><%= currentOrder.orderStatus %></td>
+                                            <% } else { %>
+                                                <td><%= currentOrder.orderStatus %></td>
+                                        <% } %>                   
+                                        <td><%= currentOrder.paymentMethod %></td>
+                                        <% if (currentOrder.paymentStatus === 'Refunded' || currentOrder.paymentStatus === 'Returned') { %>
+                                            <td class="text-success"><%= currentOrder.paymentStatus %></td>
+                                            <% } else { %>
+                                                <td><%= currentOrder.paymentStatus %></td>
+                                        <% } %>
+                                        <td><%= currentOrder.orderDate.toDateString() %></td> 
+                                    </tr>
+                                <% }) %>
+                                <% hasPaymentHistory = true; %>
+                            <% } %>
+                        <% } %>
+                        <% if (!hasPaymentHistory) { %>
+                            <tr>
+                                <td colspan="7">No payment History Available</td>
+                            </tr>
+                        <% } %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="7">No payment History Available</td>
+                            </tr>
+                        <% } %>           
+                    </tbody>                                      
+                </table>
+            </div> 
+        </div> 
+    </div> 
+    <div class="pagination-area mt-30 mb-51">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center"> <!-- Center pagination -->
+                <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                    <a class="page-link" href="/view/payments?page=<%= currentPage - 1 %>" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                        <span class="visually-hidden">Previous</span>
+                    </a>
+                </li>
+                <% for(let i = 1; i <= totalPages; i++) { %>
+                    <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                        <a class="page-link" href="/view/payments?page=<%= i %>"><%= i %></a>
+                    </li>
+                <% } %>
+                <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                    <a class="page-link" href="/view/payments?page=<%= currentPage + 1 %>" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                        <span class="visually-hidden">Next</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>    
+</section>
+</main>
+<script>
+    //filtering:
+    document.getElementById('filterBtn').addEventListener('click', function(event){
+       event.preventDefault();
+       const filterOption = document.querySelector('.filter-by').value;
+       const url = `/payment/filter/status?orderStatus=${filterOption}`;
+       fetchedProducts(url);
+    })
+
+    function fetchedProducts(url){
+        fetch(url)
+        .then(response => {
+            if(!response.ok){
+                throw new Error('Network response was not ok');
+            }
+        return response.json()
+        })
+        .then(data => {
+            console.log('Received data from backend:', data);
+            updatePaymentList(data);
+        })
+    }
+
+    function updatePaymentList(data) {
+    const tbody = document.querySelector('tbody');
+    tbody.innerHTML = "";
+
+    if (data && data.length > 0) {
+        let slNo = 1;
+        data.forEach(order => {
+            if (order.paymentMethod !== 'Cash On Delivery') {
+                order.items.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML =
+                        `
+                        <td>${slNo}</td>
+                        <td>${order.oId}</td>
+                        <td>${item.title}</td>
+                        <td>Rs.${order.billTotal}.00/-</td>
+                        <td>${order.orderStatus === 'Cancelled' ? '<span class="text-danger">' + order.orderStatus + '</span>' : order.orderStatus}</td>
+                        <td>${order.paymentMethod}</td>
+                        <td>${(order.paymentStatus === 'Refunded' || order.paymentStatus === 'Returned') ? '<span class="text-success">' + order.paymentStatus + '</span>' : order.paymentStatus}</td>
+                        <td>${new Date(order.orderDate).toDateString()}</td>
+                        `;
+                    tbody.appendChild(tr);
+                    slNo++;
+                })
+            }
+        });
+    } else {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="9">No payment history available</td>`;
+        tbody.appendChild(tr);
+    }
+}
+
+function updateBreadcrumbs(pageUrl, pageLabel) {
+    // Retrieve stored breadcrumb data from session storage
+    const breadcrumbs = JSON.parse(sessionStorage.getItem('breadcrumbs')) || [];
+
+    // Add the current page to the breadcrumbs
+    breadcrumbs.push({ url: pageUrl, label: pageLabel });
+
+    // Update session storage with the updated breadcrumbs
+    sessionStorage.setItem('breadcrumbs', JSON.stringify(breadcrumbs));
+
+    // Update the breadcrumb HTML
+    renderBreadcrumbs(breadcrumbs);
+}
+
+// Function to render breadcrumbs HTML
+function renderBreadcrumbs(breadcrumbs) {
+    const shopBreadcrumb = document.getElementById('shopBreadcrumb');
+    if (breadcrumbs.length > 0) {
+        // Get the label of the last breadcrumb in the array
+        const currentPageLabel = breadcrumbs[breadcrumbs.length - 1].label;
+        // Update the SHOP breadcrumb text with the current page label
+        shopBreadcrumb.textContent = currentPageLabel;
+    }
+}
+
+// Example usage:
+const currentPageUrl = window.location.href;
+const currentPageLabel = 'Payment History'; 
+updateBreadcrumbs(currentPageUrl, currentPageLabel);
+
+</script>
+</body>
+</html>
