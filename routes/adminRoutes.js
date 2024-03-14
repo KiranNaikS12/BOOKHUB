@@ -3,7 +3,9 @@ const session = require('express-session')
 const config = require('../config/config');
 const bodyParser = require('body-parser');
 const adminController = require('../controller/adminController');
-const auth = require('../middleware/adminauth')
+const couponController = require('../controller/couponController');
+const auth = require('../middleware/adminauth');
+
 
 const admin_route = express();
 
@@ -12,7 +14,9 @@ admin_route.use(bodyParser.json());
 admin_route.use(bodyParser.urlencoded({extended:true}));
 admin_route.set("view engine", "ejs");
 admin_route.set("views", './views/admin');
-admin_route.use(express.static('public'))
+admin_route.use(express.static('public'));
+
+
 
 admin_route.get('/',auth.isAdminLogout,adminController.loadLogin);
 admin_route.post('/',auth.isAdminLogout,adminController.verifyLogin);
@@ -35,7 +39,15 @@ admin_route.get('/order/lists',auth.isAdminLogin,adminController.LoadOrderDetail
 admin_route.get('/order/detail',auth.isAdminLogin,adminController.ViewOrderDetails);
 admin_route.post('/order/status', adminController.updateOrder);
 admin_route.put('/order/remove',auth.isAdminLogin,adminController.deleteOrderData);
-admin_route.post('/order/return-status',auth.isAdminLogin,adminController.updateReturnOrder)
+admin_route.post('/order/return-status',auth.isAdminLogin,adminController.updateReturnOrder);
+
+//coupon-management
+admin_route.get('/coupon',auth.isAdminLogin,adminController.loadCouponPage);
+admin_route.post('/add/coupon',adminController.addCouponData);
+admin_route.get('/view/coupons',auth.isAdminLogin,adminController.viewCouponList);
+admin_route.get('/update/coupon',auth.isAdminLogin,adminController.loadUpdateCoupanPage);
+admin_route.post('/update/coupon',adminController.updateCouponDetails);
+admin_route.get('/remove/coupon',auth.isAdminLogin,adminController.removeCoupon);
 
 //used as a default route for adminPage
 admin_route.get('*',function(req,res){

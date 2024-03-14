@@ -1,4 +1,5 @@
 ﻿<%- include('../userLayout/header') %>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet"/>
 <style>
     .table-border th{
         border: 1px solid black;
@@ -88,8 +89,8 @@
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td class="cart_total_label">Shipping</td>
-                                                    <td class="cart_total_amount"> <i class="ti-gift mr-5"></i> Free Shipping</td>
+                                                    <td class="cart_total_label">Shipping Charge</td>
+                                                    <td class="cart_total_amount" id="shipping"> <i class="ti-gift mr-5"></i> Free Shipping</td>
                                                 </tr>
                                                 <tr>
                                                     <td class="cart_total_label">Total Amount</td>
@@ -101,29 +102,29 @@
                                     </table>
                                 </div>
                             </div>
-                            <div class="bt-1 border-color-1 mt-30 mb-30"></div>
+                                            
+                        </div>
+                        <div class="bt-1 border-color-1 mt-30 mb-30"></div>
                             <div class="row">
                                 <div class="col-lg-6">
                                     <div class="toggle_info">
-                                        <span><i class="fi-rs-label mr-10"></i><span class="text-muted">Have a coupon?</span> <a href="" data-bs-toggle="collapse" class="collapsed" aria-expanded="false">Click here to enter your code</a></span>
+                                        <span><i class="fi-rs-label mr-30"></i><span class="text-muted">Have a coupon?</span> <a href="#coupon" data-bs-toggle="collapse" class="collapsed" aria-expanded="false">Click here to enter your code</a></span>
                                     </div>
                                     <div class="panel-collapse collapse coupon_form " id="coupon">
                                         <div class="panel-body">
                                             <p class="mb-30 font-sm">If you have a coupon code, please apply it below.</p>
-                                            <form method="post">
+                                            <form method="post" onsubmit="applycoupon(); return false">
                                                 <div class="form-group">
-                                                    <input type="text" placeholder="Enter Coupon Code...">
+                                                    <input type="text" name="coupon" placeholder="Enter Coupon Code...">
                                                 </div>
                                                 <div class="form-group">
-                                                    <button class="btn  btn-md" name="login">Apply Coupon</button>
+                                                    <button class="btn  btn-md" name="Apply">Apply Coupon</button>
                                                 </div>
                                             </form>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            
-                        </div>
+                            </div> 
                     </div>
                     <div class="col-md-6">
                         <div class="mb-25">
@@ -462,12 +463,12 @@
                                 <div class="form-group">
                                     <label>Payment Method:</label><br>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="paymentMethod" id="creditCard" value="Credit Card">
-                                        <label class="form-check-label" for="creditCard">Credit Card</label>
+                                        <input class="form-check-input" type="radio" name="paymentMethod" id="creditCard" value="Razor Pay">
+                                        <label class="form-check-label" for="creditCard">RazorPay</label>
                                     </div>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="paymentMethod" id="paypal" value="Paypal">
-                                        <label class="form-check-label" for="paypal">Paypal</label>
+                                        <input class="form-check-input" type="radio" name="paymentMethod" id="paypal" value="Wallet">
+                                        <label class="form-check-label" for="paypal">wallet</label>
                                     </div>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" name="paymentMethod" id="cashOnDelivery" value="Cash On Delivery">
@@ -475,7 +476,7 @@
                                     </div>
                                     <div id="PaymentTypeError" class="error" style="color: red;"></div>
                                 </div>
-                                <button type="button" class="btn btn-fill-out btn-block mt-30" onclick="placeOrder('<%= cart._id %>')">Place Order</button>
+                                <button type="button" class="btn btn-fill-out btn-block mt-30" onclick="placeOrder('<%= cart._id %>','<%= user.email%>')">Place Order</button>
                             </form>
                     </div>
                     
@@ -520,8 +521,11 @@
     <script src="/assets/js/main.js?v=3.4"></script>
     <script src="/assets/js/shop.js?v=3.4"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+    <!-- razorpay  -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-    <script>
+<script>
     function placeOrder(cartId) {
     const shippingAddressCheckbox = document.querySelector('input[name="shippingAddress"]');
     const shippingAddress = shippingAddressCheckbox.checked;
@@ -566,9 +570,11 @@
             addressType: addressType.value
         };
     }
-
+    
+    const email = document.querySelector('input[name="email"]').value;
+    const cartSubTotal = parseFloat(document.getElementById('totalAmount').innerText.replace('Rs.','').replace('/-',''));
+    const totalAmount = cartSubTotal;
     const additionalMobile = document.querySelector('input[name="additionalMobile"]').value;
-    // const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
     const paymentMethodRadio = document.querySelectorAll('input[name="paymentMethod"]');
     
     let paymentMethod = null;
@@ -578,7 +584,7 @@
         }
     });
 
-    if (!paymentMethod) {
+    if (!paymentMethod === '') {
         Swal.fire({
             title: 'Reminder',
             text: 'Payment method pending',
@@ -596,7 +602,8 @@
         shippingAddress: shippingAddressValue
     };
 
-    fetch('/add/order', {
+    if(paymentMethod == 'Cash On Delivery'){
+        fetch('/add/order', {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -649,8 +656,168 @@
             icon: 'error'
         });
     });
+}else if(paymentMethod === 'Razor Pay'){
+    initiateRazorPayPayment(cartId,totalAmount,email);
+}else if(paymentMethod === 'Wallet'){
+    initiateWalletPayment(cartId,totalAmount,email);
+}else {
+     Swal.fire({
+        title:'Error',
+        text:'Please select payment method',
+        icon:'error'
+     });
+     return;
+    }
+}    
+
+//************************************orderWithWallet************************************************
+function initiateWalletPayment(cartId, billTotal) {
+    fetch('/create/wallet-order', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            cartId,
+            billTotal
+        })
+    })
+    .then(response => {
+        if (response.status === 200) {
+            placeOrderAfterPaymentWithWallet(cartId);
+        } else if (response.status === 400) {
+            Swal.fire({
+                title: 'Insufficient balance',
+                text: 'Please choose different payment method',
+                icon: 'error'
+            });
+        } else {
+            throw new Error('Failed to create wallet order');
+        }
+    })
+    .catch(error => {
+        console.error('Error creating wallet order:', error);
+    });
 }
 
+
+//************************************orderWithRazorPay************************************************
+function initiateRazorPayPayment(cartId,billTotal, email){
+    fetch('/create/razorypay-order',{
+        method:'POST',
+        headers:{
+            'Content-Type':'application/json',
+        },
+        body:JSON.stringify({
+            cartId:cartId,
+            billTotal,
+            email
+        })
+    })
+    .then(response => response.json())
+    .then(data =>{
+        const options = {
+            key:'rzp_test_45Ta17CKiww25f',
+            amount: billTotal * 100,
+            order_id: data.id,
+            name:'BOOKHUB',
+            description: 'Payment for Order',
+            handler: function (response) {
+                console.log('payment successfull', response);
+                placeOrderAfterPayment(cartId);
+            },
+            prefill:{
+                email: email
+            },
+            theme:{
+                color:'#F37254'
+            }
+        };
+        // console.log('amount',amount);
+        const rzp = new Razorpay(options);
+        rzp.open();
+    })
+    .catch(error => {
+        console.error('Error creating RazorPay order:', error);
+    })
+}
+
+
+// Function to place order after successful payment
+function placeOrderAfterPayment(cartId){
+    fetch('/add/order',{
+        method:'PUT',
+        headers:{
+            'Content-Type':'application/json'
+        },
+        body:JSON.stringify({
+            cartId:cartId,
+            paymentMethod: 'Razor Pay'
+        })
+    })
+    .then(response =>{
+        if(response.status === 200) {
+            Swal.fire({
+            title:'Payment Successfull',
+            text:'',
+            icon:'success',
+            type:'success',
+            confirmButtonColor: '#4CAF50',
+            confirmButtonText: 'Order Summary'
+            }); 
+            setTimeout(() => {
+                window.location.href = '/orders';
+            }, 2000);
+        }else{
+            Swal.fire({
+            title: 'Error',
+            text: 'Failed to order',
+            icon: 'error'
+        }); 
+    }
+    })
+    .catch(error => {
+        console.error('Error creating RazorPay order:', error);
+    })
+}
+
+
+function placeOrderAfterPaymentWithWallet(cartId){
+    fetch('/add/order',{
+        method:'PUT',
+        headers:{
+            'Content-Type':'application/json'
+        },
+        body:JSON.stringify({
+            cartId: cartId,
+            paymentMethod: 'Wallet'
+        })
+    })
+    .then(response =>{
+        if(response.status === 200) {
+            Swal.fire({
+                title:'Payment Successfull',
+                text:'',
+                icon:'success',
+                type:'success',
+                confirmButtonColor: '#4CAF50',
+                confirmButtonText: 'Order Summary'
+            }); 
+            setTimeout(() => {
+                window.location.href = '/orders';
+            }, 2000);
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: 'Failed to order',
+                icon: 'error'
+            }); 
+        }
+    })
+    .catch(error => {
+        console.error('Error creating wallet order:', error);
+    })
+}
 
 document.getElementById("additionalMobile").addEventListener("input", function() {
     let currentValue = this.value;
@@ -658,7 +825,6 @@ document.getElementById("additionalMobile").addEventListener("input", function()
         this.value = "+91 " + currentValue;
     }
 });
-
 
 function removeProductFromOrder(productId, userId) {
         swal.fire({
@@ -774,6 +940,76 @@ function removeProductFromOrder(productId, userId) {
             console.error('Error:', error);
         }
     }
+
+// Function to apply coupon.
+async function applycoupon(){
+    const requestData = {
+        coupon:document.querySelector('input[name="coupon"]').value
+    }
+
+    try{
+        const response = await fetch('/apply/coupon',{
+            method:'POST',
+            headers:{
+                'Content-Type': 'application/json'
+            },
+            body:JSON.stringify(requestData)
+        })
+
+        const responseData = await response.json();
+
+        if(response.status === 200){
+            toastr.success('Coupon applied successfully', '', {
+                positionClass: 'toast-bottom-center' 
+            });
+
+            const totalAmountElement = document.getElementById('totalAmount');
+            const shippingCharge = document.getElementById('shipping');
+            const newTotalAmount = parseFloat(totalAmountElement.textContent.split('Rs.')[1].split('/-')[0] - responseData.discount);
+            totalAmountElement.textContent = `Rs. ${newTotalAmount.toFixed(2)}/-`;
+            shippingCharge.textContent = `You saved Rs.${responseData.discount}/-`
+            // setTimeout(() => {
+            //     window.location.reload();
+            // },1500)
+        }else if(response.status === 400){
+            if(responseData.message === 'Coupon code is Invalid'){
+                toastr.warning('See Why','Coupon code is Invalid',{
+                    positionClass: 'toast-bottom-center',
+                    onclick: () => {
+                       //to show details..
+                        toastr.info('The coupon code can only be redeemed once.You have already used this code ', '', {
+                            positionClass: 'toast-bottom-center',
+                            timeOut: 3000,
+                        });
+                    } 
+                })
+            }else if(responseData.message === 'Coupon is not applicable'){
+                toastr.warning('See Why','Coupon is not applicable',{
+                    positionClass: 'toast-bottom-center',
+                    onclick: () => {
+                        toastr.info('Please check that coupon is applicable for your requirements before applying the coupon code', '', {
+                            positionClass: 'toast-bottom-center',
+                            timeOut: 5000,
+                        });
+                    } 
+                });
+            }else {
+                toastr.error('Coupon code does not exists', '', {
+                    positionClass: 'toast-bottom-center' 
+                });
+            }
+        }else{
+            toastr.error('Failed to apply coupon', '', {
+                positionClass: 'toast-bottom-center' 
+            });
+        }
+
+    }catch(error){
+        toastr.error('An error occurred while adding coupon', '', {
+            positionClass: 'toast-bottom-center' 
+        });
+    }
+}
 </script>
 </body>
 </html>

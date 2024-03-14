@@ -188,24 +188,28 @@
                         <div class="header-action-right">
                             <div class="header-action-2">
                                 <div class="header-action-icon-2">
-                                    <a href="shop-wishlist.html">
-                                        <i class="material-symbols-outlined">
-                                            favorite
-                                        </i>
-                                        <!-- <span class="pro-count blue"></span> -->
-                                    </a>
+                                        <a href="/wishlist">
+                                            <i class="material-symbols-outlined">
+                                                favorite
+                                            </i>
+                                    <% if (wishlistCount >0) { %>
+                                            <span class="pro-count blue " id="wishlistCount"><%= wishlistCount %></span>
+                                            <% } else { %>
+                                                <span class="pro-count blue" id="wishlistCount" style="display: none;">0</span>
+                                    <% } %>
+                                        </a>
                                 </div>
                                 <div class="header-action-icon-2">
+                                    <% if (cartItemCount >0) { %>
                                     <a class="mini-cart-icon" href="/cart">
-                                        <i class="material-symbols-outlined"> 
+                                        <i class="material-symbols-outlined">
                                             shopping_bag
                                         </i>
-                                        <% if (cartItemCount >0) { %>
-                                            <span id="cartItemCount" class="pro-count blue"><%= cartItemCount %></span>
+                                            <span class="pro-count blue"><%= cartItemCount %></span>
                                             <% } else { %>
                                              <span></span>
-                                        <% } %>                                      
-                                    </a>                                   
+                                        <% } %>
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -243,10 +247,10 @@
                                     <li><a href="/product-list">Shop</i></a>
                                     </li>
                                     <li>
-                                        <a href="#">About</a>
+                                        <a href="#" style="color: #161616;">About</a>
                                     </li>
                                    
-                                    <li class="position-static"><a href="#">Mega menu <i class="fi-rs-angle-down"></i></a>
+                                    <li class="position-static"><a href="#" style="color: #161616;"  >Mega menu</i></a>
                                         <ul class="mega-menu">
                                             <li class="sub-mega-menu sub-mega-menu-width-22">
                                             </li>
@@ -258,9 +262,9 @@
                                             </li>
                                         </ul>
                                     </li>
-                                    <li><a href="#">Blog</i></a>
+                                    <li><a href="#" style="color: #161616;" >Blog</i></a>
                                     </li>
-                                    <li><a href="#">Pages <i class="fi-rs-angle-down"></i></a>
+                                    <li><a href="#" style="color: #161616;" >Pages</a>
                                         <!-- <ul class="sub-menu">
                                             <li><a href="page-about.html">About Us</a></li>
                                             <li><a href="page-contact.html">Contact</a></li>
@@ -273,7 +277,7 @@
                                         </ul> -->
                                     </li>
                                     <li>
-                                        <a href="page-contact.html">Contact</a>
+                                        <a href="page-contact.html" style="color: #161616;" >Contact</a>
                                     </li>
                                 </ul>
                             </nav>
@@ -387,14 +391,14 @@
     $(document).on('click', '#searchResults div', function() {
         console.log('Clicked on search result');
         const productId = $(this).data('product-id');
-        window.location.href = '/product-view?id=' + productId;
+        window.location.href = '/product/view?id=' + productId;
     });
 
     // Event listener for Enter key press
     $('#searchInput').keypress(function(event) {
         if (event.which === 13) {
             const productId = $('#searchResults div:first').data('product-id');
-            window.location.href = '/product-view?id=' + productId;
+            window.location.href = '/product/view?id=' + productId;
         }
     });
 }); 

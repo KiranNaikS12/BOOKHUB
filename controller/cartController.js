@@ -3,6 +3,7 @@ const User = require('../models/userModel');
 const Product = require('../models/productModel');
 const Category = require('../models/categoryModel');
 const Cart = require('../models/cartModel');
+const Wishlist = require('../models/wishlistModel')
 
 //***********loadCartPage***************** */
 const loadCartPage = async(req,res) => {
@@ -32,11 +33,14 @@ const loadCartPage = async(req,res) => {
         });
 
         const cartItemCount = cart ? cart.items.length : 0;
+        const wishlist = await Wishlist.findOne({ user: userData });
+        const wishlistCount = wishlist ? wishlist.items.length : 0;
         return res.render('user-cart-page',{
             user:userData,
             category:categoryData,
             cart:cart,
-            cartItemCount: cartItemCount
+            cartItemCount: cartItemCount,
+            wishlistCount:wishlistCount
         });
        
     }catch(error){

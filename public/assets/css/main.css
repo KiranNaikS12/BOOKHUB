@@ -1123,7 +1123,7 @@ option {
 }
 
 textarea {
-  border: 1px solid #e2e9e1;
+  border: 1px solid #000000;
   border-radius: 4px;
   height: 45px;
   -webkit-box-shadow: none;
@@ -1295,7 +1295,7 @@ textarea:focus {
 
 .form-group input {
   background: #ffffff;
-  border: 1px solid #e2e9e1;
+  border: 1px solid #000000;
   height: 45px;
   -webkit-box-shadow: none;
   box-shadow: none;
@@ -4796,7 +4796,8 @@ table .product-thumbnail img {
   padding: 20px;
   background-color: #f7f8f9;
   border-radius: 10px;
-  border: 1px solid #e2e9e1;
+  border: 1px solid #000000;
+  width: 444px;
 }
 
 .login_form .panel-body, .coupon_form .panel-body {

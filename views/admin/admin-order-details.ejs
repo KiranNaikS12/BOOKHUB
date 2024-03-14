@@ -316,9 +316,18 @@
                                                         <dd> <b class="h5">Rs.<%= order.billTotal %>/- </b> </dd>
                                                     </dl>
                                                     <dl class="dlist">
-                                                        <dt class="text-muted">Payment Status:</dt>
+                                                        <dt class="text-dark">Payment Status:</dt>
                                                         <dd>
-                                                            <span class="badge rounded-pill alert-warning text-dark"><%= order.paymentStatus %></span>
+                                                            <% if (order.paymentStatus === 'Pending') { %>
+                                                                <span class="badge rounded-pill alert-warning text-dark"><%= order.paymentStatus %></span>
+                                                                <% } else if(order.paymentStatus === 'Success'){ %>
+                                                                    <span class="badge rounded-pill alert-success text-dark"><%= order.paymentStatus %></span>
+                                                                <% } else if(order.paymentStatus === 'Failed'){ %>
+                                                                    <span class="badge rounded-pill alert-danger text-dark"><%= order.paymentStatus %></span>
+                                                                <% } else if(order.paymentStatus === 'Refunded'){ %>
+                                                                    <span class="badge rounded-pill alert-info text-dark"><%= order.paymentStatus %></span>
+                                                            <% } %>
+                                                            
                                                         </dd>
                                                     </dl>
                                                 </article>

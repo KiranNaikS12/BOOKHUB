@@ -50,6 +50,10 @@ const cartSchema = mongoose.Schema({
         required: true,
         default: 0
     },
+    discountedTotal:{
+        type:Number,
+        default:0
+    }
 }, {
     timestamps: true
 });

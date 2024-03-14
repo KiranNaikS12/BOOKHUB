@@ -6,6 +6,7 @@ const config = require('../config/config');
 const Order = require('../models/orderModel');
 const Product = require('../models/productModel');
 const Return = require('../models/orderReturn');
+const Coupon = require('../models/couponModel');
 
 
 // **********Hash password**********
@@ -435,9 +436,144 @@ const deleteOrderData = async(req,res) => {
 }
 
 
+// *********************************************************************************************************************************************************************
+//******************************loadCouponPage*********************************
+const loadCouponPage = async(req,res) => {
+    try{
+        res.render('admin-add-coupon')
+
+    }catch(error){
+        console.log(error.message);
+        return res.status(500).json({success:false,message:'Internal server error'});
+    }
+}
+//*******************************GeneratingCouponCode**************************
+function generatingCouponCode(){
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let couponCode = '';
+    const codeLength = 8;
+
+    for(let i=0;i<codeLength;i++){
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        couponCode += characters[randomIndex];
+    }
+    return couponCode;
+}
+//*************************************AddCoupon*******************************
+const addCouponData = async(req,res) => {
+    const {name,startDate,endDate,minimumAmount,maximumAmount,discount} = req.body;
+    console.log(req.body)
+    try{
+
+       const couponCode = generatingCouponCode();
+       const newCoupon = new Coupon({
+        name:name,
+        startDate:startDate,
+        endDate:endDate,
+        minimumAmount:minimumAmount,
+        maximumAmount:maximumAmount,
+        discount:discount,
+        couponCode,
+        isActive:1
+       });
+       console.log('couponData',newCoupon);
+       await newCoupon.save();
+       
+       return res.status(200).json({success:true,message:'Coupon added successfully'});
+
+    }catch(error){
+        console.log(error.message);
+        return res.status(500).json({success:false,message:'Internal server error'})
+    }
+}
+
+//*************************************View-Coupon-Lists*******************************
+const viewCouponList = async(req,res) => {
+    try{
+        const CouponData = await Coupon.find({status:{$ne:'delete'}})
+        return res.render('admin-view-coupon',{coupon:CouponData})
+
+    }catch(error){
+        console.log(error.message);
+        return res.status(500).json({success:false,message:'Internal server error'})
+    }
+}
+
+//*************************************Update-page*******************************
+const loadUpdateCoupanPage = async(req,res) => {
+    try{
+        const couponId = req.query.id;
+        const couponData = await Coupon.findById(couponId)
+        if(couponData){
+            return res.render('admin-edit-coupon',{coupon:couponData})
+        }
+    }catch(error){
+        console.log(error.message);
+        return res.status(500).json({success:false,message:'Internal server error'});
+    }
+}
+
+//******************************Update-coupon-data*******************************
+const updateCouponDetails = async(req,res) => {
+    try{  
+        const couponId = req.body.coupon_id;
+        const updateDetails = {
+            name:req.body.name,
+            minimumAmount:req.body.minimumAmount,
+            maximumAmount:req.body.maximumAmount,
+            discount:req.body.discount,
+            isActive:req.body.verify
+        }
+
+        if (req.body.startDate) {
+            updateDetails.startDate = req.body.startDate;
+        }
+
+        if (req.body.endDate) {
+            updateDetails.endDate = req.body.endDate;
+        }
+
+        const updateCoupon = await Coupon.findByIdAndUpdate(couponId,updateDetails,{new:true});
+        if(!updateCoupon){
+            return res.render('admin-edit-coupon',{errorMessage:'Failed to update coupon data',coupon:updateCoupon})
+        }
+         
+        return res.redirect('/admin/view/coupons')
+
+    }catch(error){
+        console.log(error.message);
+        return res.status(500).json({success:false,message:'Internal server error'});
+    }
+}
 
 
- module.exports = {
+//****************************Delete-Coupon*********************************
+const removeCoupon = async(req,res) => {
+    try{
+        const couponId = req.query.id;
+        await Coupon.findByIdAndUpdate(
+            couponId,
+            {$set:{
+                status:'delete'
+            }
+        },
+            {new:true}
+        )
+        res.redirect('/admin/view/coupons');
+
+    }catch(error){
+        console.log(error.message);
+        return res.status(500).json({success:false,message:'Internal server error'});
+    }
+}
+//*****************************************************************************************************************************************************************
+
+
+
+
+
+
+module.exports = {
     loadLogin,
     verifyLogin,
     loadHome,
@@ -457,5 +593,11 @@ const deleteOrderData = async(req,res) => {
     ViewOrderDetails,
     updateOrder,
     deleteOrderData,
-    updateReturnOrder
+    updateReturnOrder,
+    loadCouponPage,
+    addCouponData,
+    viewCouponList,
+    loadUpdateCoupanPage,
+    updateCouponDetails,
+    removeCoupon
 }

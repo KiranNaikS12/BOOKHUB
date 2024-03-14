@@ -70,10 +70,10 @@
                                             <tr>
                                                 <th>Order ID</th>
                                                 <th>Date</th>
-                                                <th>Status</th>
+                                                <th>ORDER STATUS</th>
                                                 <th>Total</th>
                                                 <th>Track Order</th>
-                                                <th>Remove</th> 
+                                                <th>Action</th> 
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -85,8 +85,8 @@
                                                         <% if (order[i].orderStatus === 'Delivered') { %>
                                                             <td>🟢<%= order[i].orderStatus %></td>
                                                             <% } else if(order[i].orderStatus === 'Cancelled' || order[i].orderStatus === 'Returned'){ %>
-                                                            <td>🔴<%= order[i].orderStatus %></td>
-                                                            <% } else if (order[i].orderStatus === 'Confirmed') { %>
+                                                            <td>❌<%= order[i].orderStatus %></td>
+                                                            <% } else if (order[i].orderStatus === 'Confirmed' ||order[i].orderStatus === 'Shipped') { %>
                                                             <td>🟡<%= order[i].orderStatus %></td>
                                                             <% } else  if(order[i].orderStatus === 'Pending'){ %>
                                                             <td>⭕<%= order[i].orderStatus %></td>
@@ -99,10 +99,10 @@
                                                         </td>
                                                         <td class="action" data-title="Remove">
                                                             <a href="#" class=" text-danger" onclick="removeOrder('<%= order[i]._id %>')">
-                                                                <% if (order[i].orderStatus !== 'Delivered') { %>
-                                                                    <i class="fi-rs-trash"></i>Cancel Order
+                                                                <% if (order[i].orderStatus === 'Delivered' || order[i].orderStatus === 'Cancelled' || order[i].orderStatus === 'Returned') { %>
+                                                                       <i style="color: rgb(191, 191, 191);">No Data found</i>
                                                                     <% } else { %>
-                                                                     
+                                                                        <i class="fi-rs-trash"></i>Cancel Order
                                                                 <% } %>
                                                                 
                                                             </a>

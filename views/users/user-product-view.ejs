@@ -1,5 +1,6 @@
 ﻿<%- include('../userLayout/header') %>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
 <style>
     .modal {
     display: none; 
@@ -195,7 +196,7 @@
                                 <div class="tab-content shop_info_tab entry-main-content">
                                     <div class="tab-pane fade show active" id="Description">
                                        <div class="">
-                                        <p>><%= product.description %></p>                       
+                                        <p><%= product.description %></p>                       
                                         </div>
                                     </div>
                                     <div class="tab-pane fade" id="Reviews">
@@ -243,7 +244,7 @@
                                                 </div>                                                                                                
                                             </div>
                                         </div>                                        
-                                        <form id="reviewForm">
+                                        <form id="reviewForm" method="post" onsubmit="sendReview(); return false;">
                                             <div class="form-group">
                                               <label for="rating">ADD RATING</label>
                                               <div class="rating">
@@ -257,9 +258,9 @@
                                             <input type="hidden" name="productId" value="<%= product._id %>">
                                             <div class="form-group">
                                               <label for="reviewText">Review:</label>
-                                              <textarea id="reviewText" name="reviewText" required></textarea>
+                                              <textarea id="reviewText" name="reviewText"></textarea>
                                             </div>
-                                            <button type="submit" onclick="sendReview()">Submit Review</button>
+                                            <button type="submit">Submit Review</button>
                                         </form>                                  
                                     </div>
                                 </div>
@@ -375,6 +376,7 @@
     <script src="/assets/js/main.js?v=3.4"></script>
     <script src="/assets/js/shop.js?v=3.4"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script>
         async function addToCart(productId, countInStock) {
             try{
@@ -479,24 +481,24 @@
     }
 
     
-async function sendReview() {
+    async function sendReview() {
     const rating = document.querySelector('input[name="rating"]:checked');
     const reviewText = document.querySelector('#reviewText').value;
     const productId = document.querySelector('input[name="productId"]').value;
 
     if (!rating || !reviewText || !productId) {
-        await Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'Please fill in all required fields!'
+        toastr.warning('Please fill in all required fields!','',{
+            positionClass: 'toast-bottom-center'
         });
         return;
     }
+
     const requestData = {
         productId: productId,
         rating: rating.value,
         reviewText: reviewText
     };
+
     try {
         const response = await fetch('/reviews', {
             method: 'POST',
@@ -506,38 +508,18 @@ async function sendReview() {
             body: JSON.stringify(requestData)
         });
 
-        if (response.status === 200) {
-            await Swal.fire({
-                title: 'Review added successfully',
-                text: '',
-                icon: "success",
-                type: 'success',
-                timer: 1500,
-                timerProgressBar: true,
-            })
+        if (response.ok) {
+            const responseData = await response.json();
+            toastr.success('Review added successfully');
             window.location.reload();
-        }else if(response.status === 405){
-            await Swal.fire({
-                title:'Sorry! Out of Stock',
-                text:'You have already submitted a review for this product',
-                icon: 'Sorry',
-                timer: 1500
-            }); 
-        }else {
-            title = 'Error';
-            text = 'Failed to add item to the cart.';
-            iconClass = 'error';
+        } else if (response.status === 405) {
+            toastr.warning('You have already submitted a review for this product');
+        } else {
+            toastr.error('Failed to add item to the cart.');
         }
-    }catch(error){
+    } catch (error) {
         console.log(error.message);
-        await Swal.fire({
-            title: 'Error',
-            text: 'An error occurred.',
-            icon: 'error',
-            position: 'center',
-            showConfirmButton: false,
-            timer: 2000,
-        });
+        toastr.error('An error occurred.');
     }
 }
 
@@ -545,3 +527,14 @@ async function sendReview() {
  </script>
 </body>
 </html>
+
+
+
+
+<!-- const successAlert = document.createElement('div');
+            successAlert.innerHTML = `
+                <div class="alert alert-success" role="alert">
+                    ${responseData.message}
+                </div>
+            `;
+            document.getElementById('reviewForm').insertAdjacentElement('afterend', successAlert); -->

@@ -19,6 +19,28 @@
 .out-of-stock {
     color: red;
 }
+.custom-swal-container {
+    background-color: #f3f3f3;
+}
+
+.custom-swal-popup {
+    border-radius: 10px;
+}
+
+.custom-swal-title {
+    font-size: 18px;
+    color: #ff6b6b;
+}
+
+.custom-swal-icon {
+    display: none; /* Hide the default Swal icon */
+}
+
+.heart {
+    color: #ff6b6b;
+    font-size: 24px;
+}
+
 </style>
     <main class="main">
         <div class="page-header breadcrumb-wrap">
@@ -102,7 +124,7 @@
                                                 <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal">
                                                     <i class="fi-rs-search"></i>
                                                 </a>
-                                                <a aria-label="Add To Wishlist" class="action-btn hover-up" href="#">
+                                                <a aria-label="Add To Wishlist" class="action-btn hover-up" onclick="addToWhislist('<%= productItem._id %>')">
                                                     <i class="fi-rs-heart"></i>
                                                 </a>
                                                 <a aria-label="Compare" class="action-btn hover-up" href="#">
@@ -450,6 +472,8 @@ function getPriceRange(){
 
     return [minPrice.trim(), maxPrice.trim()]
 }
+
+
 function updateProductList(products) {
     const productListContainer = document.querySelector('.product-grid-3');
     productListContainer.innerHTML = "";
@@ -511,6 +535,73 @@ function updateProductList(products) {
     });
 }
 
+//whislist:
+async function addToWhislist(productId){
+    try{
+        let response = await fetch('/add/wishlist',{
+            method:'POST',
+            headers:{
+                'Content-Type':'application/json'
+            },
+            body:JSON.stringify({
+                productId           
+            })
+        });
+        if(response.status === 200){
+            await Swal.fire({
+                html: `
+               <img src="/assets/imgs/icons/Animation - 1709677882224.gif" alt="Wishlist Icon" style="width: 150px; height: 150px; display: block; margin: auto;">
+               <div>
+               <div >Item added to the whislist</div>
+               </div>
+                `,
+                timer:2500,
+                timerProgressBar:true,
+                showConfirmButton: true,
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    icon: 'custom-swal-icon',
+            },
+   
+       });
+
+       const wishlistCountElement = document.getElementById('wishlistCount');
+       if(wishlistCountElement){
+        if (wishlistCountElement.style.display === 'none') {
+               wishlistCountElement.style.display = 'inline'; 
+               wishlistCountElement.innerText = '1'; 
+           } else {
+               wishlistCountElement.innerText = parseInt(wishlistCountElement.innerText) + 1;
+           }
+       }
+
+        }else if(response.status === 409){
+            await Swal.fire({
+                html: `
+               <img src="/assets/imgs/icons/love.gif" alt="Wishlist Icon" style="width: 120px; height: 120px; display: block; margin: auto;">
+               <div>
+                <div style="font-family: 'Times New Roman', Times, serif;">Oops!</div>
+               <div >Item already exists</div>
+               </div>
+                `,
+                timer: 2500,
+                timerProgressBar: true
+            })
+        }
+    }catch(error){
+        console.log(error.message)
+        await Swal.fire({
+            title: 'Error',
+            text: 'An error occurred.',
+            icon: 'error',
+            position: 'center',
+            showConfirmButton: false,
+            timer: 2000,
+
+        });
+    }
+}
 
 </script>
 </body>

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+ const mongoose = require("mongoose");
 const User = require('../models/userModel');
 const Product = require('../models/productModel');
 const Category = require('../models/categoryModel');
@@ -6,6 +6,11 @@ const Cart = require('../models/cartModel');
 const Order = require('../models/orderModel');
 const randomString = require('randomstring');
 const Return = require('../models/orderReturn');
+const Wallet = require('../models/walletModel');
+const Wishlist = require('../models/wishlistModel')
+// require('dontenv').config()
+
+// const razorypaySecretKey = process.env.RAZORPAY_SECRET_KEY;
 
 //***********GenerateRandomStringToCheckIfItIsUnique***************
 const isOrderIdUnique = async (orderId) => {
@@ -52,6 +57,9 @@ const loadCheckoutPage = async(req,res) => {
         if(cartData && cartData.items){
             cartItemCount = cartData.items.length;
         }
+      
+        const wishlist = await Wishlist.findOne({ user: userData });
+        const wishlistCount = wishlist ? wishlist.items.length : 0;
       return res.render('user-checkout-page',{
         user:userData,
         category:categoryData, 
@@ -59,7 +67,8 @@ const loadCheckoutPage = async(req,res) => {
         cartItemCount:cartItemCount,
         fname:userData.firstname,
         lname:userData.lastname,
-        mobile:userData.mobile
+        mobile:userData.mobile,
+        wishlistCount:wishlistCount
 
       })      
     }catch(error){
@@ -137,17 +146,27 @@ const addOrderDetails = async (req, res) => {
           uniqueOrderId = randomString.generate(10);
       }
 
+      let paymentStatus = '';
+      if(paymentMethod === 'Cash On Delivery'){
+        paymentStatus = 'Pending';
+      }else{
+        paymentStatus = 'Success';
+      }
+      
+      const billTotal = cart.discountedTotal > 0 ? cart.discountedTotal : cart.billTotal;
+
       const orderData = {
           user: userId,
           cart: cart._id,
           oId: uniqueOrderId,
           orderStatus:'Pending',
           items: orderItems,
-          billTotal: cart.billTotal,
+          billTotal: billTotal,
           additionalMobile: additionalMobile,
           paymentMethod: paymentMethod,
           orderNotes: orderNotes,
-          shippingAddress: orderShippingAddress
+          shippingAddress: orderShippingAddress,
+          paymentStatus: paymentStatus
       };
 
       console.log("orderData", orderData);
@@ -158,6 +177,8 @@ const addOrderDetails = async (req, res) => {
 
       const order = new Order(orderData);
       await order.save();
+
+      await Cart.deleteOne({_id:cartId});
 
       return res.status(200).json({ success: true, message: 'Proceeded to checkout page successfully' });
   } catch (error) {
@@ -294,6 +315,8 @@ const loadOrderSummary = async(req,res) => {
       });
 
       const cartItemCount = cart ? cart.items.length : 0;
+      const wishlist = await Wishlist.findOne({ user: userData });
+      const wishlistCount = wishlist ? wishlist.items.length : 0;
       return res.render('order-summary',{
         user:userData,
         category:categoryData, 
@@ -303,7 +326,8 @@ const loadOrderSummary = async(req,res) => {
         fname:userData.firstname,
         lname:userData.lastname,
         mobile:userData.mobile,
-        email:userData.email
+        email:userData.email,
+        wishlistCount:wishlistCount
       })
   }catch(error){
     console.log(error.message);
@@ -334,6 +358,8 @@ const loadOrderHistory = async(req,res) => {
       });
 
       const cartItemCount = cart ? cart.items.length : 0;
+      const wishlist = await Wishlist.findOne({ user: userData });
+      const wishlistCount = wishlist ? wishlist.items.length : 0;
       res.render('order-history',{
         user:userData,
         category:categoryData, 
@@ -341,7 +367,8 @@ const loadOrderHistory = async(req,res) => {
         cart:cart,
         cartItemCount:cartItemCount,
         currentPage:currentPage,
-        totalPages:totalPages
+        totalPages:totalPages,
+        wishlistCount:wishlistCount
     })
 
    }catch(error){
@@ -361,7 +388,26 @@ const cancelOrder = async(req,res) => {
       return res.status(404).json({ success: false, message: "Order not found" });
     }
 
+    const totalRefundAmount = deleteOrder.billTotal;
+
+    const userId = req.session.user_id;
+    const userWallet = await Wallet.findOne({user:userId});
+
+    if (!userWallet) {
+      return res.status(404).json({ success: false, message: "User's wallet not found" });
+    }
+
+    //updating wallet
+    userWallet.walletBalance += totalRefundAmount;
+    userWallet.amountSpent -= totalRefundAmount;
+    userWallet.refundAmount += totalRefundAmount;
+    await userWallet.save();
+
+    // console.log('userWallet-status',userWallet);
+
+    //updating order
     deleteOrder.orderStatus = 'Cancelled';
+    deleteOrder.paymentStatus = 'Refunded'
     deleteOrder.cancellationReason = reason;
     await deleteOrder.save();
 
@@ -382,8 +428,6 @@ const cancelOrder = async(req,res) => {
     }
 
     return res.status(200).json({ success: true, message: 'Order cancelled successfully' });
-
-    
   }catch(error){
     console.log(error.message);
     return res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -414,6 +458,8 @@ const loadOrderTrack = async(req,res) => {
     }));
 
     const cartItemCount = cart ? cart.items.length : 0;
+    const wishlist = await Wishlist.findOne({ user: userData });
+    const wishlistCount = wishlist ? wishlist.items.length : 0;
     res.render('order-status',{
       user:userData,
       category:categoryData, 
@@ -421,6 +467,7 @@ const loadOrderTrack = async(req,res) => {
       returnStatus: returnData ? returnData.returnStatus : '',
       cart:cart,
       cartItemCount:cartItemCount,
+      wishlistCount:wishlistCount
   })
 
 
@@ -453,6 +500,7 @@ const sendReturnRequest = async (req, res) => {
       res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
 
 //***********DirectlyAddToCheckoutPage***************
 const addToCheckout = async (req, res) => {
@@ -512,6 +560,7 @@ const addToCheckout = async (req, res) => {
 
 
 
+
 module.exports = {
     loadCheckoutPage,
     addOrderDetails,
@@ -522,5 +571,5 @@ module.exports = {
     sendReturnRequest,
     updateInQuantity,
     removeProductOrder,
-    addToCheckout
+    addToCheckout,
 }

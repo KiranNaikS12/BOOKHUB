@@ -6,6 +6,9 @@ const config = require('../config/config');
 const auth = require('../middleware/userauth');
 const cart = require('../controller/cartController');
 const order = require('../controller/checkoutController');
+const wishlistController = require('../controller/wishlistController');
+const payment = require('../controller/paymentController');
+const coupon = require('../controller/couponController');
 
 const user_route = express();
 
@@ -89,12 +92,35 @@ user_route.get('/products/category',auth.isLogin,userController.loadDistinctCate
 user_route.get('/search',auth.isLogin,userController.searchProduct)
 user_route.get('/products/filter',auth.isLogin,userController.loadProductFilter);
 user_route.get('/products/filter/popularity',auth.isLogin,userController.productFilterPopularity)
-
-user_route.post('/reviews',userController.sendReview);
+//review
+user_route.post('/reviews',auth.isLogin,userController.sendReview);
+//password
 user_route.get('/password',auth.isLogin,userController.LoadchangePassword);
 user_route.post('/password',auth.isLogin,userController.changePassword);
 
+//whislist
+user_route.get('/wishlist',auth.isLogin,wishlistController.loadWhislist);
+user_route.post('/add/wishlist',wishlistController.addToWhislist);
+user_route.post('/remove/wishlist',wishlistController.removeWishlist);
+
+//payment-RazorPay
+user_route.post('/create/razorypay-order',auth.isLogin,payment.handleRazorPayOrderCreation);
+
+//Payment-wallet
+user_route.get('/wallet',auth.isLogin,payment.loadWallet);
+user_route.post('/add/wallet',auth.isLogin,payment.addWallet);
+user_route.post('/create/wallet-order',payment.handleWalletPaymentOrderCreation);
+user_route.get('/view/payments',auth.isLogin,payment.loadPaymentHistory)
+
+//coupon
+user_route.get('/coupon',auth.isLogin,coupon.loadCouponPage);
+user_route.post('/apply/coupon',coupon.applyCoupon)
+
 user_route.get('/logout', auth.isLogin, userController.userLogout)
+
+user_route.get('*',function(req,res){
+    res.redirect('/')
+})
 
 module.exports = {
     user_route

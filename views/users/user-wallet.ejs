@@ -1,0 +1,281 @@
+<%- include('../userLayout/header') %>
+<link href="/assets-admin/css/main.css" rel="stylesheet" type="text/css" />
+<style>
+    /* Custom Styles */
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .wallet-box {
+        border: 1px solid #ddd;
+        background-color: #fff;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .wallet-box h3 {
+        margin-top: 0;
+        color: #333;
+    }
+
+    .wallet-details {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .wallet-details h4 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    ul li {
+        margin-bottom: 10px;
+        color: #555;
+    }
+
+    /* Table Styles */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+    .text-black {
+    color: #000;
+    margin-left: 20px;
+    }
+</style>
+</head>
+
+<body>
+<main class="main">
+    <div class="container">
+        <div class="page-header breadcrumb-wrap">
+            <div class="breadcrumb">
+                <a href="index.html" rel="nofollow">Home</a>
+                <span></span> Wallet
+            </div>
+        </div>
+    </div>
+    <section class="mt-40 mb-40">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 position-relative">
+                    <div class="wallet-box">
+                        <div class="d-flex align-items-center">
+                            <span class="icon icon-sm rounded-circle bg-success-light mr-2"><i class="text-success material-icons md-account_balance_wallet"></i></span>
+                            <h6 class="mb-0 text-black">Wallet Balance</h6>
+                            <button class="btn btn-primary btn-sm position-absolute top-4 end-0 " style="z-index: 1; margin-right: 32px;" onclick="addWallet('<%= user._id %>','<%= user.email %>','<%= order._id %>')">Add Money</button>
+                        </div>
+                        <% if (wallet) { %>
+                            <p class="mt-2 mb-0 ml-80 text-black">Rs.<%= wallet.walletBalance %>.00/-</p>
+                        <% } %>
+                    </div>
+                </div>                                                                          
+                <div class="col-md-4">
+                    <div class="wallet-box">
+                        <div class="d-flex align-items-center">
+                            <span class="icon icon-sm rounded-circle bg-info-light mr-2"><i class="text-info material-icons md-shopping_basket"></i></span>
+                            <h6 class="mb-0 text-black">Total Transaction</h6>
+                        </div>
+                        <% if (wallet) { %>
+                            <p class="mt-2 mb-0 ml-80 text-black">Rs.<%= wallet.amountSpent %>.00/-</p>
+                        <% } %>
+                    </div>
+                </div>                
+                <div class="col-md-4">
+                    <div class="wallet-box">
+                        <div class="d-flex align-items-center">
+                            <span class="icon icon-sm rounded-circle bg-warning-light mr-2"><i class="text-warning material-icons md-receipt"></i></span>
+                            <h6 class="mb-0 text-black">Total Refunds</h6>
+                        </div>
+                        <% if (wallet) { %>
+                            <p class="mt-2 mb-0 ml-80 text-black">Rs.<%= wallet.refundAmount %>.00/-</p>
+                        <% } %>
+                    </div>
+                </div>                
+            </div>            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="wallet-details">
+                        <h4>My Details</h4>
+                        <p>First Name: <%= user.firstname  %></p>
+                        <p>Last Name: <%= user.lastname  %></p>
+                        <p>User Name: <%= user.username  %></p>
+                        <p>Email: <%= user.email  %></p>
+                        <p>Phone no: <%= user.mobile  %></p>
+                        <!-- Add more user details as needed -->
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="wallet-details">
+                        <h4>Payment History</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Amount Paid</th>
+                                    <th>Order Status</th>
+                                    <th>Payment Method</th>
+                                    <th>Payment Status</th>
+                                    <th>Transaction Date</th>
+                                    
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (order && order.length > 0) { %>
+                                    <% let hasPaymentHistory = false; %>
+                                    <% for(let i = 0; i < order.length; i++) { %>
+                                        <% if (order[i].paymentMethod !== 'Cash On Delivery') { %>
+                                            <tr>
+                                                <td><%= order[i].oId  %></td>
+                                                <td><%= order[i].billTotal %></td>
+                                                <td><%= order[i].orderStatus %></td>
+                                                <td><%= order[i].paymentMethod %></td>
+                                                <td><%= order[i].paymentStatus %></td>
+                                                <td><%= order[i].orderDate.toDateString() %></td>
+                                            </tr>
+                                            <% hasPaymentHistory = true; %>
+                                        <% } %> 
+                                    <% } %>
+                                    <% if (!hasPaymentHistory) { %>
+                                        <tr>
+                                            <td colspan="5">No payment History Available</td>
+                                        </tr>
+                                    <% } %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="5">No payment History Available</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>                                                       
+                        </table>
+                        <div class="row">
+                            <div class="col-md-12 mt-5 text-end">
+                                <a href="/view/payments">View More</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+    <!-- Preloader Start -->
+    <div id="preloader-active">
+        <div class="preloader d-flex align-items-center justify-content-center">
+            <div class="preloader-inner position-relative">
+                <div class="text-center">
+                    <h5 class="mb-5">Now Loading</h5>
+                    <div class="loader">
+                        <div class="bar bar1"></div>
+                        <div class="bar bar2"></div>
+                        <div class="bar bar3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Vendor JS-->
+    <script src="/assets/js/vendor/modernizr-3.6.0.min.js"></script>
+    <script src="/assets/js/vendor/jquery-3.6.0.min.js"></script>
+    <script src="/assets/js/vendor/jquery-migrate-3.3.0.min.js"></script>
+    <script src="/assets/js/vendor/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/plugins/slick.js"></script>
+    <script src="/assets/js/plugins/jquery.syotimer.min.js"></script>
+    <script src="/assets/js/plugins/wow.js"></script>
+    <script src="/assets/js/plugins/jquery-ui.js"></script>
+    <script src="/assets/js/plugins/perfect-scrollbar.js"></script>
+    <script src="/assets/js/plugins/magnific-popup.js"></script>
+    <script src="/assets/js/plugins/select2.min.js"></script>
+    <script src="/assets/js/plugins/waypoints.js"></script>
+    <script src="/assets/js/plugins/counterup.js"></script>
+    <script src="/assets/js/plugins/jquery.countdown.min.js"></script>
+    <script src="/assets/js/plugins/images-loaded.js"></script>
+    <script src="/assets/js/plugins/isotope.js"></script>
+    <script src="/assets/js/plugins/scrollup.js"></script>
+    <script src="/assets/js/plugins/jquery.vticker-min.js"></script>
+    <!-- Template  JS -->
+    <script src=".//assets/js/main.js?v=3.4"></script>
+    <script src=".//assets/js/shop.js?v=3.4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+    function addWallet(userId, email) {
+    Swal.fire({
+        title: "Please enter the amount",
+        input: 'number',
+        showCancelButton: true,
+        confirmButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'Amount is empty!'
+            }
+        }
+    }).then((amountResult) => {
+        if (amountResult.isConfirmed) {
+            const amount = amountResult.value;
+            fetch('/add/wallet', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId,
+                        email,
+                        amount,
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    
+                    const options = {
+                        key: 'rzp_test_45Ta17CKiww25f',
+                        amount: amount * 100,
+                        name: 'BOOKHUB',
+                        description: 'Add money to the wallet',
+                        handler: function(response) {
+                            window.location.reload()
+                        },
+                        prefill: {
+                            email: email
+                        },
+                        theme: {
+                            color: '#F37254'
+                        }
+                    };
+                    const rzp = new Razorpay(options);
+                    rzp.open();
+                })
+                .catch(error => {
+                    console.error('Error adding money to the wallet', error);
+                });
+        }
+    })
+}
+
+</script>
+</body>
+</html>

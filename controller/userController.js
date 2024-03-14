@@ -9,6 +9,7 @@ const Product = require('../models/productModel');
 const Category = require('../models/categoryModel');
 const Cart = require('../models/cartModel');
 const Review = require('../models/reviewModel');
+const Wishlist = require('../models/wishlistModel')
 
 
 const transporter = nodemailer.createTransport({
@@ -311,7 +312,7 @@ const loadHomePage = async(req,res) => {
     try{
        const categoryData = await Category.find({status:'active'})
        const  userData = await User.findById({_id:req.session.user_id})
-       const productData=await Product.find({is_published:1})
+       const productData=await Product.find({is_published:1});
        const cartData = await Cart.findOne({owner:userData}).populate('items.productId');
         if(cartData) {
             cartData.items = await Promise.all(cartData.items.map(async (item) => {
@@ -326,7 +327,13 @@ const loadHomePage = async(req,res) => {
         if(cartData && cartData.items){
             cartItemCount = cartData.items.length;
         }
-       res.render('home',{user:userData,product:productData,cartItemCount:cartItemCount,cart:cartData,category:categoryData})
+        let wishlistCount = 0;
+        const wishlist = await Wishlist.findOne({ user: userData });
+        if (wishlist && wishlist.items) {
+            wishlistCount = wishlist.items.length;
+        }
+
+       res.render('home',{user:userData,product:productData,cartItemCount:cartItemCount,cart:cartData,category:categoryData,wishlistCount:wishlistCount})
     }catch(error){
         console.log(error.message)
     }
@@ -337,9 +344,11 @@ const loadProfilePage = async(req,res) => {
     try{
         const userData = await User.findById({_id:req.session.user_id})
         const categoryData = await Category.find({status:'active'})
-        const cart = await Cart.findOne({owner:userData})
+        const cart = await Cart.findOne({owner:userData});
         const cartItemCount = cart ? cart.items.length : 0;
-        res.render('user-profile',{user:userData,category:categoryData, cartItemCount: cartItemCount})
+        const wishlist = await Wishlist.findOne({ user: userData });
+        const wishlistCount = wishlist ? wishlist.items.length : 0;
+        res.render('user-profile',{user:userData,category:categoryData, cartItemCount: cartItemCount,wishlistCount:wishlistCount})
     }catch(error){
         console.log(error.message)
     }
@@ -389,8 +398,10 @@ const loadEditUser = async(req,res) => {
         const categoryData = await Category.find({status:'active'})
         const cart = await Cart.findOne({owner:userData})
         const cartItemCount = cart ? cart.items.length : 0;
+        const wishlist = await Wishlist.findOne({ user: userData });
+        const wishlistCount = wishlist ? wishlist.items.length : 0;
         if(userData){
-            res.render('user-edit-page',{user:userData,category:categoryData,cartItemCount:cartItemCount});
+            res.render('user-edit-page',{user:userData,category:categoryData,cartItemCount:cartItemCount,wishlistCount:wishlistCount});
         }else{
             res.redirect('/profile')
         }
@@ -418,10 +429,12 @@ const loadupdateUserAddress = async(req,res) => {
         const userData = await User.findById({_id:id});
         const cart = await Cart.findOne({owner:userData})
         const cartItemCount = cart ? cart.items.length : 0;
+        const wishlist = await Wishlist.findOne({ user: userData });
+        const wishlistCount = wishlist ? wishlist.items.length : 0;
         if(userData){
             const address = userData.address.find(address => address._id == addressId);
             if(address){
-                res.render('user-edit-address',{user:userData, address: address,cartItemCount:cartItemCount});
+                res.render('user-edit-address',{user:userData, address: address,cartItemCount:cartItemCount,wishlistCount:wishlistCount});
             }else{
                 res.redirect('/profile');
             }           
@@ -605,12 +618,15 @@ const loadProduct = async(req,res) => {
         if (cartData && cartData.items) {
             cartItemCount = cartData.items.length;
         }
+        const wishlist = await Wishlist.findOne({ user: userData });
+        const wishlistCount = wishlist ? wishlist.items.length : 0;
         res.render('user-product-list',{user:userData,                  
         product:productWithStatus,
         category: categoryData,
         cartItemCount:cartItemCount,
         totalPages: totalPages,
-        currentPage: page
+        currentPage: page,
+        wishlistCount:wishlistCount
     })
     }catch(error){
         console.log(error.message)
@@ -647,14 +663,16 @@ const LoadIndIvidualProduct = async (req, res) => {
 
             // Find related products with the same category
             const relatedCategory = await Product.find({category:productData.category,_id:{$ne:productData._id}}).limit(4);
-          
+            const wishlist = await Wishlist.findOne({ user: userData });
+            const wishlistCount = wishlist ? wishlist.items.length : 0;
             res.render('user-product-view', {
                 product: productData,
                 user: userData,
                 category: categoryData,
                 cartItemCount: cartItemCount,
                 relatedCategory:relatedCategory,
-                review:reviewData
+                review:reviewData,
+                wishlistCount:wishlistCount
             });
         } else {
             res.redirect('/product-list');
@@ -713,7 +731,8 @@ const loadCategoryPage = async (req, res) => {
         if (cartData && cartData.items) {
             cartItemCount = cartData.items.length;
         }
-
+        const wishlist = await Wishlist.findOne({ user: userData });
+        const wishlistCount = wishlist ? wishlist.items.length : 0;
         res.render('user-category', {
             product: products,
             user: userData,
@@ -721,6 +740,7 @@ const loadCategoryPage = async (req, res) => {
             category: categoryData,
             categoryname: categoryName,
             currentPage: page,
+            wishlistCount:wishlistCount,
             totalPages: Math.ceil(await Product.countDocuments({ category: categoryName, status: { $ne: 'inactive' } })/perPage)
         });
 
@@ -810,6 +830,7 @@ const filterPopularity = async(req,res) => {
 const sendReview = async(req,res) => {
     try{
         const {productId, rating, reviewText} = req.body;
+        console.log(req.body);
         const userId = req.session.user_id; 
 
         
@@ -935,10 +956,13 @@ const LoadchangePassword = async(req,res) => {
         const userData = await User.findById({_id:id});
         const cart = await Cart.findOne({owner:userData})
         const cartItemCount = cart ? cart.items.length : 0;
+        const wishlist = await Wishlist.findOne({ user: userData });
+        const wishlistCount = wishlist ? wishlist.items.length : 0;
         if(userData){
             res.render('change-password',{
                 user:userData,
-                cartItemCount:cartItemCount
+                cartItemCount:cartItemCount,
+                wishlistCount:wishlistCount
             });
         }else{
             redirect('/profile')
@@ -977,6 +1001,7 @@ const changePassword = async(req,res) => {
 }
 
 
+
  
 module.exports = {
     loadLandindPage,
@@ -1013,6 +1038,6 @@ module.exports = {
     loadProductFilter,
     loadDistinctCategory,
     LoadchangePassword,
-    changePassword
+    changePassword,
     
 };

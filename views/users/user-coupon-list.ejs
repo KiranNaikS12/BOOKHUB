@@ -1,0 +1,169 @@
+<%- include('../userLayout/header') %>
+    <main class="main">
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="index.html" rel="nofollow">Home</a>
+                    <span></span> Shop
+                </div>
+            </div>
+        </div>
+        <section class="mt-50 mb-50">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="shop-product-fillter">
+                            <div class="totall-product">
+                                <p> We found <strong class="text-dark"><%= coupon.length  %></strong> coupons for you!</p>
+                            </div>
+                            <div class="sort-by-product-area">
+                                <!-- <div class="sort-by-cover mr-10">
+                                    <div class="sort-by-product-wrap">
+                                        <div class="sort-by">
+                                            <span><i class="fi-rs-apps"></i>Show:</span>
+                                        </div>
+                                        <div class="sort-by-dropdown-wrap">
+                                            <span> 50 <i class="fi-rs-angle-small-down"></i></span>
+                                        </div>
+                                    </div>
+                                    <div class="sort-by-dropdown">
+                                        <ul>
+                                            <li><a class="active" href="#">50</a></li>
+                                            <li><a href="#">100</a></li>
+                                            <li><a href="#">150</a></li>
+                                            <li><a href="#">200</a></li>
+                                            <li><a href="#">All</a></li>
+                                        </ul>
+                                    </div>
+                                </div> -->
+                            </div>
+                        </div>
+                        <div class="row product-grid-3">
+                            <% if (coupon.length > 0) { %>
+                                <% for (let i = 0; i < coupon.length; i++) { %>
+                                    <% let discount = coupon[i].discount; %>
+                                    <% let colorClass = ''; %>
+                                    <% if (discount > 12) { %>
+                                        <% colorClass = 'bg-danger'; %>
+                                    <% } else if (discount >= 8 && discount <= 12) { %>
+                                        <% colorClass = 'bg-success'; %>
+                                    <% } else { %>
+                                        <% colorClass = 'bg-primary'; %>
+                                    <% } %>
+                                    <div class="col-lg-3 col-md-4">
+                                        <div class="product-cart-wrap mb-30">
+                                            <div class="product-content-wrap" style="background-color: rgb(203, 248, 203);">
+                                                <div class="product-category">
+                                                    <span class="badge <%= colorClass %> badge-small">
+                                                        <%= Number(coupon[i].isActive) === 1 ? 'Active' : 'Not Active' %>
+                                                    </span>
+                                                </div>
+                                                <h2><a href="#"><%= coupon[i].name  %></a></h2>
+                                                <div>
+                                                    <p class="mb-1" style="font-size: 14px;">
+                                                        Coupon starting from Rs.<%= coupon[i].minimumAmount %>/-For your every purchase
+                                                    </p>
+                                                </div>
+                                                <p class="mb-2 text-muted">
+                                                    Upto <%= coupon[i].discount %>% for every purchase.
+                                                </p>
+                                                <div class="input-group mb-3">
+                                                    <input type="text" class="form-control coupon-code" value="<%= coupon[i].couponCode %>" readonly>
+                                                    <button class="btn" style="background-color: aliceblue; color: black;" type="button" onclick="copyCouponCode(this)">Copy</button>
+                                                </div>
+                                                <p class="mb-2 text-info">
+                                                    <% if (coupon[i].startDate && coupon[i].endDate) { %>
+                                                        <% 
+                                                            var startMonth = coupon[i].startDate.toLocaleString('default', { month: 'short' });
+                                                            var startDay = coupon[i].startDate.getDate();
+                                                            var endMonth = coupon[i].endDate.toLocaleString('default', { month: 'short' });
+                                                            var endDay = coupon[i].endDate.getDate();   
+                                                        %>
+                                                        Starting from <%= startMonth %> <%= startDay %> to <%= endMonth %> <%= endDay %>
+                                                    <% } else { %>
+                                                        Start and end dates are not available
+                                                    <% } %>
+                                                </p> 
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            <% } else { %>
+                                <p>No coupons available</p>
+                            <% } %>
+                        </div>                        
+                        <!--pagination-->
+                        <div class="pagination-area mt-15 mb-sm-5 mb-lg-0">
+                            <nav aria-label="Page navigation example">
+                                <ul class="pagination justify-content-start">
+                                    <li class="page-item active"><a class="page-link" href="#">01</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">02</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">03</a></li>
+                                    <li class="page-item"><a class="page-link dot" href="#">...</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">16</a></li>
+                                    <li class="page-item"><a class="page-link" href="#"><i class="fi-rs-angle-double-small-right"></i></a></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <!-- Preloader Start -->
+    <div id="preloader-active">
+        <div class="preloader d-flex align-items-center justify-content-center">
+            <div class="preloader-inner position-relative">
+                <div class="text-center">
+                    <h5 class="mb-5">Now Loading</h5>
+                    <div class="loader">
+                        <div class="bar bar1"></div>
+                        <div class="bar bar2"></div>
+                        <div class="bar bar3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Vendor JS-->
+    <script src="assets/js/vendor/modernizr-3.6.0.min.js"></script>
+    <script src="assets/js/vendor/jquery-3.6.0.min.js"></script>
+    <script src="assets/js/vendor/jquery-migrate-3.3.0.min.js"></script>
+    <script src="assets/js/vendor/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/plugins/slick.js"></script>
+    <script src="assets/js/plugins/jquery.syotimer.min.js"></script>
+    <script src="assets/js/plugins/wow.js"></script>
+    <script src="assets/js/plugins/jquery-ui.js"></script>
+    <script src="assets/js/plugins/perfect-scrollbar.js"></script>
+    <script src="assets/js/plugins/magnific-popup.js"></script>
+    <script src="assets/js/plugins/select2.min.js"></script>
+    <script src="assets/js/plugins/waypoints.js"></script>
+    <script src="assets/js/plugins/counterup.js"></script>
+    <script src="assets/js/plugins/jquery.countdown.min.js"></script>
+    <script src="assets/js/plugins/images-loaded.js"></script>
+    <script src="assets/js/plugins/isotope.js"></script>
+    <script src="assets/js/plugins/scrollup.js"></script>
+    <script src="assets/js/plugins/jquery.vticker-min.js"></script>
+    <script src="assets/js/plugins/jquery.theia.sticky.js"></script>
+    <script src="assets/js/plugins/jquery.elevatezoom.js"></script>
+    <!-- Template  JS -->
+    <script src="./assets/js/main.js?v=3.4"></script>
+    <script src="./assets/js/shop.js?v=3.4"></script>
+    <script>
+         function copyCouponCode(button) {
+    var inputField = button.parentElement.querySelector('.coupon-code');
+    inputField.select();
+    document.execCommand('copy');
+
+    button.textContent = 'Copied';
+
+    button.disabled = true;
+
+    setTimeout(function() {
+        button.textContent = 'Copy';
+        button.disabled = false;
+    }, 2000); 
+}
+    </script>
+</body>
+</html>

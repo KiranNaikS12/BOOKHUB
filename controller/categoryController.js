@@ -3,7 +3,7 @@ const { body, validationResult } = require('express-validator');
 // *******LoadCategoryPage************
 const loadCategorypage = async(req,res) => {
     try{
-        const currentPage = parseInt(req.query.page) || 1;4
+        const currentPage = parseInt(req.query.page) || 1;
         const perPage = 6;
         const startIndex = (currentPage - 1) * perPage;
         const categoryData = await Category.find({deleted_at:null}).skip(startIndex).limit(perPage);
