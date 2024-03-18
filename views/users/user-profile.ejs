@@ -128,6 +128,7 @@
                             <img src="/assets/imgs/account/profile.jpg" alt="Admin" class="rounded-circle" width="150">
                             <div class="mt-3">
                               <h4><%= user.username %></h4>
+                              <p class="text-secondary mb-1">My Refferal Code:<%= user.refCode  %></p>
                               <p class="text-secondary mb-1"><%= user.email  %></p>
                               <a href="/logout"><button class="btn cusotm-dark-green">Logout</button></a>
                             </div>
@@ -225,10 +226,6 @@
                                     </div>
                                     <div id="addressTypeError" class="error" style="color: red;"></div>
                                 </div>
-                                <button type="button" class="btn btn-outline-primary mb-3" id="useCurrentLocationButton">
-                                    <i class="material-symbols-outlined" style="margin-right: 5px;">my_location</i>
-                                    Use My Current Location
-                                </button>
                                 <button type="submit" class="btn" style="background-color: #004643; color: white;">Submit</button>
                             </form>
                         </div>                                               
@@ -447,10 +444,6 @@
         return streetErrors.length === 0 && cityErrors.length === 0 && stateErrors.length === 0 && countryErrors.length === 0 && postalCodeErrors.length === 0 && addressTypeErrors.length === 0;
   
     }
-
-
-
-
     </script>   
 </body>
 </html>

@@ -473,7 +473,8 @@ const loadOrderTrack = async(req,res) => {
 
   }catch(error){
     console.log(error);
-    return res.status(500).json({ success: false, message: "Internal Server Error" });
+    const requestedRoute = req.url;
+    res.render('user-404-page',{message:`The following route '${requestedRoute}' is not available`});
   }
 }
 

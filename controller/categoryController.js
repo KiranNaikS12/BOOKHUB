@@ -26,18 +26,19 @@ const insertCategory = async(req,res) => {
          const nameRegex = '^[^\p{L}]{0,20}$'
          const validationRules = [
             body('name').notEmpty().withMessage('Category name is required'),
-            body('description').notEmpty().withMessage('description cannot be empty')
+            body('description').notEmpty().withMessage('Description is required')
          ];
          await Promise.all(validationRules.map(validation => validation.run(req)));
          const errors = validationResult(req);
          if(!errors.isEmpty()){
-            return res.render('admin-category-page',{errorMessage:errors.array()[0].msg, category: []})
+            return res.render('admin-category-page',{errorMessage:errors.array()[0].msg, category: [], totalPages:0})
          }else{
             const {name,description} = req.body;
             const categoryExists = await Category.findOne({name});
             if(categoryExists){
-                res.render('admin-category-page', { errorMessage: 'category already exists', category: [] });
+                res.render('admin-category-page', { errorMessage: 'category already exists', category: [] , totalPages:0});
             }else{
+                
                 const category = new Category({
                     name,
                     description,
@@ -47,7 +48,7 @@ const insertCategory = async(req,res) => {
                 if(categoryData){        
                     res.redirect('/admin/category')
             }else{
-                res.render('admin-category-page',{errorMessage:'Something went wrong'})
+                res.render('admin-category-page',{errorMessage:'Something went wrong',totalPages:0})
             }
         }
     }

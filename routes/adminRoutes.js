@@ -49,9 +49,14 @@ admin_route.get('/update/coupon',auth.isAdminLogin,adminController.loadUpdateCou
 admin_route.post('/update/coupon',adminController.updateCouponDetails);
 admin_route.get('/remove/coupon',auth.isAdminLogin,adminController.removeCoupon);
 
+//Sales-Report:
+admin_route.get('/sales/report',auth.isAdminLogin,adminController.loadSalesReport);
+admin_route.get('/filter/sales',auth.isAdminLogin,adminController.filterSalesReport);
+admin_route.get('/filter/revenue',auth.isAdminLogin,adminController.filterTotalRevenue);
+
 //used as a default route for adminPage
 admin_route.get('*',function(req,res){
-    res.redirect('/admin');
+    res.redirect('/admin/home');
 })
 
 module.exports = admin_route;

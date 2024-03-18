@@ -147,7 +147,6 @@
                                 <% if (order && order.length > 0) { %>
                                     <% let hasPaymentHistory = false; %>
                                     <% for(let i = 0; i < order.length; i++) { %>
-                                        <% if (order[i].paymentMethod !== 'Cash On Delivery') { %>
                                             <tr>
                                                 <td><%= order[i].oId  %></td>
                                                 <td><%= order[i].billTotal %></td>
@@ -157,7 +156,6 @@
                                                 <td><%= order[i].orderDate.toDateString() %></td>
                                             </tr>
                                             <% hasPaymentHistory = true; %>
-                                        <% } %> 
                                     <% } %>
                                     <% if (!hasPaymentHistory) { %>
                                         <tr>
@@ -237,44 +235,45 @@
     }).then((amountResult) => {
         if (amountResult.isConfirmed) {
             const amount = amountResult.value;
-            fetch('/add/wallet', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        userId,
-                        email,
-                        amount,
+            const options = {
+                key: 'rzp_test_45Ta17CKiww25f',
+                amount: amount * 100,
+                name: 'BOOKHUB',
+                description: 'Add money to the wallet',
+                handler: function(response) {
+                    // Razorpay payment success handler
+                    fetch('/add/wallet', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            userId,
+                            email,
+                            amount,
+                        })
                     })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    
-                    const options = {
-                        key: 'rzp_test_45Ta17CKiww25f',
-                        amount: amount * 100,
-                        name: 'BOOKHUB',
-                        description: 'Add money to the wallet',
-                        handler: function(response) {
-                            window.location.reload()
-                        },
-                        prefill: {
-                            email: email
-                        },
-                        theme: {
-                            color: '#F37254'
-                        }
-                    };
-                    const rzp = new Razorpay(options);
-                    rzp.open();
-                })
-                .catch(error => {
-                    console.error('Error adding money to the wallet', error);
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        window.location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Error adding money to the wallet', error);
+                    });
+                },
+                prefill: {
+                    email: email
+                },
+                theme: {
+                    color: '#F37254'
+                }
+            };
+            const rzp = new Razorpay(options);
+            rzp.open();
         }
-    })
+    });
 }
+
 
 </script>
 </body>

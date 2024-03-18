@@ -104,11 +104,13 @@ const loadEditProductDetails = async(req,res) => {
             res.redirect('/admin/product/lists')
         }
     }catch(error){
-        console.log(error.message)
+        console.log(error.message);
+        const requestedRoute = req.url;
+        res.render('admin-404-page',{message:`The following route '${requestedRoute}' is not available`});
     }
 }
 
-// *********EditProductDetails**********
+//*********EditProductDetails**********
 const loadUpdateProductDetails = async (req, res) => {
     try {
         const id = req.body.product_id;
@@ -149,7 +151,7 @@ const loadUpdateProductDetails = async (req, res) => {
             }
         });
         if (productData) {
-            res.redirect('/admin/product/lists');
+            res.redirect(`/admin/product/edit?id=${id}`);
         }
     } catch (error) {
         console.log(error.message);

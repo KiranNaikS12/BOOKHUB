@@ -227,6 +227,8 @@
                                                 <p style="color: green; font-size: 25px;"><%= successMessage %></p>
                                             <% } else if (typeof errorMessage !== 'undefined') { %>
                                                 <p style="color: red; font-size: 16px; font-family: 'Times New Roman', Times, serif;"><%= errorMessage %></p>
+                                            <% } else if (typeof invalidReferralCodeMessage !== 'undefined') { %>
+                                                <p style="color: red; font-size: 16px; font-family: 'Times New Roman', Times, serif;"><%= invalidReferralCodeMessage %></p>
                                             <% } %>
 
                                         </div>
@@ -251,6 +253,9 @@
                                             <div class="form-group">
                                                 <input type="text"  name="mobile" id="mobile" placeholder="Enter Phone no." data-bs-toggle="tooltip" data-bs-placement="top" title="Phone number shoul contain 10 digits and valid number"  data-bs-trigger="hover" data-bs-delay="500" required>
                                                 <span class="error-message" id="phoneErrorMessage"></span>
+                                            </div>
+                                            <div class="form-group">
+                                                <input type="text"  name="referedBy" id="referedBy" placeholder="Enter refferal code if any" data-bs-toggle="tooltip" data-bs-placement="top" title="Use refferl code to get 100 rupees bonous"  data-bs-trigger="hover" data-bs-delay="500">
                                             </div>
                                             <div class="form-group">
                                                 <div class="password-container">

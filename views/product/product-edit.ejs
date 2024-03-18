@@ -72,34 +72,19 @@
                 </li>
                 <li class="menu-item has-submenu">
                     <a class="menu-link" href="#"> <i class="icon material-icons md-shopping_cart"></i>
-                        <span class="text">Orders</span>
+                        <span class="text">Manage Orders</span>
                     </a>
                     <div class="submenu">
-                        <a href="#">Order list 1</a>
-                        <a href="#">Order list 2</a>
-                        <a href="#">Order detail</a>
-                        <a href="#">Order tracking</a>
-                        <a href="#">Invoice</a>
+                        <a href="/admin/order/lists">Order </a>
                     </div>
                 </li>
                 <li class="menu-item has-submenu">
-                    <a class="menu-link" href="page-sellers-cards.html"> <i class="icon material-icons md-store"></i>
-                        <span class="text">Sellers</span>
+                    <a class="menu-link"> <i class="icon material-icons md-store"></i>
+                        <span class="text">Manage Coupon</span>
                     </a>
                     <div class="submenu">
-                        <a href="#">Sellers cards</a>
-                        <a href="#">Sellers list</a>
-                        <a href="#">Seller profile</a>
-                    </div>
-                </li>
-                <li class="menu-item has-submenu">
-                    <a class="menu-link" href="#"> <i class="icon material-icons md-monetization_on"></i>
-                        <span class="text">Transactions</span>
-                    </a>
-                    <div class="submenu">
-                        <a href="#">Transaction 1</a>
-                        <a href="#">Transaction 2</a>
-                        <a href="#">Transaction Details</a>
+                        <a href="/admin/coupon">Add Coupon</a>
+                        <a href="/admin/view/coupons">View Coupon</a>
                     </div>
                 </li>
                 <li class="menu-item">
@@ -107,30 +92,17 @@
                         <span class="text">Reviews</span>
                     </a>
                 </li>
-                <li class="menu-item">
-                    <a class="menu-link" href="#"> <i class="icon material-icons md-stars"></i>
-                        <span class="text">Brands</span> </a>
-                </li>
-                <li class="menu-item">
-                    <a class="menu-link" disabled href="#"> <i class="icon material-icons md-pie_chart"></i>
-                        <span class="text">Statistics</span>
-                    </a>
-                </li>
             </ul>
             <hr>
             <ul class="menu-aside">
-                <li class="menu-item has-submenu">
+                <li class="menu-item">
+                    <a class="menu-link" href="/admin/sales/report"> <i class="icon material-icons md-local_offer"></i>
+                        <span class="text"> Sales Report </span>
+                    </a>
+                </li>
+                <li class="menu-item ">
                     <a class="menu-link" href="#"> <i class="icon material-icons md-settings"></i>
                         <span class="text">Settings</span>
-                    </a>
-                    <div class="submenu">
-                        <a href="#">Setting sample 1</a>
-                        <a href="#">Setting sample 2</a>
-                    </div>
-                </li>
-                <li class="menu-item">
-                    <a class="menu-link" href="#"> <i class="icon material-icons md-local_offer"></i>
-                        <span class="text"> Starter page </span>
                     </a>
                 </li>
             </ul>
@@ -217,29 +189,40 @@
                             <div class="mb-4">
                                 <label for="product_title" class="form-label">Product title</label>
                                 <input type="text" placeholder="Type here" class="form-control" id="product_title" name="title" value="<%= product.title %>">
+                                <span class="error-message" id="tittleErrorMessage"></span>
                             </div>
                             <div class="card mb-4">
                                 <div class="card-body">
                                     <div>
                                         <label class="form-label">Description</label>
                                         <textarea placeholder="Type here" class="form-control" rows="4" name="description"><%= product.description %></textarea>
+                                        <span class="error-message" id="descriptionErrorMessage"></span>
                                     </div>
                                 </div>
                             </div>
                                 <div class="row">
                                     <div class="col-lg-4">
                                         <div class="mb-4">
-                                            <label class="form-label">Regular price</label>
+                                            <label class="form-label">Unit price</label>
                                             <div class="row gx-2">
                                                 <input type="text" placeholder="Type here" class="form-control" name="price" value="<%= product.price %>">
+                                                <span class="error-message" id="priceErrorMessage"></span>
                                             </div>
                                         </div>
+
                                     </div>
                                     <div class="col-lg-4">
                                         <div class="mb-4">
                                             <label class="form-label">Discount Percentage</label>
                                             <input type="number" placeholder="Type here" class="form-control" class="form-control" name="discountPrice" id="discountPrice" value="<%= product.discountPrice %>">
+                                            <span class="error-message" id="discountPriceErrorMessage"></span>
                                         </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="mb-4">
+                                        <label class="form-label">After Applying Disocunt:</label>
+                                        <span id="discountedPrice"><%= product.afterDiscount  %></span>
                                     </div>
                                 </div>
                         </div>
@@ -255,18 +238,21 @@
                                         <div class="mb-4">
                                             <label for="product_name" class="form-label">Author Name</label>
                                             <input type="text" placeholder="Type here" class="form-control" id="product_sku" name="author" value="<%= product.author %>">
+                                            <span class="error-message" id="AuthorErrorMessage"></span>
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="mb-4">
                                             <label for="product_name" class="form-label">ISBN CODE</label>
                                             <input type="text" placeholder="Type here" class="form-control" id="product_color" name="ISBN" value="<%= product.ISBN %>">
+                                            <span class="error-message" id="ISBNErrorMessage"></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mb-4">
                                     <label for="product_name" class="form-label">Total Stocks</label>
                                     <input type="number" placeholder="Type here" class="form-control" name="countInStock" id="countInStock" value="<%= product.countInStock %>">
+                                    <span class="error-message" id="countInStockErrorMessage"></span>
                                 </div>
                         </div>
                     </div> <!-- card end// -->
@@ -291,6 +277,7 @@
                 <div>
                     <label class="form-label">Choose Additional Images</label>
                     <input class="form-control" type="file" accept="image/*" id="new-images" name="images" onchange="previewImages(event)" multiple>
+                    <span class="error-message" id="imageErrorMessage"></span>
                 </div>
                 <div id="imagePreview" class="mt-3"></div>
             </div>                        
@@ -311,6 +298,7 @@
                                                 <option value="<%= currentCategory %>" <%= currentCategory === product.category ? 'selected' : '' %>><%= currentCategory %></option>
                                             <% } %>
                                         <% } %>
+                                        <span class="error-message" id="categoryErrorMessage"></span>
                                     </select><br><br>
                                 </div>
                                 <input type="hidden" name="product_id" value="<%= product.id %>">
@@ -406,6 +394,102 @@
             });
         });
     });
+
+
+    //to display discount in ui
+    document.getElementById('discountPrice').addEventListener('input', function() {
+        const price = parseInt(document.getElementById('product_price').value);
+        const discountPercentage = parseInt(this.value);
+        const discountedPrice = Math.floor(price - (price * (discountPercentage / 100)));
+        document.getElementById('discountedPrice').textContent = discountedPrice;
+    });
+
+    //validation
+    function validateInput(inputElement, errorMessageElement, validationRegex, minLength, maxLength, emptyErrorMessage, invalidErrorMessage, consecutiveSameDigitsErrorMessage) {
+    let input = document.getElementById(inputElement);
+    let error = document.getElementById(errorMessageElement);
+
+    function isWithinRange(value, min, max) {
+            return value >= min && value <= max;
+        }
+
+    if (inputElement === 'category') {
+        let select = document.getElementById(inputElement);
+        select.addEventListener('change', function() {
+            if (select.value === '') {
+                select.classList.add('invalid');
+                error.innerHTML = `<span style="color: red;">${emptyErrorMessage}</span>`;
+            } else {
+                select.classList.remove('invalid');
+                error.innerHTML = '';
+            }
+        });
+    } else {
+        input.addEventListener('blur', function() {
+            const inputValue = input.value.trim();
+
+            if (inputElement === 'image') {
+                if (input.files.length === 0) {
+                    input.classList.add('invalid');
+                    error.innerHTML = `<span style="color: red;">${emptyErrorMessage}</span>`;
+                } else {
+                    input.classList.remove('invalid');
+                    error.innerHTML = '';
+                }
+            } else {
+                if (inputValue === '') {
+                    input.classList.add('invalid');
+                    error.innerHTML = `<span style="color: red;">${emptyErrorMessage}</span>`;
+                } else if (inputValue.length < minLength || (maxLength !== false && inputValue.length > maxLength) || !validationRegex.test(inputValue)) {
+                    input.classList.add('invalid');
+                    error.innerHTML = `<span style="color: red;">${invalidErrorMessage}</span>`;
+                } else if (inputElement === 'title' && hasConsecutiveSameCharacters(inputValue)) {
+                    input.classList.add('invalid');
+                    error.innerHTML = `<span style="color: red;">${consecutiveSameDigitsErrorMessage}</span>`;
+                } else if (inputElement === 'ISBN' && hasConsecutiveSameCharacters(inputValue)) {
+                    input.classList.add('invalid');
+                    error.innerHTML = `<span style="color: red;">${consecutiveSameDigitsErrorMessage}</span>`;
+                } else if(inputElement === 'countInStock'){
+                    if(!isWithinRange(parseInt(inputValue), 1, 100)){
+                        input.classList.add('invalid');
+                        error.innerHTML = `<span style="color: red;">${invalidErrorMessage}</span>`;
+                    }
+                } else {
+                        input.classList.remove('invalid');
+                        error.innerHTML = '';
+                }
+            }
+        });
+
+        input.addEventListener('focus', function() {
+            if (input.classList.contains('invalid')) {
+                input.classList.remove("invalid");
+                error.innerHTML = '';
+            }
+        });
+    }
+}
+
+validateInput('title', 'tittleErrorMessage', /^[A-Za-z0-9\s\-']+$/, 1, 60, 'Title should be required.', 'Title name cannot exceed more than 60 letters', '');
+validateInput('authorname', 'AuthorErrorMessage', /^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/, 1, 50, 'Author name should be required.', 'Author name should only contain letters and spaces.', null);
+validateInput('ISBN', 'ISBNErrorMessage', /^\d{13}$/,false,13, 'ISBN should be required.', 'ISBN must contain exactly 13 digits.','');
+validateInput('description', 'descriptionErrorMessage', /^[A-Za-z0-9\s\-']+$/, 1, false, 'Description should be required.', '');
+validateInput('image', 'imageErrorMessage', null, null, null, 'Please select an image.', null);
+validateInput('category', 'categoryErrorMessage', null, null, null, 'Please select a category', null);
+validateInput('price', 'priceErrorMessage', /^\d+(\.\d+)?$/, false, false, 'Price should be required', 'Price can only contain digits and an optional decimal point',null);
+validateInput('countInStock', 'countInStockErrorMessage', /^\d+$/, false, false, 'Count in Stock should be required.', 'Count in Stock should be a number positive number.', '');
+validateInput('discountPrice','discountPriceErrorMessage',/^\d+$/,false,false, 'Discount price is required or type 0','Disocunt price should be a positive number','')
+
+function hasConsecutiveSameCharacters(inputValue) {
+    for (let i = 0; i < inputValue.length - 1; i++) {
+        if (inputValue[i] === inputValue[i + 1]) {
+            return true;
+        }
+    }
+    return false;
+}
+    
+
     </script>
 </body>
 </html>

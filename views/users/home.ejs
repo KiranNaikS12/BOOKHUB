@@ -251,16 +251,17 @@
                         <div class="header-action-right">
                             <div class="header-action-2">
                                 <div class="header-action-icon-2">
-                                    <% if (wishlistCount >0) { %>
-                                        <a href="/wishlist">
-                                            <i class="material-symbols-outlined">
-                                                favorite
-                                            </i>
-                                            <span class="pro-count blue"><%= wishlistCount %></span>
-                                        </a>
-                                            <% } else { %>
-                                    <% } %>
-                                </div>
+                                    <a href="/wishlist">
+                                        <i class="material-symbols-outlined">
+                                            favorite
+                                        </i>
+                                <% if (wishlistCount >0) { %>
+                                        <span class="pro-count blue " id="wishlistCount"><%= wishlistCount %></span>
+                                        <% } else { %>
+                                            <span class="pro-count blue" id="wishlistCount" style="display: none;">0</span>
+                                <% } %>
+                                    </a>
+                            </div>
                                 <div class="header-action-icon-2">
                                     <% if (cartItemCount >0) { %>
                                     <a class="mini-cart-icon" href="/cart">

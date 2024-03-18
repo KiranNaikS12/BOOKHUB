@@ -23,22 +23,21 @@
       <!-- Your OTP form goes here -->
       <form method="post" action="/verify-otp" id="otpForm">
         <% if (typeof successMessage !== 'undefined') { %>
-          <p style="color: green; font-size: 18px;"><%= successMessage %></p>
-      <% } else if (typeof errorMessage !== 'undefined') { %>
-          <p style="color: red; font-size: 18px;"><%= errorMessage %></p>
-      <% } %>
+        <p style="color: green; font-size: 18px;"><%= successMessage %></p>
+        <% } else if (typeof errorMessage !== 'undefined') { %>
+        <p style="color: red; font-size: 18px;"><%= errorMessage %></p>
+        <% } %>
         <div>
           <label for="otp">Enter OTP:</label>
           <input type="text" id="otp" name="otp" required />
           <button type="submit" class="btn btn-primary">Verify OTP</button>
-          <a href="/register" id="goBackLink" class="btn btn-secondary mt-3"
-            >Back to Registration</a
-          >
+          <a href="/register" id="goBackLink" class="btn btn-secondary mt-3">Back to Registration</a>
         </div>
         <span class="error-message" id="otpErrorMessage"></span>
       </form>
-      <a id="resendOTP">Resend OTP</a>
-    </div>
+      <a id="resendOTP" style="display: none;">Resend OTP</a>
+      <div id="timer" style="display: none;">Resend OTP in <span id="countdown">60</span> seconds</div>
+    </div>    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
       function validateOTP(
@@ -102,6 +101,10 @@
             }
         });
 
+document.addEventListener('DOMContentLoaded', function () {
+  showResendOTPButton();
+});        
+
 document.getElementById('resendOTP').addEventListener('click', function() {
     fetch('/resend-otp', {
         method: 'POST',
@@ -119,6 +122,7 @@ document.getElementById('resendOTP').addEventListener('click', function() {
                 text:'',
                 text: data.message
             });
+          
         } else {
             Swal.fire({
                 icon: 'error',
@@ -137,6 +141,28 @@ document.getElementById('resendOTP').addEventListener('click', function() {
     });
 });
 
+function showResendOTPButton() {
+  const resendButton = document.getElementById('resendOTP');
+  const timerElement = document.getElementById('timer');
+  const countdownElement = document.getElementById('countdown');
+
+  resendButton.style.display = 'none';
+  timerElement.style.display = 'block';
+
+  let timeLeft = 60;
+  countdownElement.textContent = timeLeft;
+
+  const timeInterval = setInterval(() => {
+    timeLeft--;
+    if(timeLeft <= 0){
+      clearInterval(timeInterval);
+      resendButton.style.display = 'block';
+      timerElement.style.display = 'none';
+    } else {
+      countdownElement.textContent = timeLeft;
+    }
+  }, 1000);
+}
 </script>
 </body>
 </html>

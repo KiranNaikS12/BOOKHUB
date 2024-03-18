@@ -121,6 +121,7 @@
                                                     <button class="btn  btn-md" name="Apply">Apply Coupon</button>
                                                 </div>
                                             </form>
+                                            <a href="/coupon"><strong>View available Coupons</strong></a>
                                         </div>
                                     </div>
                                 </div>
@@ -745,73 +746,123 @@ function initiateRazorPayPayment(cartId,billTotal, email){
 
 // Function to place order after successful payment
 function placeOrderAfterPayment(cartId){
-    fetch('/add/order',{
-        method:'PUT',
-        headers:{
-            'Content-Type':'application/json'
-        },
-        body:JSON.stringify({
-            cartId:cartId,
-            paymentMethod: 'Razor Pay'
-        })
-    })
-    .then(response =>{
-        if(response.status === 200) {
+    const shippingAddressCheckbox = document.querySelector('input[name="shippingAddress"]');
+    const shippingAddress = shippingAddressCheckbox.checked;
+
+    let shippingAddressValue = null;
+    if (shippingAddress) {
+        // Validate shipping address fields
+        const street = document.querySelector('input[name="street"]').value;
+        const city = document.querySelector('input[name="city"]').value;
+        const state = document.querySelector('input[name="state"]').value;
+        const country = document.querySelector('select[name="country"]').value;
+        const postalCode = document.querySelector('input[name="postalCode"]').value;
+        const addressType = document.querySelector('input[name="addressType"]:checked');
+
+        
+        if (!street || !city || !state || !country || !postalCode || !addressType) {
             Swal.fire({
-            title:'Payment Successfull',
-            text:'',
-            icon:'success',
-            type:'success',
-            confirmButtonColor: '#4CAF50',
-            confirmButtonText: 'Order Summary'
-            }); 
-            setTimeout(() => {
-                window.location.href = '/orders';
-            }, 2000);
-        }else{
+                title: 'Error',
+                text: 'Please fill in all required shipping address fields',
+                icon: 'error'
+            });
+            return; 
+        }
+
+    
+        const postalCodeRegex = /^[1-9][0-9]{5}$/; 
+        if (!postalCodeRegex.test(postalCode)) {
             Swal.fire({
-            title: 'Error',
-            text: 'Failed to order',
-            icon: 'error'
-        }); 
+                title: 'Error',
+                text: 'Please enter a valid postal code',
+                icon: 'error'
+            });
+            return; 
+        }
+
+        shippingAddressValue = {
+            street,
+            city,
+            state,
+            country,
+            postalCode,
+            addressType: addressType.value
+        };
     }
-    })
-    .catch(error => {
-        console.error('Error creating RazorPay order:', error);
-    })
-}
+    
+    const email = document.querySelector('input[name="email"]').value;
+    const cartSubTotal = parseFloat(document.getElementById('totalAmount').innerText.replace('Rs.','').replace('/-',''));
+    const totalAmount = cartSubTotal;
+    const additionalMobile = document.querySelector('input[name="additionalMobile"]').value;
+    const paymentMethodRadio = document.querySelectorAll('input[name="paymentMethod"]');
+    
+    let paymentMethod = null;
+    paymentMethodRadio.forEach(method => {
+        if (method.checked) {
+            paymentMethod = method.value;
+        }
+    });
 
+    if (!paymentMethod === '') {
+        Swal.fire({
+            title: 'Reminder',
+            text: 'Payment method pending',
+            icon: 'warning'
+        });
+        return; 
+    }
+    const orderNotes = document.querySelector('textarea[name="orderNotes"]').value;
+    
+    const bodyData = {
+        cartId,
+        additionalMobile,
+        paymentMethod,
+        orderNotes,
+        shippingAddress: shippingAddressValue
+    };
 
-function placeOrderAfterPaymentWithWallet(cartId){
-    fetch('/add/order',{
+    fetch('/add/order/razorpay',{
         method:'PUT',
         headers:{
             'Content-Type':'application/json'
         },
-        body:JSON.stringify({
-            cartId: cartId,
-            paymentMethod: 'Wallet'
-        })
+        body:JSON.stringify(bodyData)
     })
-    .then(response =>{
-        if(response.status === 200) {
+    .then(response => {
+        if (response.status === 200) {
             Swal.fire({
-                title:'Payment Successfull',
+                title:'Order Successfull',
                 text:'',
                 icon:'success',
                 type:'success',
                 confirmButtonColor: '#4CAF50',
                 confirmButtonText: 'Order Summary'
-            }); 
+            });
             setTimeout(() => {
                 window.location.href = '/orders';
             }, 2000);
-        } else {
-            Swal.fire({
+        } else if (response.status === 400) {   
+        response.json().then(data => {
+            if (data.message === 'User does not have a default address') {
+                Swal.fire({
+                    title: 'Warning',
+                    text: 'User does not have a default address. Please set a default address.',
+                    icon: 'warning'
+                });
+            } else {               
+                Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred while processing your request',
+                    icon: 'error'
+                });
+            }
+        });
+        }else{
+                Swal.fire({
                 title: 'Error',
                 text: 'Failed to order',
                 icon: 'error'
-            }); 
+            });
         }
     })
     .catch(error => {
@@ -819,6 +870,137 @@ function placeOrderAfterPaymentWithWallet(cartId){
     })
 }
 
+
+
+
+function placeOrderAfterPaymentWithWallet(cartId){
+    const shippingAddressCheckbox = document.querySelector('input[name="shippingAddress"]');
+    const shippingAddress = shippingAddressCheckbox.checked;
+
+    let shippingAddressValue = null;
+    if (shippingAddress) {
+        // Validate shipping address fields
+        const street = document.querySelector('input[name="street"]').value;
+        const city = document.querySelector('input[name="city"]').value;
+        const state = document.querySelector('input[name="state"]').value;
+        const country = document.querySelector('select[name="country"]').value;
+        const postalCode = document.querySelector('input[name="postalCode"]').value;
+        const addressType = document.querySelector('input[name="addressType"]:checked');
+
+        
+        if (!street || !city || !state || !country || !postalCode || !addressType) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Please fill in all required shipping address fields',
+                icon: 'error'
+            });
+            return; 
+        }
+
+    
+        const postalCodeRegex = /^[1-9][0-9]{5}$/; 
+        if (!postalCodeRegex.test(postalCode)) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Please enter a valid postal code',
+                icon: 'error'
+            });
+            return; 
+        }
+
+        shippingAddressValue = {
+            street,
+            city,
+            state,
+            country,
+            postalCode,
+            addressType: addressType.value
+        };
+    }
+    
+    const email = document.querySelector('input[name="email"]').value;
+    const cartSubTotal = parseFloat(document.getElementById('totalAmount').innerText.replace('Rs.','').replace('/-',''));
+    const totalAmount = cartSubTotal;
+    const additionalMobile = document.querySelector('input[name="additionalMobile"]').value;
+    const paymentMethodRadio = document.querySelectorAll('input[name="paymentMethod"]');
+    
+    let paymentMethod = null;
+    paymentMethodRadio.forEach(method => {
+        if (method.checked) {
+            paymentMethod = method.value;
+        }
+    });
+
+    if (!paymentMethod === '') {
+        Swal.fire({
+            title: 'Reminder',
+            text: 'Payment method pending',
+            icon: 'warning'
+        });
+        return; 
+    }
+    const orderNotes = document.querySelector('textarea[name="orderNotes"]').value;
+    
+    const bodyData = {
+        cartId,
+        additionalMobile,
+        paymentMethod,
+        orderNotes,
+        shippingAddress: shippingAddressValue
+    };
+
+    fetch('/add/order/wallet',{
+        method:'PUT',
+        headers:{
+            'Content-Type':'application/json'
+        },
+        body:JSON.stringify(bodyData)
+    })
+    .then(response => {
+        if (response.status === 200) {
+            Swal.fire({
+                title:'Order Successfull',
+                text:'',
+                icon:'success',
+                type:'success',
+                confirmButtonColor: '#4CAF50',
+                confirmButtonText: 'Order Summary'
+            });
+            setTimeout(() => {
+                window.location.href = '/orders';
+            }, 2000);
+        } else if (response.status === 400) {   
+        response.json().then(data => {
+            if (data.message === 'User does not have a default address') {
+                Swal.fire({
+                    title: 'Warning',
+                    text: 'User does not have a default address. Please set a default address.',
+                    icon: 'warning'
+                });
+            } else {               
+                Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred while processing your request',
+                    icon: 'error'
+                });
+            }
+        });
+        }else{
+                Swal.fire({
+                title: 'Error',
+                text: 'Failed to order',
+                icon: 'error'
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error creating wallet order:', error);
+    })
+}
+
+
+
+//*****************TO-GET-ADDITIONAL-NUMBER---------------------//
 document.getElementById("additionalMobile").addEventListener("input", function() {
     let currentValue = this.value;
     if (!currentValue.startsWith("+91 ")) {
@@ -826,6 +1008,8 @@ document.getElementById("additionalMobile").addEventListener("input", function()
     }
 });
 
+
+//*****************TO-REMOVE-PRODUCT-FROM-THE-CHECKOUT---------------------//
 function removeProductFromOrder(productId, userId) {
         swal.fire({
             title: "Are you sure?",
@@ -878,7 +1062,7 @@ function removeProductFromOrder(productId, userId) {
         });
     }
 
-
+//*****************TO-UPDATE-QUANTITY-IN-CHEKOUT---------------------//
     async function updateInQuantity(productId, userId, newQuantity) {
             try {
                 let res = await fetch('product/quantity', {
@@ -941,7 +1125,7 @@ function removeProductFromOrder(productId, userId) {
         }
     }
 
-// Function to apply coupon.
+//*****************APPLY-COUPON---------------------//
 async function applycoupon(){
     const requestData = {
         coupon:document.querySelector('input[name="coupon"]').value

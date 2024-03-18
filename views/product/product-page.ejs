@@ -77,45 +77,22 @@
                         <a href="/admin/view/coupons">View Coupon</a>
                     </div>
                 </li>
-                <!-- <li class="menu-item has-submenu">
-                    <a class="menu-link" href="#"> <i class="icon material-icons md-monetization_on"></i>
-                        <span class="text">Transactions</span>
-                    </a>
-                    <div class="submenu">
-                        <a href="#">Transaction 1</a>
-                        <a href="#">Transaction 2</a>
-                        <a href="#">Transaction Details</a>
-                    </div>
-                </li> -->
                 <li class="menu-item">
                     <a class="menu-link" href="#"> <i class="icon material-icons md-comment"></i>
                         <span class="text">Reviews</span>
                     </a>
                 </li>
-                <!-- <li class="menu-item">
-                    <a class="menu-link" href="#"> <i class="icon material-icons md-stars"></i>
-                        <span class="text">Brands</span> </a>
-                </li>
-                <li class="menu-item">
-                    <a class="menu-link" disabled href="#"> <i class="icon material-icons md-pie_chart"></i>
-                        <span class="text">Statistics</span>
-                    </a>
-                </li> -->
             </ul>
             <hr>
             <ul class="menu-aside">
-                <li class="menu-item has-submenu">
+                <li class="menu-item">
+                    <a class="menu-link" href="/admin/sales/report"> <i class="icon material-icons md-local_offer"></i>
+                        <span class="text"> Sales Report </span>
+                    </a>
+                </li>
+                <li class="menu-item ">
                     <a class="menu-link" href="#"> <i class="icon material-icons md-settings"></i>
                         <span class="text">Settings</span>
-                    </a>
-                    <div class="submenu">
-                        <a href="#">Setting sample 1</a>
-                        <a href="#">Setting sample 2</a>
-                    </div>
-                </li>
-                <li class="menu-item">
-                    <a class="menu-link" href="#"> <i class="icon material-icons md-local_offer"></i>
-                        <span class="text"> Starter page </span>
                     </a>
                 </li>
             </ul>
@@ -243,7 +220,7 @@
                                 <span class="error-message" id="priceErrorMessage"></span>
                             </div>
                             <div class="mb-4">
-                                <label class="form-label">Discount Price</label>
+                                <label class="form-label">Discount Percentage</label>
                                 <input type="number" placeholder="Type here" class="form-control" name="discountPrice" id="discountPrice">
                                 <span class="error-message" id="discountPriceErrorMessage"></span>
                             </div>  
@@ -354,8 +331,8 @@ validateInput('description', 'descriptionErrorMessage', /^[A-Za-z0-9\s\-']+$/, 1
 validateInput('image', 'imageErrorMessage', null, null, null, 'Please select an image.', null);
 validateInput('category', 'categoryErrorMessage', null, null, null, 'Please select a category', null);
 validateInput('price', 'priceErrorMessage', /^\d+(\.\d+)?$/, false, false, 'Price should be required', 'Price can only contain digits and an optional decimal point',null);
-validateInput('countInStock', 'countInStockErrorMessage', /^\d+$/, false, false, 'Count in Stock should be required.', 'Count in Stock should be a number between 1 and 100.', '');
-
+validateInput('countInStock', 'countInStockErrorMessage', /^\d+$/, false, false, 'Count in Stock should be required.', 'Count in Stock should be a number positive number.', '');
+validateInput('discountPrice','discountPriceErrorMessage',/^\d+$/,false,false, 'Discount price is required or type 0','Disocunt price should be a positive number','')
 
 function hasConsecutiveSameCharacters(inputValue) {
     for (let i = 0; i < inputValue.length - 1; i++) {

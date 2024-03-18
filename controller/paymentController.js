@@ -7,8 +7,15 @@ const Wishlist = require("../models/wishlistModel");
 const axios = require('axios')
 const Order = require('../models/orderModel');
 const Wallet = require('../models/walletModel');
+const randomString = require('randomstring');
 require('dotenv').config()
 
+
+//***********GenerateRandomStringToCheckIfItIsUnique***************
+const isOrderIdUnique = async (orderId) => {
+  const existingOrder = await Order.findOne({ oId: orderId });
+  return !existingOrder;
+};
 
 
 // ***********************************CreatingRazorPayOrder***************************************
@@ -72,7 +79,7 @@ const loadWallet = async(req,res) => {
       const categoryData = await Category.find({status:'active'});
       const cart = await Cart.findOne({ owner: userId });
       const user = await User.findById(userId);
-      const order = await Order.find({user:userId,orderStatus:{$ne:'Deleted'}});
+      const order = await Order.find({user:userId,orderStatus:{$ne:'Deleted'}}).limit(3).sort({orderDate:-1})
       const wallet = await Wallet.findOne({user:userId});
     //   console.log('wallet',wallet);
 
@@ -159,7 +166,7 @@ const addWallet = async (req,res) => {
     }
 }
 
-
+//*******************************Handling-payment-with-wallet*********************************** */
 const handleWalletPaymentOrderCreation = async (req, res) => {
   const { cartId, billTotal } = req.body;
   try {
@@ -189,16 +196,20 @@ const handleWalletPaymentOrderCreation = async (req, res) => {
   }
 };
 
+//*************************************Payment-History-Page****************************************** */
 const loadPaymentHistory = async(req,res) => {
   try{
-
+    const currentPage = parseInt(req.query.page) || 1;
+    const perPage = 6;
+    const startIndex = (currentPage - 1) * perPage;
     const userId = req.session.user_id;
     const categoryData = await Category.find({status:'active'});
     const cart = await Cart.findOne({owner:userId});
     const user = await User.findById(userId);
-    const order = await Order.find({user:userId,orderStatus:{$ne:'Deleted'}});
+    const order = await Order.find({user:userId,orderStatus:{$ne:'Deleted'}}).populate('items.productId user').skip(startIndex).limit(perPage).sort({orderDate:-1})
     const wallet = await Wallet.findOne({user:userId});
 
+    const orderCount = await Order.countDocuments({user:userId,orderStatus:{$ne:'Deleted'}}).populate('items.productId user');
     if(!user){
       return res.status(404).json({ success: false, message: "user not found" });
     }
@@ -223,14 +234,19 @@ const loadPaymentHistory = async(req,res) => {
     const cartItemCount = cart ? cart.items.length : 0;
     const wishlist = await Wishlist.findOne({ user: user });
     const wishlistCount = wishlist ? wishlist.items.length : 0;
+
+    const totalPages = Math.ceil(orderCount/perPage)
     res.render('user-payment-history',{
       user:user,
+      userEmail:user.email,
       category:categoryData,
       cartItemCount:cartItemCount,
       order:order,
       wallet:wallet,
-      wishlistCount:wishlistCount
-    
+      wishlistCount:wishlistCount,
+      totalPages:totalPages,
+      currentPage:currentPage
+
     })
 
   }catch(error){
@@ -240,6 +256,235 @@ const loadPaymentHistory = async(req,res) => {
 }
 
 
+//************************************Filtering-Payment-History****************************************** */
+const filterPaymentHistory = async(req,res)=> {
+  try{
+
+    const {orderStatus} = req.query;
+
+    const filteredPaymentHistory = await Order.find({orderStatus}).populate('items.productId user')
+    res.json(filteredPaymentHistory)
+    console.log('filteredPaymentHistory',filteredPaymentHistory);
+
+  }catch(error){
+    console.log(error.message);
+    res.status(500).json({success:false,message:'Internal server error'});
+  }
+}
+
+const handlePaymentWithWallet = async (req, res) => {
+  const { cartId, additionalMobile, shippingAddress, paymentMethod, orderNotes } = req.body;
+
+  console.log(req.body);
+  try {
+      const cart = await Cart.findById(cartId);
+      if (!cart) {
+          return res.status(400).json({ success: false, message: 'Cart Not Found' });
+      }
+
+      const userId = req.session.user_id;
+      const user = await User.findById(userId);
+      if (!user) {
+          return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      let orderShippingAddress;
+
+      if (shippingAddress) {
+          orderShippingAddress = {
+              street: shippingAddress.street,
+              city: shippingAddress.city,
+              state: shippingAddress.state,
+              country: shippingAddress.country,
+              postalCode: shippingAddress.postalCode,
+              type: shippingAddress.addressType 
+          };
+      } else {
+          if (user.address.length > 0) {
+              const addressValue = user.address[user.address.length - 1];
+              orderShippingAddress = {
+                  street: addressValue.street,
+                  city: addressValue.city,
+                  state: addressValue.state,
+                  country: addressValue.country,
+                  postalCode: addressValue.postalCode,
+                  type: addressValue.type
+              };
+          } else {
+              return res.status(400).json({ success: false, message: 'User does not have a default address' });
+          }
+      }
+
+      const orderItems = await Promise.all(cart.items.map(async (item) => {
+          const product = await Product.findById(item.productId);
+          let productStatus = 'active';
+          if (product.countInStock - item.quantity === 0) {
+              productStatus = 'out-of-stock';
+          }
+          await Product.findByIdAndUpdate(item.productId, { status: productStatus });
+          return {
+              productId: item.productId,
+              title: product.title, 
+              image: item.image,
+              productPrice: item.productPrice,
+              quantity: item.quantity,
+              price: item.price,
+              productStatus: productStatus
+          };
+          
+      }));
+      
+
+      // Generate unique order ID
+      let uniqueOrderId = randomString.generate(10);
+      while (!(await isOrderIdUnique(uniqueOrderId))) {
+          uniqueOrderId = randomString.generate(10);
+      }
+
+      let paymentStatus = '';
+      if(paymentMethod === 'Cash On Delivery'){
+        paymentStatus = 'Pending';
+      }else{
+        paymentStatus = 'Success';
+      }
+      
+      const billTotal = cart.discountedTotal > 0 ? cart.discountedTotal : cart.billTotal;
+
+      const orderData = {
+          user: userId,
+          cart: cart._id,
+          oId: uniqueOrderId,
+          orderStatus:'Pending',
+          items: orderItems,
+          billTotal: billTotal,
+          additionalMobile: additionalMobile,
+          paymentMethod: paymentMethod,
+          orderNotes: orderNotes,
+          shippingAddress: orderShippingAddress,
+          paymentStatus: paymentStatus
+      };
+
+      console.log("orderData", orderData);
+
+      cart.items = [];
+      cart.billTotal = 0;
+      await cart.save();
+
+      const order = new Order(orderData);
+      await order.save();
+
+      await Cart.deleteOne({_id:cartId});
+
+      return res.status(200).json({ success: true, message: 'Proceeded to checkout page successfully' });
+  } catch (error) {
+      console.log(error.message);
+      return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+
+const handlePaymentWithRazorPay = async(req,res) =>{
+  const { cartId, additionalMobile, shippingAddress, paymentMethod, orderNotes } = req.body;
+
+  console.log(req.body);
+  try{
+    const cart = await Cart.findById(cartId);
+      if (!cart) {
+          return res.status(400).json({ success: false, message: 'Cart Not Found' });
+      }
+
+      const userId = req.session.user_id;
+      const user = await User.findById(userId);
+      if (!user) {
+          return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      let orderShippingAddress;
+
+      if (shippingAddress) {
+          orderShippingAddress = {
+              street: shippingAddress.street,
+              city: shippingAddress.city,
+              state: shippingAddress.state,
+              country: shippingAddress.country,
+              postalCode: shippingAddress.postalCode,
+              type: shippingAddress.addressType 
+          };
+      } else {
+          if (user.address.length > 0) {
+              const addressValue = user.address[user.address.length - 1];
+              orderShippingAddress = {
+                  street: addressValue.street,
+                  city: addressValue.city,
+                  state: addressValue.state,
+                  country: addressValue.country,
+                  postalCode: addressValue.postalCode,
+                  type: addressValue.type
+              };
+          } else {
+              return res.status(400).json({ success: false, message: 'User does not have a default address' });
+          }
+      }
+
+      const orderItems = await Promise.all(cart.items.map(async (item) => {
+          const product = await Product.findById(item.productId);
+          let productStatus = 'active';
+          if (product.countInStock - item.quantity === 0) {
+              productStatus = 'out-of-stock';
+          }
+          await Product.findByIdAndUpdate(item.productId, { status: productStatus });
+          return {
+              productId: item.productId,
+              title: product.title, 
+              image: item.image,
+              productPrice: item.productPrice,
+              quantity: item.quantity,
+              price: item.price,
+              productStatus: productStatus
+          };
+          
+      }));
+      
+
+      // Generate unique order ID
+      let uniqueOrderId = randomString.generate(10);
+      while (!(await isOrderIdUnique(uniqueOrderId))) {
+          uniqueOrderId = randomString.generate(10);
+      }
+      
+      const billTotal = cart.discountedTotal > 0 ? cart.discountedTotal : cart.billTotal;
+
+      const orderData = {
+          user: userId,
+          cart: cart._id,
+          oId: uniqueOrderId,
+          orderStatus:'Pending',
+          items: orderItems,
+          billTotal: billTotal,
+          additionalMobile: additionalMobile,
+          paymentMethod: paymentMethod,
+          orderNotes: orderNotes,
+          shippingAddress: orderShippingAddress,
+          
+      };
+
+      console.log("orderData", orderData);
+
+      cart.items = [];
+      cart.billTotal = 0;
+      await cart.save();
+
+      const order = new Order(orderData);
+      await order.save();
+
+      await Cart.deleteOne({_id:cartId});
+
+      return res.status(200).json({ success: true, message: 'Proceeded to checkout page successfully' });
+  }catch(error){
+    console.log(error.message);
+    return res.status(500).json({success:false, message:'Internal Server Error'})
+  }
+}
 
 
 module.exports = {
@@ -247,5 +492,8 @@ module.exports = {
     loadWallet,
     addWallet,
     handleWalletPaymentOrderCreation,
-    loadPaymentHistory
+    loadPaymentHistory,
+    filterPaymentHistory,
+    handlePaymentWithWallet,
+    handlePaymentWithRazorPay
 }  

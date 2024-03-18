@@ -2,6 +2,11 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
 <style>
+
+.widget-category .active {
+    font-weight: bold;
+    color: red; 
+}
     .modal {
     display: none; 
     position: fixed; 
@@ -58,6 +63,8 @@
   .rating label:hover ~ label,
   .rating input:checked ~ label {
     color: #f90;
+
+    
   }
 </style>
     <main class="main">
@@ -316,11 +323,14 @@
                             <h5 class="section-title style-1 mb-30 wow fadeIn animated">Category</h5>
                             <% if (category) { %>
                                 <% for (let i = 0; i < category.length; i++) { %>
-                                    <li><a href="#"><%= category[i].name %></a></li>
+                                    <li>
+                                        <a  href="#" class="<%= category[i].name === product.category ? 'active' : '' %>">
+                                            <%= category[i].name %>
+                                        </a>
+                                    </li>
                                 <% } %>
                             <% } %>
-                                                       
-                        </div>
+                        </div>                        
                         <!-- Fillter By Price -->
                         <!-- Product sidebar Widget -->
                         <div class="banner-img wow fadeIn mb-45 animated d-lg-block d-none">

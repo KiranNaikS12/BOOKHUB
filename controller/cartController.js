@@ -45,7 +45,7 @@ const loadCartPage = async(req,res) => {
        
     }catch(error){
         console.log(error.message);
-        return res.status(500).json({ message: "Internal server error" });
+        res.render('user-404-page',{message:`Oops Cart Not found`});
     }
 }
 

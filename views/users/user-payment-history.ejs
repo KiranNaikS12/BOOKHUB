@@ -58,7 +58,6 @@
                         <% let hasPaymentHistory = false; %>
                         <% for(let i = 0; i < order.length; i++) { %>
                             <% const currentOrder = order[i]; %>
-                            <% if (currentOrder.paymentMethod !== 'Cash On Delivery') { %>
                                 <% currentOrder.items.forEach(item => { %>
                                     <tr>
                                         <td><%= i+1  %></td>
@@ -80,7 +79,6 @@
                                     </tr>
                                 <% }) %>
                                 <% hasPaymentHistory = true; %>
-                            <% } %>
                         <% } %>
                         <% if (!hasPaymentHistory) { %>
                             <tr>
@@ -178,35 +176,7 @@
     }
 }
 
-function updateBreadcrumbs(pageUrl, pageLabel) {
-    // Retrieve stored breadcrumb data from session storage
-    const breadcrumbs = JSON.parse(sessionStorage.getItem('breadcrumbs')) || [];
 
-    // Add the current page to the breadcrumbs
-    breadcrumbs.push({ url: pageUrl, label: pageLabel });
-
-    // Update session storage with the updated breadcrumbs
-    sessionStorage.setItem('breadcrumbs', JSON.stringify(breadcrumbs));
-
-    // Update the breadcrumb HTML
-    renderBreadcrumbs(breadcrumbs);
-}
-
-// Function to render breadcrumbs HTML
-function renderBreadcrumbs(breadcrumbs) {
-    const shopBreadcrumb = document.getElementById('shopBreadcrumb');
-    if (breadcrumbs.length > 0) {
-        // Get the label of the last breadcrumb in the array
-        const currentPageLabel = breadcrumbs[breadcrumbs.length - 1].label;
-        // Update the SHOP breadcrumb text with the current page label
-        shopBreadcrumb.textContent = currentPageLabel;
-    }
-}
-
-// Example usage:
-const currentPageUrl = window.location.href;
-const currentPageLabel = 'Payment History'; 
-updateBreadcrumbs(currentPageUrl, currentPageLabel);
 
 </script>
 </body>

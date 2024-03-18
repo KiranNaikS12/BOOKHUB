@@ -1,0 +1,465 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>BOOKHUB</title>
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:title" content="">
+    <meta property="og:type" content="">
+    <meta property="og:url" content="">
+    <meta property="og:image" content="">
+    <link href="/assets-admin/css/main.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet"/>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+    
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+    
+        th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+    
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+    
+        .table-bordered th, .table-bordered td {
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen-overlay"></div>
+    <aside class="navbar-aside" id="offcanvas_aside">
+        <div class="aside-top">
+            <div class="logo logo-width-1">
+                <a href="/admin/home"><h3>BOOKHUB</h3></a>
+            </div>
+            <div>
+                <button class="btn btn-icon btn-aside-minimize"> <i class="text-muted material-icons md-menu_open"></i> </button>
+            </div>
+        </div>
+        <nav>
+            <ul class="menu-aside">
+                <li class="menu-item active">
+                    <a class="menu-link" href="/admin/home"> <i class="icon material-icons md-home"></i>
+                        <span class="text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="/admin/profile"> <i class="icon material-icons md-person"></i>
+                        <span class="text">My Profile</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="/admin/category/"> <i class="icon material-icons md-shopping_bag"></i>
+                        <span class="text">Manage Category</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="/admin/dashboard"> <i class="icon material-icons md-person"></i>
+                        <span class="text">User Account</span>
+                    </a>
+                </li>
+                <li class="menu-item has-submenu">
+                    <a class="menu-link" href="#"> <i class="icon material-icons md-shopping_cart"></i>
+                        <span class="text">Manage Product</span>
+                    </a>
+                    <div class="submenu">
+                        <a href="/admin/product/add">Add product</a>
+                        <a href="/admin/product/lists">View Product</a>
+                    </div>
+                </li>
+                <li class="menu-item has-submenu">
+                    <a class="menu-link" href="#"> <i class="icon material-icons md-shopping_cart"></i>
+                        <span class="text">Manage Orders</span>
+                    </a>
+                    <div class="submenu">
+                        <a href="/admin/order/lists">Order </a>
+                    </div>
+                </li>
+                <li class="menu-item has-submenu">
+                    <a class="menu-link"> <i class="icon material-icons md-store"></i>
+                        <span class="text">Manage Coupon</span>
+                    </a>
+                    <div class="submenu">
+                        <a href="/admin/coupon">Add Coupon</a>
+                        <a href="/admin/view/coupons">View Coupon</a>
+                    </div>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="#"> <i class="icon material-icons md-comment"></i>
+                        <span class="text">Reviews</span>
+                    </a>
+                </li>
+            </ul>
+            <hr>
+            <ul class="menu-aside">
+                <li class="menu-item">
+                    <a class="menu-link" href="/admin/sales/report"> <i class="icon material-icons md-local_offer"></i>
+                        <span class="text"> Sales Report </span>
+                    </a>
+                </li>
+                <li class="menu-item ">
+                    <a class="menu-link" href="#"> <i class="icon material-icons md-settings"></i>
+                        <span class="text">Settings</span>
+                    </a>
+                </li>
+            </ul>
+            <br>
+            <br>
+        </nav>
+    </aside>
+    <main class="main-wrap">
+        <header class="main-header navbar">
+            <div class="col-search">
+                <form class="searchform">
+                    <div class="input-group">
+                        <input list="search_terms" type="text" class="form-control" placeholder="Search term">
+                        <button class="btn btn-light bg" type="button"> <i class="material-icons md-search"></i></button>
+                    </div>
+                    <datalist id="search_terms">
+                        <option value="Products">
+                        <option value="New orders">
+                        <option value="Apple iphone">
+                        <option value="Ahmed Hassan">
+                    </datalist>
+                </form>
+            </div>
+            <div class="col-nav">
+                <button class="btn btn-icon btn-mobile me-auto" data-trigger="#offcanvas_aside"> <i class="material-icons md-apps"></i> </button>
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a class="nav-link btn-icon" href="#">
+                            <i class="material-icons md-notifications animation-shake"></i>
+                            <span class="badge rounded-pill">3</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn-icon darkmode" href="#"> <i class="material-icons md-nights_stay"></i> </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="requestfullscreen nav-link btn-icon"><i class="material-icons md-cast"></i></a>
+                    </li>
+                    <li class="dropdown nav-item">
+                        <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownLanguage" aria-expanded="false"><i class="material-icons md-public"></i></a>
+                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownLanguage">
+                            <a class="dropdown-item text-brand" href="#"><img src="/assets-admin/imgs/theme/flag-us.png" alt="English">English</a>
+                            <a class="dropdown-item" href="#"><img src="/assets-admin/imgs/theme/flag-fr.png" alt="Français">Français</a>
+                            <a class="dropdown-item" href="#"><img src="/assets-admin/imgs/theme/flag-jp.png" alt="Français">日本語</a>
+                            <a class="dropdown-item" href="#"><img src="/assets-admin/imgs/theme/flag-cn.png" alt="Français">中国人</a>
+                        </div>
+                    </li>
+                    <li class="dropdown nav-item">
+                        <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownAccount" aria-expanded="false"> <img class="img-xs rounded-circle" src="/assets-admin/imgs/people/avatar2.jpg" alt="User"></a>
+                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownAccount">
+                            <a class="dropdown-item" href="#"><i class="material-icons md-perm_identity"></i>Edit Profile</a>
+                            <a class="dropdown-item" href="#"><i class="material-icons md-settings"></i>Account Settings</a>
+                            <a class="dropdown-item" href="#"><i class="material-icons md-account_balance_wallet"></i>Wallet</a>
+                            <a class="dropdown-item" href="#"><i class="material-icons md-receipt"></i>Billing</a>
+                            <a class="dropdown-item" href="#"><i class="material-icons md-help_outline"></i>Help center</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="#"><i class="material-icons md-exit_to_app"></i>Logout</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </header>
+        <section class="content-main">
+            <div class="content-header">
+                <div>
+                    <h2 class="content-title card-title">Sales Report</h2>
+                    <p>Entire Sales Report Available Here....</p>
+                </div>
+                <div class="export-buttons">
+                    <button class="btn btn-primary export-button" id="export-pdf">Export as PDF</button>
+                    <button class="btn btn-primary export-button" id="export-excel">Export as Excel</button>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <header class="card-header">
+                    <div class="row gx-3">
+                        <div class="col-lg-2 col-6 col-md-3">
+                            <select class="form-select" id="filter-by-date">
+                                <option value="">Filter</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="yearly">Yearly</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-4 col-md-6"> 
+                            <div class="input-group">
+                                <input type="date" id="start-date" class="form-control">
+                                <span class="input-group-text">to</span>
+                                <input type="date" id="end-date" class="form-control">
+                                <button id="apply-filter" class="btn btn-primary">Apply</button>
+                            </div>
+                        </div>
+                    </div>                    
+                </header> <!-- card-header end// -->
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr style="background-color:#eefdfd;">
+                                    <th>Slno.</th>
+                                    <th>Date</th>
+                                    <th scope="col">Order ID</th>
+                                    <th scope="col">Customer</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Total Products</th>
+                                    <th scope="col">Total Actual Price</th>
+                                    <th scope="col">Offer Applied</th>
+                                    <th scope="col">Coupon Amount Applied</th>
+                                    <th scope="col">Payment Method</th>
+                                    <th scope="col">Total Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (order && order.length > 0) { %>
+                                    <% order.forEach((currentOrder, index) => { %>
+                                        <% if (currentOrder.orderStatus === 'Delivered') { %>
+                                            <% let billTotal = currentOrder.billTotal || 0; %>
+                                            <% let totalOfferPrice = 0; %> 
+                                            <% let totalActualPrice = 0; %>
+                                            <% let productCount = 0; %> 
+                                            <% currentOrder.items.forEach((item) => { %>
+                                                <% const product = item.productId; %>
+                                                <% const unitPrice = product.price * item.quantity; %>
+                                                <% const offerPrice = unitPrice - item.price; %> 
+                                                <% const actualPrice = unitPrice %>  
+                                                <% totalOfferPrice += offerPrice; %> 
+                                                <% totalActualPrice += actualPrice; %> 
+                                                <% productCount += item.quantity; %> 
+                                            <% }) %>
+                                            <tr>
+                                                <td><%= index + 1 %></td>
+                                                <td><%= currentOrder.orderDate.toDateString() %></td>
+                                                <td><%= currentOrder.oId %></td>
+                                                <td><%= currentOrder.user.email %></td>
+                                                <td><%= currentOrder.orderStatus %></td>
+                                                <td><%= productCount %></td>
+                                                <td>Rs.<%= totalActualPrice %></td>
+                                                <td>Rs.<%= totalOfferPrice %></td>
+                                                <% const getCoupon = totalActualPrice - totalOfferPrice; %>
+                                                <% const couponAmount = getCoupon - currentOrder.billTotal %>
+                                                <!-- Calculate coupon amount here -->
+                                                <td><%= couponAmount %></td>
+                                                <% if (currentOrder.paymentMethod === 'Cash On Delivery') { %>
+                                                    <td>COD</td>
+                                                <% } else { %>
+                                                    <td><%= currentOrder.paymentMethod  %></td>
+                                                <% } %> 
+                                                <td><%= currentOrder.billTotal  %></td>
+                                            </tr>
+                                        <% } %>
+                                    <% }) %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="11">No sales data available</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>                                                                                                                                              
+                    </div> 
+                </div> 
+            </div> 
+            <div class="pagination-area mt-30 mb-51">
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination justify-content-center"> <!-- Center pagination -->
+                        <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                            <a class="page-link" href="/admin/sales/report?page=<%= currentPage - 1 %>" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                                <span class="visually-hidden">Previous</span>
+                            </a>
+                        </li>
+                        <% for(let i = 1; i <= totalPage; i++) { %>
+                            <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                <a class="page-link" href="/admin/sales/report?page=<%= i %>"><%= i %></a>
+                            </li>
+                        <% } %>
+                        <li class="page-item <%= currentPage === totalPage ? 'disabled' : '' %>">
+                            <a class="page-link" href="/admin/sales/report?page=<%= currentPage + 1 %>" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                                <span class="visually-hidden">Next</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </section> <!-- content-main end// -->
+        
+    </main>
+    <script src="/assets-admin/js/vendors/jquery-3.6.0.min.js"></script>
+    <script src="/assets-admin/js/vendors/bootstrap.bundle.min.js"></script>
+    <script src="/assets-admin/js/vendors/select2.min.js"></script>
+    <script src="/assets-admin/js/vendors/perfect-scrollbar.js"></script>
+    <script src="/assets-admin/js/vendors/jquery.fullscreen.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.4.1/jspdf.debug.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <!-- Main Script -->
+    <script src="/assets-admin/js/main.js" type="text/javascript"></script>
+    <!-- cdn for pdf reports -->   
+     <script>
+    function exportToPDF(){
+    if (typeof jsPDF !== 'undefined') {
+        const content = document.querySelector('.table-responsive');
+        html2canvas(content).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF();
+            const imgWidth = 200;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+            pdf.save('sales_report.pdf');
+        })
+    } else {
+        console.error('jsPDF library is not available');
+    }
+    }
+
+    function exportToExcel(){
+        const table = document.querySelector('.table-responsive table');
+        let csvContent = "data:text/csv;charset=utf-8,";
+        const rows = table.querySelectorAll('tr');
+        rows.forEach(row => {
+            const rowData = [];
+            row.querySelectorAll('th, td').forEach(cell => {
+                rowData.push(cell.textContent.trim());
+            });
+            csvContent += rowData.join(',') + '\n';
+        });
+
+        const encodeUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodeUri);
+        link.setAttribute('download', 'sales_report.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    //Event listener for exporting to pdf   
+    document.getElementById('export-pdf').addEventListener('click',exportToPDF);
+    
+    // Event listener for exporting to Excel
+    document.getElementById('export-excel').addEventListener('click', exportToExcel);
+
+
+
+
+    //filtering based on orderDate:
+    document.getElementById('apply-filter').addEventListener('click', function() {
+    const filterOption = document.getElementById('filter-by-date').value;
+    let url = '/admin/filter/sales';
+
+    if (filterOption === 'custom') {
+        const startDate = document.getElementById('start-date').value;
+        const endDate = document.getElementById('end-date').value;
+        
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(endDate);
+
+        if (startDate && endDate) {
+
+            if(endDateObj > new Date()){
+                toastr.error('You cannot apply filter for future date!');
+                return;
+            }
+
+            url += `?startDate=${startDate}&endDate=${endDate}`;
+            fetchedProducts(url);
+        } else {
+            toastr.warning('Please select the starting and ending date')
+        }
+    } else if (filterOption) {
+        url += `?interval=${filterOption}`;
+        document.getElementById('start-date').value = '';
+        document.getElementById('end-date').value = '';
+        fetchedProducts(url);
+    }
+});
+
+function fetchedProducts(url) {
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json()
+        })
+        .then(data => {
+            console.log('Received data from backend:', data);
+            updatePaymentList(data);
+        })
+        .catch(error => {
+            console.log('Error fetching products:', error);
+        });
+}
+
+    function updatePaymentList(data) {
+        const tbody = document.querySelector('tbody');
+        tbody.innerHTML = ""; 
+
+    if (data && data.length > 0) {
+        let slNo = 1;
+        data.forEach(order => {
+            if (order.orderStatus === 'Delivered') {
+                const tr = document.createElement('tr');
+                let billTotal = order.billTotal || 0;
+                let totalOfferPrice = 0;
+                let totalActualPrice = 0;
+                let productCount = 0;
+                
+                if (order.items && order.items.length > 0) {
+                    order.items.forEach(item => {
+                        const product = item.productId;
+                        const unitPrice = product.price * item.quantity;
+                        const offerPrice = unitPrice - item.price;
+                        const actualPrice = unitPrice;
+                        totalOfferPrice += offerPrice;
+                        totalActualPrice += actualPrice;
+                        productCount += item.quantity;
+                    });
+                }
+
+                couponAmount = totalActualPrice - totalOfferPrice - billTotal;
+                tr.innerHTML = `
+                    <td>${slNo}</td>
+                    <td>${new Date(order.orderDate).toDateString()}</td>
+                    <td>${order.oId}</td>
+                    <td>${order.user.email}</td>
+                    <td>${order.orderStatus}</td>
+                    <td>${productCount}</td>
+                    <td>Rs.${totalActualPrice}</td>
+                    <td>Rs.${totalOfferPrice}</td>
+                    <td>${couponAmount}</td>
+                    <td>${order.paymentMethod === 'Cash On Delivery' ? 'COD' : order.paymentMethod}</td>
+                    <td>Rs.${billTotal}</td>
+                `;
+
+                tbody.appendChild(tr);
+                slNo++;
+            }
+        });
+    } else {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="11">No sales data available</td>`;
+        tbody.appendChild(tr);
+    }
+}
+
+</script>
+</body>
+</html>

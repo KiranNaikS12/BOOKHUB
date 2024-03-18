@@ -42,7 +42,7 @@
                                                     <h5 class="product-name"><a href="#"><%= item.data.title %></a></h5>
                                                     <p class="font-xs">Category: <%= item.data.category %></p>
                                                     <% if (item.data.countInStock <= 10) { %>
-                                                        <p class="font-xs text-danger" id="countInStock-<%= item.data._id %>">Only  <%= item.data.countInStock %>  stocks Left</p>
+                                                        <p class="font-xs text-danger" id="countInStock-<%= item.data._id %>">Only  <%= item.data.countInStock %> stocks are remaining hurry up</p>
                                                         <% } else if(item.data.status === 'out-of-stock'){ %>
                                                          <p class="text-danger"><%= item.data.status  %></p>
                                                          <% } else if(item.data.countInStock > 10){ %>
